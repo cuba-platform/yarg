@@ -39,7 +39,7 @@ public final class ODTTableHelper {
 
     public static List<String> getTablesNames(XComponent xComponent) {
         XNameAccess tables = asXTextTablesSupplier(xComponent).getTextTables();
-        return new ArrayList<>(Arrays.asList(tables.getElementNames()));
+        return new ArrayList<String>(Arrays.asList(tables.getElementNames()));
     }
 
     public static XTextTable getTableByName(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {

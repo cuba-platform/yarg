@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class DefaultPropertiesLoader implements PropertiesLoader {
-    private String propertiesPath = "./reporting.properties";
+    protected String propertiesPath = "./reporting.properties";
+    protected Properties properties;
+    protected final Object lock = new Object();
 
     public DefaultPropertiesLoader() {
     }
@@ -16,10 +18,15 @@ public class DefaultPropertiesLoader implements PropertiesLoader {
     }
 
     public Properties load() throws IOException {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(propertiesPath));
-        properties.putAll(System.getProperties());
-        return properties;
+        synchronized (lock) {
+            if (properties == null) {
+                properties = new Properties();
+                properties.load(new FileInputStream(propertiesPath));
+                properties.putAll(System.getProperties());
+                return properties;
+            } else {
+                return properties;
+            }
+        }
     }
-
 }

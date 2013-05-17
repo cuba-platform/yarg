@@ -1,3 +1,4 @@
+import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
@@ -8,6 +9,7 @@ import com.haulmont.newreport.structure.ReportTemplate;
 import com.haulmont.newreport.structure.impl.*;
 import com.haulmont.newreport.structure.xml.impl.DefaultXmlReader;
 import com.haulmont.newreport.structure.xml.impl.DefaultXmlWriter;
+import com.haulmont.newreport.util.groovy.DefaultScriptingImpl;
 import com.haulmont.newreport.util.properties.DefaultPropertiesLoader;
 import org.junit.Test;
 
@@ -31,7 +33,7 @@ public class ExportImportTest {
 
         Reporting reporting = new Reporting();
         reporting.setFormatterFactory(new DefaultFormatterFactory());
-        reporting.setLoaderFactory(new DefaultLoaderFactory(new DefaultPropertiesLoader()));
+        reporting.setLoaderFactory(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl())));
         reporting.runReport(new RunParams(report1));
         reporting.runReport(new RunParams(report2));
     }

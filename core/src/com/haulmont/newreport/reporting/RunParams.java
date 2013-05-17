@@ -20,8 +20,8 @@ public class RunParams {
         this.report = report;
     }
 
-    public RunParams templateName(String templateName) {
-        this.templateCode = templateName;
+    public RunParams templateCode(String templateCode) {
+        this.templateCode = templateCode;
         return this;
     }
 

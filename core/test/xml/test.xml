@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<report name="report" xmlns="http://cuba.haulmont.com/reporting.xsd">
-<templates>
-    <template code="DEFAULT" documentName="result.xls" documentPath="./test/test.xls" outputType="xls"/>
-</templates>
-<rootBand name="Root" orientation="H">
-    <bands>
-        <band name="Band1" orientation="H">
-            <bands/>
-            <dataSets>
-                <dataSet name="" type="groovy">
-                    <script>return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]</script>
-                </dataSet>
-            </dataSets>
-        </band>
-    </bands>
-    <dataSets/>
-</rootBand>
-<parameters/>
+<!--<?xml version="1.0" encoding="UTF-8" xmlns="http://cuba.haulmont.com/reporting.xsd"?>-->
+<report name="report">
+    <templates>
+        <template code="DEFAULT" documentName="result.xls" documentPath="./test/test.xls" outputType="xls"/>
+    </templates>
+    <parameters/>
+    <rootBand name="Root" orientation="H">
+        <bands>
+            <band name="Band1" orientation="H">
+                <bands/>
+                <dataSets>
+                    <dataSet name="123" type="groovy">
+                        <script>return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]</script>
+                    </dataSet>
+                </dataSets>
+            </band>
+        </bands>
+        <dataSets/>
+    </rootBand>
 </report>

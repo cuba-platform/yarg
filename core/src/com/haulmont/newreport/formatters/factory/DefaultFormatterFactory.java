@@ -18,7 +18,7 @@ import com.haulmont.newreport.structure.ReportTemplate;
 import java.io.OutputStream;
 
 public class DefaultFormatterFactory implements FormatterFactory {
-    protected OOConnectorAPI  ooConnectorAPI;
+    protected OOConnectorAPI ooConnectorAPI;
 
     public DefaultFormatterFactory() {
     }
@@ -35,9 +35,10 @@ public class DefaultFormatterFactory implements FormatterFactory {
 
         if ("xls".equalsIgnoreCase(templateExtension)) {
             return new XLSFormatter(rootBand, reportTemplate, outputStream);
-        } else if ("doc".equalsIgnoreCase(templateExtension)) {
-            return new DocFormatter(rootBand, reportTemplate, outputStream, ooConnectorAPI);
-        } else if ("odt".equalsIgnoreCase(templateExtension)) {
+        } else if ("doc".equalsIgnoreCase(templateExtension) || "odt".equalsIgnoreCase(templateExtension)) {
+            if (ooConnectorAPI == null) {
+                throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check that \"cuba.reporting.openoffice.path\" property is set in properties file.");
+            }
             return new DocFormatter(rootBand, reportTemplate, outputStream, ooConnectorAPI);
         } else if ("docx".equalsIgnoreCase(templateExtension)) {
             return new DocxFormatter(rootBand, reportTemplate, outputStream);

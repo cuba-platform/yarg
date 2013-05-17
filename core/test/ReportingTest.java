@@ -1,5 +1,6 @@
 import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
+import com.haulmont.newreport.loaders.factory.PropertiesSqlLoaderFactory;
 import com.haulmont.newreport.reporting.Reporting;
 import com.haulmont.newreport.reporting.RunParams;
 import com.haulmont.newreport.structure.Report;
@@ -27,9 +28,9 @@ public class ReportingTest {
 
         Reporting reporting = new Reporting();
         reporting.setFormatterFactory(new DefaultFormatterFactory());
-        reporting.setLoaderFactory(new DefaultLoaderFactory(new DefaultPropertiesLoader()));
+        reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader()).create()));
 
-        reporting.runReport(new RunParams(report).templateName("XLS"), new FileOutputStream("./result/result.xls"));
+        reporting.runReport(new RunParams(report).templateCode("XLS"), new FileOutputStream("./result/result.xls"));
     }
 
     private Report createReport() throws IOException {

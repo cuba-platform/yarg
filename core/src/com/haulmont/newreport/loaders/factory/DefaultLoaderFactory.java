@@ -9,49 +9,42 @@ import com.haulmont.newreport.exception.InitializationException;
 import com.haulmont.newreport.exception.UnsupportedLoaderException;
 import com.haulmont.newreport.loaders.DataLoader;
 import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
-import com.haulmont.newreport.loaders.impl.SqlDataDataLoader;
+import com.haulmont.newreport.loaders.impl.SqlDataLoader;
 import com.haulmont.newreport.util.groovy.DefaultScriptingImpl;
 import com.haulmont.newreport.util.properties.PropertiesLoader;
 import org.apache.commons.dbcp.*;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class DefaultLoaderFactory implements LoaderFactory {
-    protected GroovyDataLoader groovyDataLoader;
-    protected SqlDataDataLoader sqlDataDataLoader;
-    protected PropertiesLoader propertiesLoader;
+    protected Map<String, DataLoader> dataLoaders = new HashMap<String, DataLoader>();
 
-    public DefaultLoaderFactory(PropertiesLoader propertiesLoader) {
-        this.propertiesLoader = propertiesLoader;
-        try {
-            groovyDataLoader = new GroovyDataLoader(new DefaultScriptingImpl());
+    public DefaultLoaderFactory setGroovyDataLoader(DataLoader dataLoader) {
+        return registerDataLoader("groovy", dataLoader);
+    }
 
-            Properties properties = propertiesLoader.load();
-            String driver = properties.getProperty("cuba.reporting.sql.driver");
-            String dbUrl = properties.getProperty("cuba.reporting.sql.dbUrl");
-            String user = properties.getProperty("cuba.reporting.sql.user");
-            String password = properties.getProperty("cuba.reporting.sql.password");
+    public DefaultLoaderFactory setSqlDataLoader(DataLoader dataLoader) {
+        return registerDataLoader("sql", dataLoader);
+    }
 
-            DataSource dataSource = setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
-            sqlDataDataLoader = new SqlDataDataLoader(dataSource);
-        } catch (IOException e) {
-            throw new InitializationException("An error occurred while loading properties", e);
-        }
+    public DefaultLoaderFactory registerDataLoader(String key, DataLoader dataLoader) {
+        dataLoaders.put(key, dataLoader);
+        return this;
     }
 
     @Override
     public DataLoader createDataLoader(String loaderType) {
-        if ("groovy".equalsIgnoreCase(loaderType)) {
-            return groovyDataLoader;
-        } else if ("sql".equalsIgnoreCase(loaderType)) {
-            return sqlDataDataLoader;
-
+        DataLoader dataLoader = dataLoaders.get(loaderType);
+        if (dataLoader == null) {
+            throw new UnsupportedLoaderException(String.format("Unsupported loader type [%s]", loaderType));
+        } else {
+            return dataLoader;
         }
-        throw new UnsupportedLoaderException(String.format("Unsupported loader type [%s]", loaderType));
     }
-
 
     public static DataSource setupDataSource(String driver, String connectURI,
                                              String username,
@@ -85,7 +78,7 @@ public class DefaultLoaderFactory implements LoaderFactory {
 
             return dataSource;
         } catch (ClassNotFoundException e) {
-            throw new InitializationException("An error occurred during creation of new datasource object",e);
+            throw new InitializationException("An error occurred during creation of new datasource object", e);
         }
     }
 }

@@ -1,6 +1,6 @@
 import com.haulmont.newreport.structure.impl.BandOrientation;
 import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
-import com.haulmont.newreport.loaders.impl.SqlDataDataLoader;
+import com.haulmont.newreport.loaders.impl.SqlDataLoader;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.impl.DataSetImpl;
 import com.haulmont.newreport.util.groovy.DefaultScriptingImpl;
@@ -25,11 +25,11 @@ public class DataLoadersTest {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("startDate", new Timestamp(new Date().getTime()));
             params.put("start", "login%");
-            SqlDataDataLoader sqlDataDataLoader = new SqlDataDataLoader(testDatabase.getDs());
+            SqlDataLoader sqlDataLoader = new SqlDataLoader(testDatabase.getDs());
             Band rootBand = new Band("band1", null, BandOrientation.HORIZONTAL);
             rootBand.setData(Collections.<String, Object>emptyMap());
 
-            List<Map<String, Object>> result = sqlDataDataLoader.loadData(
+            List<Map<String, Object>> result = sqlDataLoader.loadData(
                     new DataSetImpl("", "select login, password from user where create_ts > ${startDate} and login like ${start} limit 10", "sql"), rootBand, params);
             printResult(result);
         } catch (Exception e) {

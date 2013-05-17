@@ -17,12 +17,12 @@ import java.util.regex.Pattern;
 
 /**
  * @author degtyarjov
- * @version $Id: SqlDataDataLoader.java 9930 2012-12-13 22:31:09Z artamonov $
+ * @version $Id: SqlDataLoader.java 9930 2012-12-13 22:31:09Z artamonov $
  */
-public class SqlDataDataLoader extends AbstractDbDataLoader {
+public class SqlDataLoader extends AbstractDbDataLoader {
     private DataSource dataSource;
 
-    public SqlDataDataLoader(DataSource dataSource) {
+    public SqlDataLoader(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -82,7 +82,7 @@ public class SqlDataDataLoader extends AbstractDbDataLoader {
             parentBand = parentBand.getParentBand();
         }
 
-        List<ParamPosition> paramPositions = new ArrayList<ParamPosition>();
+        List<QueryParameter> queryParameters = new ArrayList<QueryParameter>();
         List<Object> values = new ArrayList<Object>();
         for (Map.Entry<String, Object> entry : currentParams.entrySet()) {
             // Remembers ${alias} positions
@@ -91,7 +91,6 @@ public class SqlDataDataLoader extends AbstractDbDataLoader {
 
             String alias = "${" + paramName + "}";
             String paramNameRegexp = "\\$\\{" + paramName + "\\}";
-
             String deleteRegexp = "(?i) *(and|or)? +[\\w|\\d|\\.|\\_]+ +(=|>=|<=|like) *" + paramNameRegexp;
 
             //if value == null - removing condition from query
@@ -104,25 +103,37 @@ public class SqlDataDataLoader extends AbstractDbDataLoader {
 
                 int subPosition = 0;
                 while (matcher.find(subPosition)) {
-                    paramPositions.add(new ParamPosition(paramNameRegexp, matcher.start(), convertParameter(paramValue)));
+                    queryParameters.add(new QueryParameter(paramNameRegexp, matcher.start(), convertParameter(paramValue)));
                     subPosition = matcher.end();
                 }
             }
         }
 
         // Sort params by position
-        Collections.sort(paramPositions, new Comparator<ParamPosition>() {
+        Collections.sort(queryParameters, new Comparator<QueryParameter>() {
             @Override
-            public int compare(ParamPosition o1, ParamPosition o2) {
+            public int compare(QueryParameter o1, QueryParameter o2) {
                 return o1.getPosition().compareTo(o2.getPosition());
             }
         });
 
-        for (ParamPosition paramEntry : paramPositions) {
-            // Replace all params by ?
-            query = query.replaceAll(paramEntry.getParamRegexp(), "?");
-            Object value = paramEntry.getValue();
-            values.add(value);
+        for (QueryParameter parameter : queryParameters) {
+            if (parameter.isSingleValue()) {
+                // Replace single parameter with ?
+                query = query.replaceAll(parameter.getParamRegexp(), "?");
+                Object value = parameter.getValue();
+                values.add(value);
+            } else {
+                // Replace multiple parameter with ?,..(N)..,?
+                List<?> multipleValues = parameter.getMultipleValues();
+                StringBuilder builder = new StringBuilder();
+                for (Object value : multipleValues) {
+                    builder.append("?,");
+                    values.add(value);
+                }
+                builder.deleteCharAt(builder.length() - 1);
+                query = query.replaceAll(parameter.getParamRegexp(), builder.toString());
+            }
         }
 
         query = query.trim();
@@ -133,12 +144,12 @@ public class SqlDataDataLoader extends AbstractDbDataLoader {
         return new QueryPack(query, values.toArray());
     }
 
-    private static class ParamPosition {
+    private static class QueryParameter {
         private Integer position;
         private Object value;
         private String paramRegexp;
 
-        private ParamPosition(String paramRegexp, Integer position, Object value) {
+        private QueryParameter(String paramRegexp, Integer position, Object value) {
             this.position = position;
             this.value = value;
             this.paramRegexp = paramRegexp;
@@ -154,6 +165,24 @@ public class SqlDataDataLoader extends AbstractDbDataLoader {
 
         public String getParamRegexp() {
             return paramRegexp;
+        }
+
+        public boolean isSingleValue() {
+            return !(value instanceof Collection || value instanceof Object[]);
+        }
+
+        public List<?> getMultipleValues() {
+            if (isSingleValue()) {
+                return Collections.singletonList(value);
+            } else {
+                if (value instanceof Collection) {
+                    return new ArrayList<Object>((Collection<?>) value);
+                } else if (value instanceof Object[]) {
+                    return Arrays.asList((Object[]) value);
+                }
+            }
+
+            return null;
         }
     }
 }
