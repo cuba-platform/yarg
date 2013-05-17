@@ -1,0 +1,82 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="report">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="templates" minOccurs='1' maxOccurs='1'>
+                    <xs:complexType>
+                        <xs:sequence minOccurs="0">
+                            <xs:element name="template" type="template"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="parameters" minOccurs='1' maxOccurs='1'>
+                    <xs:complexType>
+                        <xs:sequence minOccurs="0">
+                            <xs:element name="parameter" type="parameter"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="rootBand" minOccurs='1' maxOccurs='1' type="band"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="template">
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="documentName" type="xs:string" use="required"/>
+        <xs:attribute name="documentPath" type="xs:string"/>
+        <xs:attribute name="outputType" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="band">
+        <xs:sequence>
+            <xs:element name="bands">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0">
+                        <xs:element name="band" type="band"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="dataSets">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0">
+                        <xs:element name="dataSet" type="dataSet"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+
+        <xs:attribute name="name" type="BandName" use="required"/>
+        <xs:attribute name="orientation" type="Orientation"/>
+    </xs:complexType>
+
+    <xs:complexType name="dataSet">
+        <xs:sequence>
+            <xs:element name="script" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="BandName" use="required"/>
+        <xs:attribute name="type" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="parameter">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="alias" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="xs:string" use="required"/>
+        <xs:attribute name="required" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:simpleType name="Orientation">
+        <xs:restriction base="xs:normalizedString">
+            <xs:enumeration value="H"/>
+            <xs:enumeration value="V"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="BandName">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-z0-9_]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
