@@ -36,6 +36,22 @@ public class FormattersTest {
     }
 
     @Test
+    public void testXlsToPdfFormatter() throws Exception {
+        Band root = createRootBand();
+
+        FileOutputStream outputStream = new FileOutputStream("./result/result.pdf");
+
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOOTaskRunner(new OOTaskRunner("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
+                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.pdf), outputStream));
+
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDocx() throws Exception {
         Band root = createRootBand();
 
@@ -66,7 +82,7 @@ public class FormattersTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOOConnectorAPI(new OOTaskRunner("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        defaultFormatterFactory.setOOTaskRunner(new OOTaskRunner("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl(null, "test.odt", "./test/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();

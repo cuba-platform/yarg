@@ -12,6 +12,8 @@ import com.haulmont.newreport.formatters.impl.DocxFormatter;
 import com.haulmont.newreport.formatters.impl.HtmlFormatter;
 import com.haulmont.newreport.formatters.impl.XLSFormatter;
 import com.haulmont.newreport.formatters.impl.doc.connector.OOTaskRunnerAPI;
+import com.haulmont.newreport.formatters.impl.xls.XlsToPdfConverter;
+import com.haulmont.newreport.formatters.impl.xls.XlsToPdfConverterAPI;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportTemplate;
 
@@ -19,12 +21,14 @@ import java.io.OutputStream;
 
 public class DefaultFormatterFactory implements FormatterFactory {
     protected OOTaskRunnerAPI ooTaskRunnerAPI;
+    protected XlsToPdfConverterAPI xlsToPdfConverter;
 
     public DefaultFormatterFactory() {
     }
 
-    public void setOOConnectorAPI(OOTaskRunnerAPI ooTaskRunnerAPI) {
+    public void setOOTaskRunner(OOTaskRunnerAPI ooTaskRunnerAPI) {
         this.ooTaskRunnerAPI = ooTaskRunnerAPI;
+        this.xlsToPdfConverter = new XlsToPdfConverter(ooTaskRunnerAPI);
     }
 
     public Formatter createFormatter(FormatterFactoryInput factoryInput) {
@@ -34,7 +38,9 @@ public class DefaultFormatterFactory implements FormatterFactory {
         OutputStream outputStream = factoryInput.outputStream;
 
         if ("xls".equalsIgnoreCase(templateExtension)) {
-            return new XLSFormatter(rootBand, reportTemplate, outputStream);
+            XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
+            xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
+            return xlsFormatter;
         } else if ("doc".equalsIgnoreCase(templateExtension) || "odt".equalsIgnoreCase(templateExtension)) {
             if (ooTaskRunnerAPI == null) {
                 throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");

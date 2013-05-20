@@ -72,7 +72,7 @@ public class ConsoleRunner {
                 }
 
                 OOTaskRunner taskRunner = new OOTaskRunner(openOfficePath, ports);
-                formatterFactory.setOOConnectorAPI(taskRunner);
+                formatterFactory.setOOTaskRunner(taskRunner);
 
                 String openOfficeTimeout = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_TIMEOUT);
                 if (StringUtils.isNotBlank(openOfficeTimeout)) {

@@ -1,5 +1,6 @@
 package com.haulmont.newreport.formatters.impl;
 
+import com.haulmont.newreport.exception.UnsupportedFormatException;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.impl.BandOrientation;
 import com.haulmont.newreport.structure.ReportOutputType;
@@ -21,6 +22,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import com.haulmont.newreport.formatters.impl.xls.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -58,8 +60,14 @@ public class XLSFormatter extends AbstractFormatter {
 
     private Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<HSSFSheet, HSSFPatriarch>();
 
+    private XlsToPdfConverterAPI xlsToPdfConverter;
+
     public XLSFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
+    }
+
+    public void setXlsToPdfConverter(XlsToPdfConverterAPI xlsToPdfConverter) {
+        this.xlsToPdfConverter = xlsToPdfConverter;
     }
 
     @Override
@@ -117,6 +125,18 @@ public class XLSFormatter extends AbstractFormatter {
                 resultWorkbook.write(outputStream);
             } catch (Exception e) {
                 throw new ReportingException(e);
+            }
+        } else if (ReportOutputType.pdf.equals(outputType)) {
+            if (xlsToPdfConverter != null) {
+                try {
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    resultWorkbook.write(stream);
+                    xlsToPdfConverter.convertXlsToPdf(stream.toByteArray(), outputStream);
+                } catch (IOException e) {
+                    throw new ReportingException(e);
+                }
+            } else {
+                throw new UnsupportedFormatException("Could not convert xls files to pdf because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
             }
         }
     }
