@@ -20,13 +20,13 @@ public class PropertiesSqlLoaderFactory {
         this.propertiesLoader = propertiesLoader;
     }
 
-    public SqlDataLoader create(){
+    public SqlDataLoader create() {
         try {
             Properties properties = propertiesLoader.load();
-            String driver = properties.getProperty("cuba.reporting.sql.driver");
-            String dbUrl = properties.getProperty("cuba.reporting.sql.dbUrl");
-            String user = properties.getProperty("cuba.reporting.sql.user");
-            String password = properties.getProperty("cuba.reporting.sql.password");
+            String driver = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_DRIVER);
+            String dbUrl = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_DB_URL);
+            String user = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_USER);
+            String password = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_PASSWORD);
 
             DataSource dataSource = DefaultLoaderFactory.setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
             SqlDataLoader sqlDataLoader = new SqlDataLoader(dataSource);

@@ -8,7 +8,7 @@ package com.haulmont.newreport.formatters.impl.tags;
 
 import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.doc.OfficeComponent;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnection;
+import com.haulmont.newreport.formatters.impl.doc.connector.OOResourceProvider;
 import com.sun.star.awt.Size;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.beans.XPropertySet;
@@ -83,8 +83,7 @@ public class BitmapTagHandler implements TagHandler {
                 int height = Integer.parseInt(paramsMatcher.group(2));
                 try {
                     XComponent xComponent = officeComponent.getOfficeComponent();
-                    OOConnection connection = officeComponent.getOfficeConnection();
-                    insertImage(xComponent, connection, destination, textRange, imageContent, width, height);
+                    insertImage(xComponent, officeComponent.getOoResourceProvider(), destination, textRange, imageContent, width, height);
                     inserted = true;
                 } catch (Exception ignored) {
                 }
@@ -120,10 +119,10 @@ public class BitmapTagHandler implements TagHandler {
         return (byte[]) paramValue;
     }
 
-    protected void insertImage(XComponent document, OOConnection connection, XText destination, XTextRange textRange,
+    protected void insertImage(XComponent document, OOResourceProvider ooResourceProvider, XText destination, XTextRange textRange,
                                byte[] imageContent, int width, int height) throws Exception {
         XMultiServiceFactory xFactory = asXMultiServiceFactory(document);
-        XComponentContext xComponentContext = connection.getxComponentContext();
+        XComponentContext xComponentContext = ooResourceProvider.getXComponentContext();
         XMultiComponentFactory serviceManager = xComponentContext.getServiceManager();
 
         Object oImage = xFactory.createInstance(TEXT_GRAPHIC_OBJECT);

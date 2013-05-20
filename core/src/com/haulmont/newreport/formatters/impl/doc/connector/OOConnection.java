@@ -10,72 +10,45 @@
  */
 package com.haulmont.newreport.formatters.impl.doc.connector;
 
+import com.haulmont.newreport.exception.FailedToConnectToOpenOfficeException;
 import com.sun.star.comp.helper.BootstrapException;
-import com.sun.star.frame.XComponentLoader;
-import com.sun.star.frame.XDesktop;
-import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.uno.Exception;
 import com.sun.star.uno.XComponentContext;
 
-import java.util.List;
-
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.*;
-
-public class OOConnection {
+class OOConnection {
     protected XComponentContext xComponentContext;
     protected String openOfficePath;
     protected OOServer oooServer;
     protected Integer port;
-    protected OOConnector connector;
+    protected OOTaskRunner connector;
     protected BootstrapSocketConnector bsc;
+    protected OOResourceProvider ooResourceProvider;
 
-    public OOConnection(String openOfficePath, Integer port, ProcessManager processManager, OOConnector connector) {
-        this.port = port;
-        this.connector = connector;
-
-        List oooOptions = OOServer.getDefaultOOoOptions();
-        oooServer = new OOServer(openOfficePath, oooOptions, "localhost", port, processManager);
-        bsc = new BootstrapSocketConnector(oooServer);
-        this.openOfficePath = openOfficePath;
+    public OOConnection(String openOfficePath, Integer port, ProcessManager processManager, OOTaskRunner connector) {
+        try {
+            this.port = port;
+            this.connector = connector;
+            this.oooServer = new OOServer(openOfficePath, OOServer.getDefaultOOoOptions(), "localhost", port, processManager);
+            this.bsc = new BootstrapSocketConnector(oooServer);
+            this.openOfficePath = openOfficePath;
+            this.xComponentContext = bsc.connect("localhost", port);
+            this.ooResourceProvider = new OOResourceProvider(xComponentContext);
+        } catch (Exception e) {
+            throw new FailedToConnectToOpenOfficeException("Unable to create Open office components.", e);
+        } catch (BootstrapException e) {
+            throw new FailedToConnectToOpenOfficeException("Unable to start Open office instance.", e);
+        }
     }
 
-    public XDesktop createDesktop() throws Exception {
-        Object o = xComponentContext.getServiceManager().createInstanceWithContext(
-                "com.sun.star.frame.Desktop", xComponentContext);
-        return asXDesktop(o);
-    }
-
-    public XComponentLoader createXComponentLoader() throws Exception {
-        return asXComponentLoader(createDesktop());
-    }
-
-    public XDispatchHelper createXDispatchHelper() throws Exception {
-        Object o = xComponentContext.getServiceManager().createInstanceWithContext(
-                "com.sun.star.frame.DispatchHelper", xComponentContext);
-        return asXDispatchHelper(o);
-    }
-
-    public XComponentContext getxComponentContext() {
-        return xComponentContext;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public String getOpenOfficePath() {
-        return openOfficePath;
-    }
-
-    void open() throws BootstrapException {
-        xComponentContext = bsc.connect("localhost", port);
+    public OOResourceProvider getOOResourceProvider() {
+        return ooResourceProvider;
     }
 
     void close() {
         bsc.disconnect();
     }
 
-    void finallyHandleClose() {
+    void releaseResources() {
         oooServer.kill();
         connector.putPortBack(port);
     }

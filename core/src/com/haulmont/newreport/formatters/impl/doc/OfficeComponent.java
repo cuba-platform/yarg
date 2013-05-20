@@ -10,27 +10,20 @@
  */
 package com.haulmont.newreport.formatters.impl.doc;
 
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnection;
-import com.sun.star.frame.XComponentLoader;
+import com.haulmont.newreport.formatters.impl.doc.connector.OOResourceProvider;
 import com.sun.star.lang.XComponent;
 
 public class OfficeComponent {
-    private OOConnection officeConnection;
-    private XComponentLoader officeLoader;
     private XComponent officeComponent;
+    private OOResourceProvider ooResourceProvider;
 
-    public OfficeComponent(OOConnection officeConnection, XComponentLoader officeLoader, XComponent officeComponent) {
-        this.officeConnection = officeConnection;
-        this.officeLoader = officeLoader;
-        this.officeComponent = officeComponent;
+    public OfficeComponent(OOResourceProvider ooResourceProvider, XComponent xComponent) {
+        this.ooResourceProvider = ooResourceProvider;
+        this.officeComponent = xComponent;
     }
 
-    public OOConnection getOfficeConnection() {
-        return officeConnection;
-    }
-
-    public XComponentLoader getOfficeLoader() {
-        return officeLoader;
+    public OOResourceProvider getOoResourceProvider() {
+        return ooResourceProvider;
     }
 
     public XComponent getOfficeComponent() {

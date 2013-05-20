@@ -11,20 +11,20 @@ import com.haulmont.newreport.formatters.impl.DocFormatter;
 import com.haulmont.newreport.formatters.impl.DocxFormatter;
 import com.haulmont.newreport.formatters.impl.HtmlFormatter;
 import com.haulmont.newreport.formatters.impl.XLSFormatter;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnectorAPI;
+import com.haulmont.newreport.formatters.impl.doc.connector.OOTaskRunnerAPI;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportTemplate;
 
 import java.io.OutputStream;
 
 public class DefaultFormatterFactory implements FormatterFactory {
-    protected OOConnectorAPI ooConnectorAPI;
+    protected OOTaskRunnerAPI ooTaskRunnerAPI;
 
     public DefaultFormatterFactory() {
     }
 
-    public void setOOConnectorAPI(OOConnectorAPI ooConnectorAPI) {
-        this.ooConnectorAPI = ooConnectorAPI;
+    public void setOOConnectorAPI(OOTaskRunnerAPI ooTaskRunnerAPI) {
+        this.ooTaskRunnerAPI = ooTaskRunnerAPI;
     }
 
     public Formatter createFormatter(FormatterFactoryInput factoryInput) {
@@ -36,10 +36,10 @@ public class DefaultFormatterFactory implements FormatterFactory {
         if ("xls".equalsIgnoreCase(templateExtension)) {
             return new XLSFormatter(rootBand, reportTemplate, outputStream);
         } else if ("doc".equalsIgnoreCase(templateExtension) || "odt".equalsIgnoreCase(templateExtension)) {
-            if (ooConnectorAPI == null) {
-                throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check that \"cuba.reporting.openoffice.path\" property is set in properties file.");
+            if (ooTaskRunnerAPI == null) {
+                throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
             }
-            return new DocFormatter(rootBand, reportTemplate, outputStream, ooConnectorAPI);
+            return new DocFormatter(rootBand, reportTemplate, outputStream, ooTaskRunnerAPI);
         } else if ("docx".equalsIgnoreCase(templateExtension)) {
             return new DocxFormatter(rootBand, reportTemplate, outputStream);
         } else if ("ftl".equalsIgnoreCase(templateExtension)) {

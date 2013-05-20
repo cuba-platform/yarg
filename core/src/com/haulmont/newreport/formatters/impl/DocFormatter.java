@@ -10,6 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl;
 
+import com.haulmont.newreport.formatters.impl.doc.connector.*;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.structure.impl.ReportValueFormat;
@@ -18,14 +19,10 @@ import com.haulmont.newreport.formatters.impl.doc.ClipBoardHelper;
 import com.haulmont.newreport.formatters.impl.doc.ODTTableHelper;
 import com.haulmont.newreport.formatters.impl.doc.OOOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.OfficeComponent;
-import com.haulmont.newreport.formatters.impl.doc.connector.NoFreePortsException;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnection;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnectorAPI;
 import com.haulmont.newreport.formatters.impl.tags.TagHandler;
 import com.haulmont.newreport.structure.ReportTemplate;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XIndexAccess;
-import com.sun.star.frame.XComponentLoader;
 import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.io.IOException;
 import com.sun.star.io.XInputStream;
@@ -64,17 +61,15 @@ public class DocFormatter extends AbstractFormatter {
      */
     protected List<TagHandler> tagHandlers = new ArrayList<TagHandler>();
 
-    protected OOConnection connection;
-
     protected XComponent xComponent;
 
     protected OfficeComponent officeComponent;
 
-    protected OOConnectorAPI connectorAPI;
+    protected OOTaskRunnerAPI taskRunnerAPI;
 
-    public DocFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OOConnectorAPI connectorAPI) {
+    public DocFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OOTaskRunnerAPI taskRunnerAPI) {
         super(rootBand, reportTemplate, outputStream);
-        this.connectorAPI = connectorAPI;
+        this.taskRunnerAPI = taskRunnerAPI;
     }
 
     public void renderDocument() {
@@ -84,7 +79,7 @@ public class DocFormatter extends AbstractFormatter {
         try {
             doCreateDocument(reportTemplate.getOutputType(), outputStream);
         } catch (Exception e) {//just try again if any exceptions occurred
-            log.warn("An error occured while generating doc report. System will retry to generate report once again.", e);
+            log.warn("An error occurred while generating doc report. System will retry to generate report once again.", e);
             try {
                 doCreateDocument(reportTemplate.getOutputType(), outputStream);
             } catch (NoFreePortsException e1) {
@@ -94,22 +89,18 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     private void doCreateDocument(final ReportOutputType outputType, final OutputStream outputStream) throws NoFreePortsException {
-        createOpenOfficeConnection();
-
-        Runnable runnable = new Runnable() {
+        OfficeTask officeTask = new OfficeTask() {
             @Override
-            public void run() {
+            public void processTaskInOpenOffice(OOResourceProvider ooResourceProvider) {
                 try {
                     XInputStream xis = getXInputStream(reportTemplate);
-                    XComponentLoader xComponentLoader = connection.createXComponentLoader();
-                    xComponent = loadXComponent(xComponentLoader, xis);
-
-                    officeComponent = new OfficeComponent(connection, xComponentLoader, xComponent);
+                    xComponent = loadXComponent(ooResourceProvider.getXComponentLoader(), xis);
+                    officeComponent = new OfficeComponent(ooResourceProvider, xComponent);
 
                     // Lock clipboard
                     synchronized (ClipBoardHelper.class) {
                         // Handling tables
-                        fillTables();
+                        fillTables(ooResourceProvider.getXDispatchHelper());
                     }
                     // Handling text
                     replaceAllAliasesInDocument();
@@ -121,11 +112,7 @@ public class DocFormatter extends AbstractFormatter {
             }
         };
 
-        connectorAPI.openConnectionRunWithTimeoutAndClose(connection, runnable, 60);//todo parameters
-    }
-
-    private void createOpenOfficeConnection() throws NoFreePortsException {
-        connection = connectorAPI.createConnection();
+        taskRunnerAPI.runTaskWithTimeout(officeTask, taskRunnerAPI.getTimeoutInSeconds());
     }
 
     private void saveAndClose(XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
@@ -142,11 +129,10 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     //todo allow to define table name as docx formatter does (##band=Band1 in first cell)
-    private void fillTables() throws com.sun.star.uno.Exception {
+    private void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
         List<String> tablesNames = getTablesNames(xComponent);
         tablesNames.retainAll(rootBand.getBandDefinitionNames());
 
-        XDispatchHelper xDispatchHelper = connection.createXDispatchHelper();
         for (String tableName : tablesNames) {
             Band band = rootBand.findBandRecursively(tableName);
             XTextTable xTextTable = getTableByName(xComponent, tableName);

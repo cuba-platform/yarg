@@ -6,7 +6,7 @@
 package console;
 
 import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnector;
+import com.haulmont.newreport.formatters.impl.doc.connector.OOTaskRunner;
 import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.newreport.loaders.factory.PropertiesSqlLoaderFactory;
 import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
@@ -61,8 +61,8 @@ public class ConsoleRunner {
             Reporting reporting = new Reporting();
             DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory();
             Properties properties = propertiesLoader.load();
-            String openOfficePath = properties.getProperty("cuba.reporting.openoffice.path");
-            String openOfficePorts = properties.getProperty("cuba.reporting.openoffice.ports");
+            String openOfficePath = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PATH);
+            String openOfficePorts = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PORTS);
             if (StringUtils.isNotBlank(openOfficePath) && StringUtils.isNotBlank(openOfficePorts)) {
                 String[] portsStr = openOfficePorts.split(",");
                 Integer[] ports = new Integer[portsStr.length];
@@ -71,8 +71,13 @@ public class ConsoleRunner {
                     ports[i] = Integer.valueOf(str);
                 }
 
-                OOConnector ooConnector = new OOConnector(openOfficePath, ports);
-                formatterFactory.setOOConnectorAPI(ooConnector);
+                OOTaskRunner taskRunner = new OOTaskRunner(openOfficePath, ports);
+                formatterFactory.setOOConnectorAPI(taskRunner);
+
+                String openOfficeTimeout = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_TIMEOUT);
+                if (StringUtils.isNotBlank(openOfficeTimeout)) {
+                    taskRunner.setTimeoutInSeconds(Integer.valueOf(openOfficeTimeout));
+                }
             }
 
             reporting.setFormatterFactory(formatterFactory);

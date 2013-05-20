@@ -1,5 +1,5 @@
 import com.haulmont.newreport.formatters.factory.FormatterFactoryInput;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOConnector;
+import com.haulmont.newreport.formatters.impl.doc.connector.OOTaskRunner;
 import com.haulmont.newreport.structure.impl.BandOrientation;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.formatters.Formatter;
@@ -66,7 +66,7 @@ public class FormattersTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOOConnectorAPI(new OOConnector("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        defaultFormatterFactory.setOOConnectorAPI(new OOTaskRunner("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl(null, "test.odt", "./test/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();

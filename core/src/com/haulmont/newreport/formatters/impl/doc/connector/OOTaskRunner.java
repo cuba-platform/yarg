@@ -16,38 +16,38 @@ import com.sun.star.comp.helper.BootstrapException;
 import java.util.Collections;
 import java.util.concurrent.*;
 
-public class OOConnector implements OOConnectorAPI {
+public class OOTaskRunner implements OOTaskRunnerAPI {
     protected volatile boolean platformDependProcessManagement = true;
     protected final ExecutorService executor;
     protected final BlockingQueue<Integer> freePorts = new LinkedBlockingDeque<Integer>();
     protected Integer[] openOfficePorts;
     protected String openOfficePath;
+    protected Integer timeoutInSeconds = 60;
 
-    public OOConnector(String openOfficePath, Integer... ports) {
+    public OOTaskRunner(String openOfficePath, Integer... ports) {
         this.openOfficePath = openOfficePath;
         this.openOfficePorts = ports;
         Collections.addAll(freePorts, ports);
         executor = Executors.newFixedThreadPool(freePorts.size());
     }
 
-    public OOConnection createConnection() throws NoFreePortsException {
-        final Integer port = freePorts.poll();
-        if (port != null) {
-            return new OOConnection(openOfficePath, port, resolveProcessManager(), this);
-        } else {
-            throw new NoFreePortsException("Couldn't get free port from pool");
-        }
+    public void setTimeoutInSeconds(Integer timeoutInSeconds) {
+        this.timeoutInSeconds = timeoutInSeconds;
+    }
+
+    public Integer getTimeoutInSeconds() {
+        return timeoutInSeconds;
     }
 
     @Override
-    public void openConnectionRunWithTimeoutAndClose(final OOConnection connection, final Runnable runnable, int timeoutInSeconds) {
+    public void runTaskWithTimeout(final OfficeTask officeTask, int timeoutInSeconds) throws NoFreePortsException {
+        final OOConnection connection = createConnection();
         Future future = null;
         try {
             Callable<Void> task = new Callable<Void>() {
                 @Override
                 public Void call() throws java.lang.Exception {
-                    connection.open();
-                    runnable.run();
+                    officeTask.processTaskInOpenOffice(connection.getOOResourceProvider());
                     connection.close();
                     return null;
                 }
@@ -56,7 +56,7 @@ public class OOConnector implements OOConnectorAPI {
             future.get(timeoutInSeconds, TimeUnit.SECONDS);
         } catch (ExecutionException ex) {
             if (ex.getCause() instanceof BootstrapException) {
-                throw new FailedToConnectToOpenOfficeException("Failed to connect to open office. Please check open office path " + connection.getOpenOfficePath(), ex);
+                throw new FailedToConnectToOpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
             }
             throw new RuntimeException(ex.getCause());
         } catch (java.lang.Exception ex) {
@@ -65,12 +65,8 @@ public class OOConnector implements OOConnectorAPI {
             if (future != null) {
                 future.cancel(true);
             }
-            connection.finallyHandleClose();
+            connection.releaseResources();
         }
-    }
-
-    void putPortBack(Integer port) {
-        freePorts.add(port);
     }
 
     public ExecutorService getExecutor() {
@@ -107,6 +103,15 @@ public class OOConnector implements OOConnectorAPI {
         this.platformDependProcessManagement = platformDependProcessManagement;
     }
 
+    protected OOConnection createConnection() throws NoFreePortsException {
+        final Integer port = freePorts.poll();
+        if (port != null) {
+            return new OOConnection(openOfficePath, port, resolveProcessManager(), this);
+        } else {
+            throw new NoFreePortsException("Couldn't get free port from pool");
+        }
+    }
+
     protected ProcessManager resolveProcessManager() {
         if (platformDependProcessManagement) {
             String os = System.getProperty("os.name").toLowerCase();
@@ -116,5 +121,9 @@ public class OOConnector implements OOConnectorAPI {
                 return new LinuxProcessManager();
         }
         return new JavaProcessManager();
+    }
+
+    void putPortBack(Integer port) {
+        freePorts.add(port);
     }
 }
