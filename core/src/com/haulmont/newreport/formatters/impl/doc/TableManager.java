@@ -10,6 +10,8 @@
  */
 package com.haulmont.newreport.formatters.impl.doc;
 
+import com.haulmont.newreport.exception.ReportingException;
+import com.haulmont.newreport.formatters.impl.AbstractFormatter;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XNameAccess;
 import com.sun.star.frame.XController;
@@ -31,31 +33,52 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTHelper.copy;
-import static com.haulmont.newreport.formatters.impl.doc.ODTHelper.paste;
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.*;
+import static com.haulmont.newreport.formatters.impl.doc.UnoHelper.copy;
+import static com.haulmont.newreport.formatters.impl.doc.UnoHelper.paste;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.*;
 
-public final class ODTTableHelper {
+public class TableManager {
+    protected XTextTable xTextTable;
+
+    public TableManager(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
+        xTextTable = getTableByName(xComponent, tableName);
+    }
+
+    public XTextTable getXTextTable() {
+        return xTextTable;
+    }
 
     public static List<String> getTablesNames(XComponent xComponent) {
         XNameAccess tables = asXTextTablesSupplier(xComponent).getTextTables();
         return new ArrayList<String>(Arrays.asList(tables.getElementNames()));
     }
 
-    public static XTextTable getTableByName(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
+    protected static XTextTable getTableByName(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
         XNameAccess tables = asXTextTablesSupplier(xComponent).getTextTables();
         return (XTextTable) ((Any) tables.getByName(tableName)).getObject();
     }
 
-    public static XCell getXCell(XTextTable xTextTable, int col, int row) throws IndexOutOfBoundsException {
+    public boolean hasValueExpressions() {
+        XTextTable xTextTable = getXTextTable();
+        int lastRow = xTextTable.getRows().getCount() - 1;
+        try {
+            for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
+                String templateText = asXText(getXCell(i, lastRow)).getString();
+                if (AbstractFormatter.UNIVERSAL_ALIAS_PATTERN.matcher(templateText).find()) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            throw new ReportingException(e);
+        }
+        return false;
+    }
+
+    public XCell getXCell(int col, int row) throws IndexOutOfBoundsException {
         return asXCellRange(xTextTable).getCellByPosition(col, row);
     }
 
-    public static XCell getXCell(XTextTable xTextTable, String cellName) {
-        return xTextTable.getCellByName(cellName);
-    }
-
-    public static void selectRow(XController xController, XTextTable xTextTable, int row) throws com.sun.star.uno.Exception {
+    public void selectRow(XController xController, int row) throws com.sun.star.uno.Exception {
         String[] cellNames = xTextTable.getCellNames();
         int colCount = xTextTable.getColumns().getCount();
         String firstCellName = cellNames[row * colCount];
@@ -74,36 +97,23 @@ public final class ODTTableHelper {
         }
     }
 
-    public static void deleteRow(XTextTable xTextTable, int row) {
-        XTableRows xTableRows = xTextTable.getRows();
-        xTableRows.removeByIndex(row, 1);
-    }
-
-    public static void deleteLastRow(XTextTable xTextTable) {
+    public void deleteLastRow() {
         XTableRows xTableRows = xTextTable.getRows();
         xTableRows.removeByIndex(xTableRows.getCount() - 1, 1);
     }
 
-    public static void insertRowToEnd(XTextTable xTextTable) {
+    public void insertRowToEnd() {
         XTableRows xTableRows = xTextTable.getRows();
         xTableRows.insertByIndex(xTableRows.getCount(), 1);
     }
 
-    public static void duplicateLastRow(XDispatchHelper xDispatchHelper, XController xController, XTextTable xTextTable) throws com.sun.star.uno.Exception, WrappedTargetException, IllegalArgumentException {
+    public void duplicateLastRow(XDispatchHelper xDispatchHelper, XController xController) throws com.sun.star.uno.Exception, IllegalArgumentException {
         int lastRowNum = xTextTable.getRows().getCount() - 1;
-        selectRow(xController, xTextTable, lastRowNum);
+        selectRow(xController, lastRowNum);
         XDispatchProvider xDispatchProvider = asXDispatchProvider(xController.getFrame());
         copy(xDispatchHelper, xDispatchProvider);
-        insertRowToEnd(xTextTable);
-        selectRow(xController, xTextTable, ++lastRowNum);
+        insertRowToEnd();
+        selectRow(xController, ++lastRowNum);
         paste(xDispatchHelper, xDispatchProvider);
-    }
-
-    //delete nonexistent symbols from cell text
-    public static String preformatCellText(String cellText) {
-        if (cellText != null)
-            return cellText.replace("\r", "");
-        else
-            return cellText;
     }
 }

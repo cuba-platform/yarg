@@ -18,9 +18,9 @@ import java.io.ByteArrayInputStream;
 /**
  * Implementation for XInputStream
  */
-public class OOInputStream extends ByteArrayInputStream implements XInputStream, XSeekable {
+public class OfficeInputStream extends ByteArrayInputStream implements XInputStream, XSeekable {
 
-    public OOInputStream(byte[] buf) {
+    public OfficeInputStream(byte[] buf) {
         super(buf);
     }
 

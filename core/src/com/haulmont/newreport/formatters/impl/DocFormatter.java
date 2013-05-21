@@ -10,14 +10,13 @@
  */
 package com.haulmont.newreport.formatters.impl;
 
+import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
+import com.haulmont.newreport.formatters.impl.doc.TableManager;
 import com.haulmont.newreport.formatters.impl.doc.connector.*;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.structure.impl.ReportValueFormat;
 import com.haulmont.newreport.exception.ReportingException;
-import com.haulmont.newreport.formatters.impl.doc.ClipBoardHelper;
-import com.haulmont.newreport.formatters.impl.doc.ODTTableHelper;
-import com.haulmont.newreport.formatters.impl.doc.OOOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.OfficeComponent;
 import com.haulmont.newreport.formatters.impl.tags.TagHandler;
 import com.haulmont.newreport.structure.ReportTemplate;
@@ -35,15 +34,18 @@ import com.sun.star.util.XSearchDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTHelper.*;
-import static com.haulmont.newreport.formatters.impl.doc.ODTTableHelper.*;
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.*;
+import static com.haulmont.newreport.formatters.impl.doc.UnoHelper.*;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.*;
 
 /**
  * Document formatter for '.doc' file types
@@ -65,11 +67,11 @@ public class DocFormatter extends AbstractFormatter {
 
     protected OfficeComponent officeComponent;
 
-    protected OOTaskRunnerAPI taskRunnerAPI;
+    protected OfficeIntegrationAPI officeIntegration;
 
-    public DocFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OOTaskRunnerAPI taskRunnerAPI) {
+    public DocFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OfficeIntegrationAPI officeIntegration) {
         super(rootBand, reportTemplate, outputStream);
-        this.taskRunnerAPI = taskRunnerAPI;
+        this.officeIntegration = officeIntegration;
     }
 
     public void renderDocument() {
@@ -91,17 +93,14 @@ public class DocFormatter extends AbstractFormatter {
     private void doCreateDocument(final ReportOutputType outputType, final OutputStream outputStream) throws NoFreePortsException {
         OfficeTask officeTask = new OfficeTask() {
             @Override
-            public void processTaskInOpenOffice(OOResourceProvider ooResourceProvider) {
+            public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
                 try {
                     XInputStream xis = getXInputStream(reportTemplate);
                     xComponent = loadXComponent(ooResourceProvider.getXComponentLoader(), xis);
                     officeComponent = new OfficeComponent(ooResourceProvider, xComponent);
 
-                    // Lock clipboard
-                    synchronized (ClipBoardHelper.class) {
-                        // Handling tables
-                        fillTables(ooResourceProvider.getXDispatchHelper());
-                    }
+                    // Handling tables
+                    fillTables(ooResourceProvider.getXDispatchHelper());
                     // Handling text
                     replaceAllAliasesInDocument();
                     // Saving document to output stream and closing
@@ -112,12 +111,12 @@ public class DocFormatter extends AbstractFormatter {
             }
         };
 
-        taskRunnerAPI.runTaskWithTimeout(officeTask, taskRunnerAPI.getTimeoutInSeconds());
+        officeIntegration.runTaskWithTimeout(officeTask, officeIntegration.getTimeoutInSeconds());
     }
 
     private void saveAndClose(XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
             throws IOException {
-        OOOutputStream ooos = new OOOutputStream(outputStream);
+        OfficeOutputStream ooos = new OfficeOutputStream(outputStream);
         String filterName;
         if (ReportOutputType.pdf.equals(outputType)) {
             filterName = PDF_OUTPUT_FILE;
@@ -130,77 +129,70 @@ public class DocFormatter extends AbstractFormatter {
 
     //todo allow to define table name as docx formatter does (##band=Band1 in first cell)
     private void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
-        List<String> tablesNames = getTablesNames(xComponent);
+        List<String> tablesNames = TableManager.getTablesNames(xComponent);
         tablesNames.retainAll(rootBand.getBandDefinitionNames());
 
         for (String tableName : tablesNames) {
             Band band = rootBand.findBandRecursively(tableName);
-            XTextTable xTextTable = getTableByName(xComponent, tableName);
+            TableManager tableManager = new TableManager(xComponent, tableName);
+            XTextTable xTextTable = tableManager.getXTextTable();
+
             if (band != null) {
                 // todo remove this hack!
                 // try to select one cell without it workaround
                 int columnCount = xTextTable.getColumns().getCount();
-                if (columnCount < 2)
+                if (columnCount < 2) {
                     xTextTable.getColumns().insertByIndex(columnCount, 1);
-                fillTable(tableName, band.getParentBand(), xTextTable, xDispatchHelper);
+                }
+                fillTable(tableName, band.getParentBand(), tableManager, xDispatchHelper);
                 // end of workaround ->
-                if (columnCount < 2)
+                if (columnCount < 2) {
                     xTextTable.getColumns().removeByIndex(columnCount, 1);
+                }
             } else {
-                if (haveValueExpressions(xTextTable))
-                    deleteLastRow(xTextTable);
+                if (tableManager.hasValueExpressions())
+                    tableManager.deleteLastRow();
             }
         }
     }
 
-    public boolean haveValueExpressions(XTextTable xTextTable) {
-        int lastrow = xTextTable.getRows().getCount() - 1;
-        try {
-            for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
-                String templateText = asXText(ODTTableHelper.getXCell(xTextTable, i, lastrow)).getString();
-                if (UNIVERSAL_ALIAS_PATTERN.matcher(templateText).find()) {
-                    return true;
+    private void fillTable(String name, Band parentBand, TableManager tableManager, XDispatchHelper xDispatchHelper)
+            throws com.sun.star.uno.Exception {
+        // Lock clipboard, cause uno uses it to grow tables
+        synchronized (clipboardLock) {//todo try get rid of it
+            XTextTable xTextTable = tableManager.getXTextTable();
+            if (officeIntegration.isDisplayDeviceAvailable()) {
+                clearClipboard();
+            }
+            int startRow = xTextTable.getRows().getCount() - 1;
+            List<Band> childrenBands = parentBand.getChildrenList();
+            for (Band child : childrenBands) {
+                if (name.equals(child.getName())) {
+                    tableManager.duplicateLastRow(xDispatchHelper, asXTextDocument(xComponent).getCurrentController());
                 }
             }
-        } catch (Exception e) {
-            throw new ReportingException(e);
+            int i = startRow;
+            for (Band child : childrenBands) {
+                if (name.equals(child.getName())) {
+                    fillRow(child, tableManager, i);
+                    i++;
+                }
+            }
+            tableManager.deleteLastRow();
         }
-        return false;
     }
 
-    private void fillTable(String name, Band parentBand, XTextTable xTextTable, XDispatchHelper xDispatchHelper)
-            throws com.sun.star.uno.Exception {
-        boolean displayDeviceUnavailable = true;//todo parameter
-        if (!displayDeviceUnavailable) {
-            ClipBoardHelper.clear();
-        }
-        int startRow = xTextTable.getRows().getCount() - 1;
-        List<Band> childrenBands = parentBand.getChildrenList();
-        for (Band child : childrenBands) {
-            if (name.equals(child.getName())) {
-                duplicateLastRow(xDispatchHelper, asXTextDocument(xComponent).getCurrentController(), xTextTable);
-            }
-        }
-        int i = startRow;
-        for (Band child : childrenBands) {
-            if (name.equals(child.getName())) {
-                fillRow(child, xTextTable, i);
-                i++;
-            }
-        }
-        deleteLastRow(xTextTable);
-    }
-
-    private void fillRow(Band band, XTextTable xTextTable, int row)
+    private void fillRow(Band band, TableManager tableManager, int row)
             throws com.sun.star.lang.IndexOutOfBoundsException, NoSuchElementException, WrappedTargetException {
+        XTextTable xTextTable = tableManager.getXTextTable();
         int colCount = xTextTable.getColumns().getCount();
         for (int col = 0; col < colCount; col++) {
-            fillCell(band, getXCell(xTextTable, col, row));
+            fillCell(band, tableManager.getXCell(col, row));
         }
     }
 
     private void fillCell(Band band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
-        String cellText = preformatCellText(asXText(xCell).getString());
+        String cellText = formatCellText(asXText(xCell).getString());
         List<String> parametersToInsert = new ArrayList<String>();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(cellText);
         while (matcher.find()) {
@@ -218,7 +210,7 @@ public class DocFormatter extends AbstractFormatter {
                 xTextCursor.goLeft((short) paramStr.length(), true);
 
                 insertValue(xText, xTextCursor, band, parameterName);
-                cellText = preformatCellText(xText.getString());
+                cellText = formatCellText(xText.getString());
 
                 index = cellText.indexOf(paramStr);
             }
@@ -281,10 +273,42 @@ public class DocFormatter extends AbstractFormatter {
                     String valueString = formatValue(paramValue, fullParamName);
                     text.insertString(textRange, valueString, true);
                 }
-            } else
+            } else {
                 text.insertString(textRange, "", true);
+            }
         } catch (Exception ex) {
             throw new ReportingException("Insert data error");
+        }
+    }
+
+    //delete nonexistent symbols from cell text
+    private String formatCellText(String cellText) {
+        if (cellText != null) {
+            return cellText.replace("\r", "");
+        } else {
+            return cellText;
+        }
+    }
+
+    private static final Object clipboardLock = new Object();
+
+    private static void clearClipboard() {
+        try {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
+                public DataFlavor[] getTransferDataFlavors() {
+                    return new DataFlavor[0];
+                }
+
+                public boolean isDataFlavorSupported(DataFlavor flavor) {
+                    return false;
+                }
+
+                public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+                    throw new UnsupportedFlavorException(flavor);
+                }
+            }, null);
+        } catch (IllegalStateException ignored) {
+            //ignore exception
         }
     }
 }

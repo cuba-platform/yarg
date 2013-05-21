@@ -8,7 +8,7 @@ package com.haulmont.newreport.formatters.impl.tags;
 
 import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.doc.OfficeComponent;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOResourceProvider;
+import com.haulmont.newreport.formatters.impl.doc.connector.OfficeResourceProvider;
 import com.sun.star.awt.Size;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.beans.XPropertySet;
@@ -34,7 +34,7 @@ import org.docx4j.wml.Text;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.*;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.*;
 
 /**
  * <p>$Id: BitmapTagHandler.java 10587 2013-02-19 08:40:16Z degtyarjov $</p>
@@ -83,7 +83,7 @@ public class BitmapTagHandler implements TagHandler {
                 int height = Integer.parseInt(paramsMatcher.group(2));
                 try {
                     XComponent xComponent = officeComponent.getOfficeComponent();
-                    insertImage(xComponent, officeComponent.getOoResourceProvider(), destination, textRange, imageContent, width, height);
+                    insertImage(xComponent, officeComponent.getOfficeResourceProvider(), destination, textRange, imageContent, width, height);
                     inserted = true;
                 } catch (Exception ignored) {
                 }
@@ -119,10 +119,10 @@ public class BitmapTagHandler implements TagHandler {
         return (byte[]) paramValue;
     }
 
-    protected void insertImage(XComponent document, OOResourceProvider ooResourceProvider, XText destination, XTextRange textRange,
+    protected void insertImage(XComponent document, OfficeResourceProvider officeResourceProvider, XText destination, XTextRange textRange,
                                byte[] imageContent, int width, int height) throws Exception {
         XMultiServiceFactory xFactory = asXMultiServiceFactory(document);
-        XComponentContext xComponentContext = ooResourceProvider.getXComponentContext();
+        XComponentContext xComponentContext = officeResourceProvider.getXComponentContext();
         XMultiComponentFactory serviceManager = xComponentContext.getServiceManager();
 
         Object oImage = xFactory.createInstance(TEXT_GRAPHIC_OBJECT);

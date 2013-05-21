@@ -11,17 +11,17 @@ import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.uno.*;
 import com.sun.star.uno.Exception;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.asXComponentLoader;
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.asXDesktop;
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.asXDispatchHelper;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.asXComponentLoader;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.asXDesktop;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.asXDispatchHelper;
 
-public class OOResourceProvider {
+public class OfficeResourceProvider {
     protected XComponentContext xComponentContext;
     protected XDesktop xDesktop;
     protected XDispatchHelper xDispatchHelper;
     protected XComponentLoader xComponentLoader;
 
-    public OOResourceProvider(XComponentContext xComponentContext) throws Exception {
+    public OfficeResourceProvider(XComponentContext xComponentContext) throws Exception {
         this.xComponentContext = xComponentContext;
         xDesktop = createDesktop();
         xDispatchHelper = createXDispatchHelper();

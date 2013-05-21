@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Map;
 
 public class ReportImpl implements Report {
-
     protected String name;
     protected Map<String, ReportTemplate> reportTemplates;
     protected BandDefinition rootBandDefinition;

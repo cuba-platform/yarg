@@ -6,7 +6,7 @@
 package console;
 
 import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOTaskRunner;
+import com.haulmont.newreport.formatters.impl.doc.connector.OfficeIntegration;
 import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.newreport.loaders.factory.PropertiesSqlLoaderFactory;
 import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
@@ -71,12 +71,17 @@ public class ConsoleRunner {
                     ports[i] = Integer.valueOf(str);
                 }
 
-                OOTaskRunner taskRunner = new OOTaskRunner(openOfficePath, ports);
-                formatterFactory.setOOTaskRunner(taskRunner);
+                OfficeIntegration officeIntegration = new OfficeIntegration(openOfficePath, ports);
+                formatterFactory.setOfficeIntegration(officeIntegration);
 
-                String openOfficeTimeout = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_TIMEOUT);
+                String openOfficeTimeout = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_DISPLAY_DEVICE_AVAILABLE);
                 if (StringUtils.isNotBlank(openOfficeTimeout)) {
-                    taskRunner.setTimeoutInSeconds(Integer.valueOf(openOfficeTimeout));
+                    officeIntegration.setTimeoutInSeconds(Integer.valueOf(openOfficeTimeout));
+                }
+
+                String displayDeviceAvailable = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_DISPLAY_DEVICE_AVAILABLE);
+                if (StringUtils.isNotBlank(displayDeviceAvailable)) {
+                    officeIntegration.setDisplayDeviceAvailable(Boolean.valueOf(displayDeviceAvailable));
                 }
             }
 

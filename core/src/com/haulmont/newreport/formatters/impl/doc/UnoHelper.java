@@ -23,13 +23,13 @@ import com.sun.star.lang.XComponent;
 import com.sun.star.util.XCloseable;
 import org.apache.commons.io.IOUtils;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.asXCloseable;
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.asXStorable;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.asXCloseable;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.asXStorable;
 
-public final class ODTHelper {
+public final class UnoHelper {
     public static XInputStream getXInputStream(ReportTemplate reportTemplate) {
         try {
-            return new OOInputStream(IOUtils.toByteArray(reportTemplate.getDocumentContent()));
+            return new OfficeInputStream(IOUtils.toByteArray(reportTemplate.getDocumentContent()));
         } catch (java.io.IOException e) {
             throw new RuntimeException(e);//todo exception
         }
@@ -65,16 +65,6 @@ public final class ODTHelper {
         props[1].Value = filterName;
         XStorable xStorable = asXStorable(xComponent);
         xStorable.storeToURL("private:stream", props);
-    }
-
-    /**
-     * Utility method. Converts path to url
-     */
-    public static String pathToUrl(String sURL) throws java.io.IOException {
-        java.io.File sourceFile = new java.io.File(sURL);
-        StringBuffer sTmp = new StringBuffer("file:///");
-        sTmp.append(sourceFile.getCanonicalPath().replace('\\', '/'));
-        return sTmp.toString();
     }
 
     public static void copy(XDispatchHelper xDispatchHelper, XDispatchProvider xDispatchProvider) {

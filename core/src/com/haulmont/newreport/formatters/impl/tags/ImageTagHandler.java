@@ -29,7 +29,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.*;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.*;
 
 /**
  * Handle images with format string: ${image:[Width]x[Height]}

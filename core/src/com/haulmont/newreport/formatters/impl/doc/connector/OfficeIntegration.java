@@ -16,15 +16,16 @@ import com.sun.star.comp.helper.BootstrapException;
 import java.util.Collections;
 import java.util.concurrent.*;
 
-public class OOTaskRunner implements OOTaskRunnerAPI {
+public class OfficeIntegration implements OfficeIntegrationAPI {
     protected volatile boolean platformDependProcessManagement = true;
     protected final ExecutorService executor;
     protected final BlockingQueue<Integer> freePorts = new LinkedBlockingDeque<Integer>();
     protected Integer[] openOfficePorts;
     protected String openOfficePath;
     protected Integer timeoutInSeconds = 60;
+    protected Boolean displayDeviceAvailable = false;
 
-    public OOTaskRunner(String openOfficePath, Integer... ports) {
+    public OfficeIntegration(String openOfficePath, Integer... ports) {
         this.openOfficePath = openOfficePath;
         this.openOfficePorts = ports;
         Collections.addAll(freePorts, ports);
@@ -35,13 +36,21 @@ public class OOTaskRunner implements OOTaskRunnerAPI {
         this.timeoutInSeconds = timeoutInSeconds;
     }
 
+    public void setDisplayDeviceAvailable(Boolean displayDeviceAvailable) {
+        this.displayDeviceAvailable = displayDeviceAvailable;
+    }
+
     public Integer getTimeoutInSeconds() {
         return timeoutInSeconds;
     }
 
+    public Boolean isDisplayDeviceAvailable() {
+        return displayDeviceAvailable;
+    }
+
     @Override
     public void runTaskWithTimeout(final OfficeTask officeTask, int timeoutInSeconds) throws NoFreePortsException {
-        final OOConnection connection = createConnection();
+        final OfficeConnection connection = createConnection();
         Future future = null;
         try {
             Callable<Void> task = new Callable<Void>() {
@@ -103,10 +112,10 @@ public class OOTaskRunner implements OOTaskRunnerAPI {
         this.platformDependProcessManagement = platformDependProcessManagement;
     }
 
-    protected OOConnection createConnection() throws NoFreePortsException {
+    protected OfficeConnection createConnection() throws NoFreePortsException {
         final Integer port = freePorts.poll();
         if (port != null) {
-            return new OOConnection(openOfficePath, port, resolveProcessManager(), this);
+            return new OfficeConnection(openOfficePath, port, resolveProcessManager(), this);
         } else {
             throw new NoFreePortsException("Couldn't get free port from pool");
         }

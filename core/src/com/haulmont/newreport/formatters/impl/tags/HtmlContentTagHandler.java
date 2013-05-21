@@ -35,7 +35,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.haulmont.newreport.formatters.impl.doc.ODTUnoConverter.asXDocumentInsertable;
+import static com.haulmont.newreport.formatters.impl.doc.UnoConverter.asXDocumentInsertable;
 
 /**
  * Handle HTML with format string: ${html}

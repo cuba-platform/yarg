@@ -6,5 +6,5 @@
 package com.haulmont.newreport.formatters.impl.doc.connector;
 
 public interface OfficeTask {
-    void processTaskInOpenOffice(OOResourceProvider ooResourceProvider);
+    void processTaskInOpenOffice(OfficeResourceProvider officeResourceProvider);
 }

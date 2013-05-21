@@ -18,11 +18,11 @@ import java.io.OutputStream;
 /**
  * Proxy stream
  */
-public class OOOutputStream extends OutputStream implements XOutputStream {
+public class OfficeOutputStream extends OutputStream implements XOutputStream {
 
     private OutputStream outputStream;
 
-    public OOOutputStream(OutputStream outputStream) {
+    public OfficeOutputStream(OutputStream outputStream) {
         if (outputStream == null)
             throw new NullPointerException();
 

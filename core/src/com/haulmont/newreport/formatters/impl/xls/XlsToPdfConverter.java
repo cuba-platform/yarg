@@ -1,11 +1,11 @@
 package com.haulmont.newreport.formatters.impl.xls;
 
-import com.haulmont.newreport.formatters.impl.doc.ODTHelper;
-import com.haulmont.newreport.formatters.impl.doc.OOInputStream;
-import com.haulmont.newreport.formatters.impl.doc.OOOutputStream;
+import com.haulmont.newreport.formatters.impl.doc.UnoHelper;
+import com.haulmont.newreport.formatters.impl.doc.OfficeInputStream;
+import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.connector.NoFreePortsException;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOResourceProvider;
-import com.haulmont.newreport.formatters.impl.doc.connector.OOTaskRunnerAPI;
+import com.haulmont.newreport.formatters.impl.doc.connector.OfficeResourceProvider;
+import com.haulmont.newreport.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.newreport.formatters.impl.doc.connector.OfficeTask;
 import com.sun.star.frame.XComponentLoader;
 import com.sun.star.io.XInputStream;
@@ -20,10 +20,10 @@ public class XlsToPdfConverter implements XlsToPdfConverterAPI {
 
     private static final String XLS_TO_PDF_OUTPUT_FILE = "calc_pdf_Export";
 
-    protected OOTaskRunnerAPI taskRunner;
+    protected OfficeIntegrationAPI officeIntegration;
 
-    public XlsToPdfConverter(OOTaskRunnerAPI taskRunner) {
-        this.taskRunner = taskRunner;
+    public XlsToPdfConverter(OfficeIntegrationAPI officeIntegration) {
+        this.officeIntegration = officeIntegration;
     }
 
     @Override
@@ -43,23 +43,23 @@ public class XlsToPdfConverter implements XlsToPdfConverterAPI {
     private void doConvertXlsToPdf(final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
         OfficeTask officeTask = new OfficeTask() {
             @Override
-            public void processTaskInOpenOffice(OOResourceProvider ooResourceProvider) {
+            public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
                 try {
-                    XInputStream xis = new OOInputStream(documentBytes);
+                    XInputStream xis = new OfficeInputStream(documentBytes);
                     XComponentLoader xComponentLoader = ooResourceProvider.getXComponentLoader();
-                    XComponent xComponent = ODTHelper.loadXComponent(xComponentLoader, xis);
+                    XComponent xComponent = UnoHelper.loadXComponent(xComponentLoader, xis);
                     saveAndClose(xComponent, outputStream, XLS_TO_PDF_OUTPUT_FILE);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
         };
-        taskRunner.runTaskWithTimeout(officeTask, taskRunner.getTimeoutInSeconds());
+        officeIntegration.runTaskWithTimeout(officeTask, officeIntegration.getTimeoutInSeconds());
     }
 
     private void saveAndClose(XComponent xComponent, OutputStream outputStream, String filterName) throws com.sun.star.io.IOException {
-        OOOutputStream ooOutputStream = new OOOutputStream(outputStream);
-        ODTHelper.saveXComponent(xComponent, ooOutputStream, filterName);
-        ODTHelper.closeXComponent(xComponent);
+        OfficeOutputStream officeOutputStream = new OfficeOutputStream(outputStream);
+        UnoHelper.saveXComponent(xComponent, officeOutputStream, filterName);
+        UnoHelper.closeXComponent(xComponent);
     }
 }

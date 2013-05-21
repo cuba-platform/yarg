@@ -15,16 +15,16 @@ import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.uno.Exception;
 import com.sun.star.uno.XComponentContext;
 
-class OOConnection {
+class OfficeConnection {
     protected XComponentContext xComponentContext;
     protected String openOfficePath;
     protected OOServer oooServer;
     protected Integer port;
-    protected OOTaskRunner connector;
+    protected OfficeIntegration connector;
     protected BootstrapSocketConnector bsc;
-    protected OOResourceProvider ooResourceProvider;
+    protected OfficeResourceProvider officeResourceProvider;
 
-    public OOConnection(String openOfficePath, Integer port, ProcessManager processManager, OOTaskRunner connector) {
+    public OfficeConnection(String openOfficePath, Integer port, ProcessManager processManager, OfficeIntegration connector) {
         try {
             this.port = port;
             this.connector = connector;
@@ -32,7 +32,7 @@ class OOConnection {
             this.bsc = new BootstrapSocketConnector(oooServer);
             this.openOfficePath = openOfficePath;
             this.xComponentContext = bsc.connect("localhost", port);
-            this.ooResourceProvider = new OOResourceProvider(xComponentContext);
+            this.officeResourceProvider = new OfficeResourceProvider(xComponentContext);
         } catch (Exception e) {
             throw new FailedToConnectToOpenOfficeException("Unable to create Open office components.", e);
         } catch (BootstrapException e) {
@@ -40,8 +40,8 @@ class OOConnection {
         }
     }
 
-    public OOResourceProvider getOOResourceProvider() {
-        return ooResourceProvider;
+    public OfficeResourceProvider getOOResourceProvider() {
+        return officeResourceProvider;
     }
 
     void close() {

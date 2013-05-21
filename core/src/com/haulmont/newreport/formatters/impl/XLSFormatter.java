@@ -600,7 +600,7 @@ public class XLSFormatter extends AbstractFormatter {
     //---------------------Utility classes------------------------
 
     /**
-     * In this class colected all methods which works with area's dependencies
+     * In this class collected all methods which works with area's dependencies
      */
     private class AreaDependencyHelper {
         void updateCell(Cell cell) {
