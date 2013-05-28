@@ -5,6 +5,7 @@
  */
 package com.haulmont.newreport.reporting;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.newreport.formatters.Formatter;
 import com.haulmont.newreport.formatters.factory.FormatterFactoryInput;
 import com.haulmont.newreport.formatters.factory.FormatterFactory;
@@ -47,18 +48,25 @@ public class Reporting implements ReportingAPI {
     }
 
     private void runReport(Report report, String templateCode, Map<String, Object> params, OutputStream outputStream) {
+        Preconditions.checkNotNull(report, "\"report\" parameter can not be null");
+        Preconditions.checkNotNull(templateCode, "\"templateCode\" can not be null");
+        Preconditions.checkNotNull(params, "\"params\" can not be null");
+        Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
+
         ReportTemplate reportTemplate = report.getReportTemplates().get(templateCode);
+        Preconditions.checkNotNull(reportTemplate, String.format("Template not found for code [%s]. Report name [%s].", templateCode, report.getName()));
+
         String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
         Band rootBand = new Band(Band.ROOT_BAND_NAME);
-        rootBand.setData(params);
+        rootBand.setData(new HashMap<String, Object>(params));
         FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputStream);
         Formatter formatter = formatterFactory.createFormatter(factoryInput);
 
-        rootBand.setBandDefinitionNames(new HashSet<String>());
+        rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
         for (BandDefinition definition : report.getRootBandDefinition().getChildrenBandDefinitions()) {
             List<Band> bands = createBands(definition, rootBand, params);
             rootBand.addChildren(bands);
-            rootBand.getBandDefinitionNames().add(definition.getName());//todo not only first level bands
+            rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
         }
 
         formatter.renderDocument();

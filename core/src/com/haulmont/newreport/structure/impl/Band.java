@@ -18,7 +18,7 @@ public class Band {
 
     private final String name;
     private final BandOrientation orientation;
-    private Set<String> bandDefinitionNames = null;
+    private Set<String> firstLevelBandDefinitionNames = null;
     private int level;
 
     public Band(String name) {
@@ -164,12 +164,12 @@ public class Band {
         return children;
     }
 
-    public Set<String> getBandDefinitionNames() {
-        return bandDefinitionNames;
+    public Set<String> getFirstLevelBandDefinitionNames() {
+        return firstLevelBandDefinitionNames;
     }
 
-    public void setBandDefinitionNames(Set<String> bandDefinitionNames) {
-        this.bandDefinitionNames = bandDefinitionNames;
+    public void setFirstLevelBandDefinitionNames(Set<String> firstLevelBandDefinitionNames) {
+        this.firstLevelBandDefinitionNames = firstLevelBandDefinitionNames;
     }
 
     public Map<String, ReportValueFormat> getValuesFormats() {

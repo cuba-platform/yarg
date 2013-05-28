@@ -20,6 +20,12 @@ public class DataSetImpl implements DataSet {
         this.loaderType = loaderType;
     }
 
+    public DataSetImpl(DataSet dataSet) {
+        name = dataSet.getName();
+        script = dataSet.getScript();
+        loaderType = dataSet.getLoaderType();
+    }
+
     public String getScript() {
         return script;
     }

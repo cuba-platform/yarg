@@ -9,12 +9,13 @@ import com.haulmont.newreport.structure.Report;
 import com.haulmont.newreport.structure.ReportTemplate;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RunParams {
     protected Report report;
     protected String templateCode = ReportTemplate.DEFAULT_TEMPLATE_CODE;
-    protected Map<String, Object> params = Collections.emptyMap();
+    protected Map<String, Object> params = new HashMap<String, Object>();
 
     public RunParams(Report report) {
         this.report = report;
@@ -26,7 +27,12 @@ public class RunParams {
     }
 
     public RunParams params(Map<String, Object> params) {
-        this.params = params;
+        this.params.putAll(params);
+        return this;
+    }
+
+    public RunParams param(String key, Object value){
+        params.put(key, value);
         return this;
     }
 }

@@ -1,5 +1,6 @@
 package com.haulmont.newreport.structure.impl;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.newreport.structure.BandDefinition;
 import com.haulmont.newreport.structure.Report;
 import com.haulmont.newreport.structure.ReportParameter;
@@ -10,30 +11,35 @@ import java.util.HashMap;
 
 public class ReportBuilder {
     private ReportImpl report;
+    private BandDefinitionImpl rootBandDefinition;
 
     public ReportBuilder() {
-        BandDefinitionImpl rootBandDefinition = new BandDefinitionImpl(Band.ROOT_BAND_NAME, null);
-        report = new ReportImpl(null, new HashMap<String, ReportTemplate>(), rootBandDefinition, new ArrayList<ReportParameter>());
+        rootBandDefinition = new BandDefinitionImpl(Band.ROOT_BAND_NAME, null);
+        report = new ReportImpl(null, rootBandDefinition);
     }
 
     public ReportBuilder band(BandDefinition bandDefinition) {
+        Preconditions.checkNotNull(bandDefinition, "\"bandDefinition\" parameter can not be null");
         BandDefinitionImpl wrapperBandDefinition = new BandDefinitionImpl(bandDefinition);
-        report.getRootBandDefinition().getChildrenBandDefinitions().add(wrapperBandDefinition);
-        wrapperBandDefinition.setParentBandDefinition(report.getRootBandDefinition());
+        rootBandDefinition.childrenBandDefinitions.add(wrapperBandDefinition);
+        wrapperBandDefinition.setParentBandDefinition(rootBandDefinition);
         return this;
     }
 
     public ReportBuilder template(ReportTemplate reportTemplate) {
-        report.getReportTemplates().put(reportTemplate.getCode(), reportTemplate);
+        Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" parameter can not be null");
+        report.reportTemplates.put(reportTemplate.getCode(), reportTemplate);
         return this;
     }
 
     public ReportBuilder parameter(ReportParameter reportParameter) {
+        Preconditions.checkNotNull(reportParameter, "\"reportParameter\" parameter can not be null");
         report.getReportParameters().add(reportParameter);
         return this;
     }
 
     public ReportBuilder name(String name) {
+        Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
         report.setName(name);
         return this;
     }

@@ -130,7 +130,7 @@ public class DocFormatter extends AbstractFormatter {
     //todo allow to define table name as docx formatter does (##band=Band1 in first cell)
     private void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
         List<String> tablesNames = TableManager.getTablesNames(xComponent);
-        tablesNames.retainAll(rootBand.getBandDefinitionNames());
+        tablesNames.retainAll(rootBand.getFirstLevelBandDefinitionNames());
 
         for (String tableName : tablesNames) {
             Band band = rootBand.findBandRecursively(tableName);

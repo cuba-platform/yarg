@@ -106,9 +106,9 @@ public class FormattersTest {
 
         root.addChild(band1_1);
         root.addChild(band1_2);
-        root.setBandDefinitionNames(new HashSet<String>());
-        root.getBandDefinitionNames().add("Band1");
-        root.getBandDefinitionNames().add("Band2");
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Band1");
+        root.getFirstLevelBandDefinitionNames().add("Band2");
         return root;
     }
 

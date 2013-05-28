@@ -5,13 +5,10 @@
  */
 package com.haulmont.newreport.structure.xml.impl;
 
+import com.haulmont.newreport.structure.*;
 import com.haulmont.newreport.structure.impl.BandOrientation;
-import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.exception.ReportingXmlException;
 import com.haulmont.newreport.structure.impl.Band;
-import com.haulmont.newreport.structure.Report;
-import com.haulmont.newreport.structure.ReportParameter;
-import com.haulmont.newreport.structure.ReportTemplate;
 import com.haulmont.newreport.structure.impl.*;
 import com.haulmont.newreport.structure.xml.XmlReader;
 import org.dom4j.Document;
@@ -49,7 +46,7 @@ public class DefaultXmlReader implements XmlReader {
                         SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
                 factory.setSchema(schemaFactory.newSchema(
-                        new Source[] {new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("reporting.xsd"))}));
+                        new Source[]{new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("reporting.xsd"))}));
 
                 SAXParser parser = factory.newSAXParser();
 
@@ -64,8 +61,9 @@ public class DefaultXmlReader implements XmlReader {
             Element rootElement = document.getRootElement();
             Map<String, ReportTemplate> templateMap = parseTemplates(rootElement);
             List<ReportParameter> reportParameters = parseInputParameters(rootElement);
-            BandDefinitionImpl rootBandDefinition = new BandDefinitionImpl(Band.ROOT_BAND_NAME, null);
-            parseBandDefinitions(rootElement.element("rootBand"), rootBandDefinition);
+            BandDefinitionBuilder rootBandDefinitionBuilder = new BandDefinitionBuilder().name(Band.ROOT_BAND_NAME);
+            parseChildBandDefinitions(rootElement.element("rootBand"), rootBandDefinitionBuilder);
+            BandDefinition rootBandDefinition = rootBandDefinitionBuilder.build();
 
             ReportImpl report = new ReportImpl(rootElement.attribute("name").getText(), templateMap, rootBandDefinition, reportParameters);
             return report;
@@ -80,6 +78,7 @@ public class DefaultXmlReader implements XmlReader {
 
     /**
      * Override this method to load files differently from basic file system way
+     *
      * @param documentPath - path to document (file system path or other if overriden)
      * @throws FileNotFoundException
      */
@@ -121,25 +120,30 @@ public class DefaultXmlReader implements XmlReader {
         return reportParameters;
     }
 
-    protected void parseBandDefinitions(Element bandDefinitionElement, BandDefinitionImpl bandDefinition) throws FileNotFoundException, ClassNotFoundException {
+    protected void parseChildBandDefinitions(Element bandDefinitionElement, BandDefinitionBuilder parentBandDefinitionBuilder) throws FileNotFoundException, ClassNotFoundException {
         Element childrenBandsElement = bandDefinitionElement.element("bands");
         List<Element> childrenBands = childrenBandsElement.elements("band");
-        for (Element childBand : childrenBands) {
-            String childBandName = childBand.attribute("name").getText();
-            BandOrientation orientation = BandOrientation.fromId(childBand.attribute("orientation").getText());
-            BandDefinitionImpl childBandDefinition = new BandDefinitionImpl(childBandName, bandDefinition, orientation);
-            bandDefinition.getChildrenBandDefinitions().add(childBandDefinition);
-            Element dataSetsElement = childBand.element("dataSets");
+        for (Element childBandElement : childrenBands) {
+            String childBandName = childBandElement.attribute("name").getText();
+            BandOrientation orientation = BandOrientation.fromId(childBandElement.attribute("orientation").getText());
+            BandDefinitionBuilder childBandDefinitionBuilder =
+                    new BandDefinitionBuilder()
+                            .name(childBandName)
+                            .orientation(orientation);
+
+            Element dataSetsElement = childBandElement.element("dataSets");
             List<Element> dataSetElements = dataSetsElement.elements("dataSet");
             for (Element dataSetElement : dataSetElements) {
                 String script = dataSetElement.element("script").getText();
                 String type = dataSetElement.attribute("type").getText();
                 String dataSetName = dataSetElement.attribute("name").getText();
 
-                childBandDefinition.getDataSets().add(new DataSetImpl(dataSetName, script, type));
+                childBandDefinitionBuilder.dataSet(dataSetName, script, type);
             }
 
-            parseBandDefinitions(childBand, childBandDefinition);
+            parseChildBandDefinitions(childBandElement, childBandDefinitionBuilder);
+            BandDefinition childBandDefinition = childBandDefinitionBuilder.build();
+            parentBandDefinitionBuilder.band(childBandDefinition);
         }
     }
 }

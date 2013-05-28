@@ -10,8 +10,7 @@ import com.haulmont.newreport.structure.Report;
 import com.haulmont.newreport.structure.ReportParameter;
 import com.haulmont.newreport.structure.ReportTemplate;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 public class ReportImpl implements Report {
     protected String name;
@@ -26,6 +25,13 @@ public class ReportImpl implements Report {
         this.reportParameters = reportParameters;
     }
 
+    public ReportImpl(String name, BandDefinition rootBandDefinition) {
+        this.name = name;
+        this.reportTemplates = new HashMap<String, ReportTemplate>();
+        this.rootBandDefinition = rootBandDefinition;
+        this.reportParameters = new ArrayList<ReportParameter>();
+    }
+
     void setName(String name) {
         this.name = name;
     }
@@ -37,7 +43,7 @@ public class ReportImpl implements Report {
 
     @Override
     public Map<String, ReportTemplate> getReportTemplates() {
-        return reportTemplates;
+        return Collections.unmodifiableMap(reportTemplates);
     }
 
     @Override
@@ -47,6 +53,6 @@ public class ReportImpl implements Report {
 
     @Override
     public Collection<ReportParameter> getReportParameters() {
-        return reportParameters;
+        return Collections.unmodifiableCollection(reportParameters);
     }
 }
