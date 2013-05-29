@@ -32,12 +32,12 @@ public final class HSSFCellHelper {
     /**
      * Copies template cell to result cell and fills it with band data
      *
-     * @param band         - band
-     * @param templateCell - template cell
-     * @param resultCell   - result cell
+     * @param band              - band
+     * @param templateCellValue - template cell value
+     * @param resultCell        - result cell
      */
-    public static void updateValueCell(Band rootBand, Band band, HSSFCell templateCell, HSSFCell resultCell, HSSFPatriarch patriarch) {
-        String parameterName = templateCell.toString();
+    public static void updateValueCell(Band rootBand, Band band, String templateCellValue, HSSFCell resultCell, HSSFPatriarch patriarch) {
+        String parameterName = templateCellValue;
         parameterName = unwrapParameterName(parameterName);
 
         if (StringUtils.isEmpty(parameterName)) return;
@@ -100,15 +100,14 @@ public final class HSSFCellHelper {
      * @param cell - cell
      * @return -
      */
-    public static boolean isOneValueCell(HSSFCell cell) {
+    public static boolean isOneValueCell(HSSFCell cell, String value) {
         boolean result = true;
         if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
-            String value = cell.getRichStringCellValue().getString();
-
-            if (value.lastIndexOf("${") != 0)
+            if (value.lastIndexOf("${") != 0) {
                 result = false;
-            else
+            } else {
                 result = value.indexOf("}") == value.length() - 1;
+            }
         }
         return result;
     }

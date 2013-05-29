@@ -98,10 +98,12 @@ public class FormattersTest {
         Map<String, Object> datamap = new HashMap<String, Object>();
         datamap.put("col1", 123);
         datamap.put("col2", 321);
+        datamap.put("cwidth", 10000);
         band1_1.setData(datamap);
         Map<String, Object> datamap2 = new HashMap<String, Object>();
         datamap2.put("col1", 456);
         datamap2.put("col2", 654);
+        datamap2.put("cwidth", 10000);
         band1_2.setData(datamap2);
 
         root.addChild(band1_1);

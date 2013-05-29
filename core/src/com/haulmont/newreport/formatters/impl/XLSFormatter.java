@@ -1,6 +1,7 @@
 package com.haulmont.newreport.formatters.impl;
 
 import com.haulmont.newreport.exception.UnsupportedFormatException;
+import com.haulmont.newreport.formatters.impl.xls.options.*;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.impl.BandOrientation;
 import com.haulmont.newreport.structure.ReportOutputType;
@@ -36,6 +37,13 @@ import static com.haulmont.newreport.formatters.impl.xls.HSSFRangeHelper.*;
  * Document formatter for '.xls' file types
  */
 public class XLSFormatter extends AbstractFormatter {
+    private static final String DYNAMIC_HEIGHT_STYLE = "styleWithoutHeight";
+
+    private static final String CELL_DYNAMIC_STYLE_SELECTOR = "##style=";
+    private static final String COPY_COLUMN_WIDTH_SELECTOR = "##copyColumnWidth";
+    private static final String AUTO_WIDTH_SELECTOR = "##autoWidth";
+    private static final String CUSTOM_WIDTH_SELECTOR = "##width=";
+
     private HSSFWorkbook templateWorkbook;
     private HSSFSheet currentTemplateSheet = null;
 
@@ -59,6 +67,7 @@ public class XLSFormatter extends AbstractFormatter {
     private AreaDependencyHelper areaDependencyHelper = new AreaDependencyHelper();
 
     private Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<HSSFSheet, HSSFPatriarch>();
+    private List<StyleOption> optionContainer = new ArrayList<StyleOption>();
 
     private XlsToPdfConverterAPI xlsToPdfConverter;
 
@@ -79,7 +88,16 @@ public class XLSFormatter extends AbstractFormatter {
         }
 
         processDocument(rootBand);
+
+        applyStyleOptions();
+
         outputDocument(reportTemplate.getOutputType(), outputStream);
+    }
+
+    private void applyStyleOptions() {
+        for (StyleOption option : optionContainer) {
+            option.apply();
+        }
     }
 
     private void initWorkbook() throws IOException {
@@ -200,6 +218,9 @@ public class XLSFormatter extends AbstractFormatter {
         CellReference topLeft, bottomRight;
         AreaReference resultRange;
 
+        int rowsAddedByHorizontalBandBackup = rowsAddedByHorizontalBand;
+        int rownumBackup = rownum;
+
         if (crefs != null) {
             addRangeBounds(band, crefs);
 
@@ -211,8 +232,11 @@ public class XLSFormatter extends AbstractFormatter {
             int offset = 0;
 
             topLeft = new CellReference(rownum, 0);
-            copyMergeRegions(resultSheet, rangeName, rownum + rowsAddedByHorizontalBand,
-                    getCellFromReference(crefs[0], templateSheet).getColumnIndex());
+            // no child bands - merge regions now
+            if (band.getChildrenList().isEmpty()) {
+                copyMergeRegions(resultSheet, rangeName, rownum + rowsAddedByHorizontalBand,
+                        getCellFromReference(crefs[0], templateSheet).getColumnIndex());
+            }
 
             for (CellReference cellRef : crefs) {
                 HSSFCell templateCell = getCellFromReference(cellRef, templateSheet);
@@ -223,7 +247,7 @@ public class XLSFormatter extends AbstractFormatter {
 
                     if (templateCell.getCellStyle().getParentStyle() != null
                             && templateCell.getCellStyle().getParentStyle().getUserStyleName() != null
-                            && templateCell.getCellStyle().getParentStyle().getUserStyleName().equals("styleWithoutHeight")
+                            && templateCell.getCellStyle().getParentStyle().getUserStyleName().equals(DYNAMIC_HEIGHT_STYLE)
                             ) {
                         //resultRow.setHeight(templateCell.getRow().getHeight());
                     } else {
@@ -254,6 +278,12 @@ public class XLSFormatter extends AbstractFormatter {
             writeBand(child);
         }
 
+        // scheduled merge regions
+        if (!band.getChildrenList().isEmpty() && crefs != null) {
+            copyMergeRegions(resultSheet, rangeName, rownumBackup + rowsAddedByHorizontalBandBackup,
+                    getCellFromReference(crefs[0], templateSheet).getColumnIndex());
+        }
+
         rownum += rowsAddedByHorizontalBand;
         rowsAddedByHorizontalBand = 0;
         rownum += rowsAddedByVerticalBand;
@@ -267,7 +297,6 @@ public class XLSFormatter extends AbstractFormatter {
      * @param band          - band to write
      * @param templateSheet - template sheet
      * @param resultSheet   - result sheet
-     * @return number of inserted rows
      */
     private void writeVerticalBand(Band band, HSSFSheet templateSheet, HSSFSheet resultSheet) {
         String rangeName = band.getName();
@@ -422,39 +451,42 @@ public class XLSFormatter extends AbstractFormatter {
                         int regionVOffset = cra.getFirstRow() - row;
                         int regionHOffset = cra.getFirstColumn() - column;
 
-                        CellRangeAddress cra2 = cra.copy();
-                        cra2.setFirstColumn(regionHOffset + firstTargetRangeColumn);
-                        cra2.setLastColumn(regionHOffset + regionWidth - 1 + firstTargetRangeColumn);
+                        CellRangeAddress newRegion = cra.copy();
+                        newRegion.setFirstColumn(regionHOffset + firstTargetRangeColumn);
+                        newRegion.setLastColumn(regionHOffset + regionWidth - 1 + firstTargetRangeColumn);
 
-                        cra2.setFirstRow(regionVOffset + firstTargetRangeRow);
-                        cra2.setLastRow(regionVOffset + regionHeight - 1 + firstTargetRangeRow);
+                        newRegion.setFirstRow(regionVOffset + firstTargetRangeRow);
+                        newRegion.setLastRow(regionVOffset + regionHeight - 1 + firstTargetRangeRow);
 
-                        resultSheet.addMergedRegion(cra2);
+                        boolean skipRegion = false;
+
+                        for (int mergedIndex = 0; mergedIndex < resultSheet.getNumMergedRegions(); mergedIndex++) {
+                            CellRangeAddress mergedRegion = resultSheet.getMergedRegion(mergedIndex);
+
+                            if (!isIntersectedRegions(newRegion, mergedRegion))
+                                continue;
+
+                            skipRegion = true;
+                        }
+
+                        if (!skipRegion) {
+                            resultSheet.addMergedRegion(newRegion);
+                        }
                     }
                 }
             }
     }
 
-    private HSSFCellStyle copyCellStyle(HSSFCellStyle templateStyle) {
-        HSSFCellStyle style = styleCache.getCellStyleByTemplate(templateStyle);
-
-        if (style == null) {
-            HSSFCellStyle newStyle = resultWorkbook.createCellStyle();
-
-            newStyle.cloneStyleRelationsFrom(templateStyle);
-            HSSFFont templateFont = templateStyle.getFont(templateWorkbook);
-            HSSFFont font = fontCache.getFontByTemplate(templateFont);
-            if (font != null)
-                newStyle.setFont(font);
-            else {
-                newStyle.cloneFontFrom(templateStyle);
-                fontCache.addCachedFont(templateFont, newStyle.getFont(resultWorkbook));
-            }
-            styleCache.addCachedStyle(templateStyle, newStyle);
-            style = newStyle;
-        }
-
-        return style;
+    private boolean isIntersectedRegions(CellRangeAddress x, CellRangeAddress y) {
+        return (x.getFirstColumn() <= y.getLastColumn() &&
+                x.getLastColumn() >= y.getFirstColumn() &&
+                x.getLastRow() >= y.getFirstRow() &&
+                x.getFirstRow() <= y.getLastRow())
+                // or
+                || (y.getFirstColumn() <= x.getLastColumn() &&
+                y.getLastColumn() >= x.getFirstColumn() &&
+                y.getLastRow() >= x.getFirstRow() &&
+                y.getFirstRow() <= x.getLastRow());
     }
 
     /**
@@ -468,24 +500,49 @@ public class XLSFormatter extends AbstractFormatter {
     private HSSFCell copyCellFromTemplate(HSSFCell templateCell, HSSFRow resultRow, int resultColumn, Band band) {
         if (templateCell != null) {
             HSSFCell resultCell = resultRow.createCell(resultColumn);
-            // trouble with maximum font count
-            // try to use font cache
+
             HSSFCellStyle templateStyle = templateCell.getCellStyle();
             HSSFCellStyle resultStyle = copyCellStyle(templateStyle);
             resultCell.setCellStyle(resultStyle);
 
+            String templateCellValue = "";
             int cellType = templateCell.getCellType();
-            if (HSSFCell.CELL_TYPE_STRING == cellType && isOneValueCell(templateCell)) {
-                updateValueCell(rootBand, band, templateCell, resultCell, drawingPatriarchsMap.get(resultCell.getSheet()));
-            } else if (cellType == HSSFCell.CELL_TYPE_FORMULA)
-                resultCell.setCellFormula(inlineBandDataToCellString(templateCell, band));
-            else if (cellType == HSSFCell.CELL_TYPE_STRING) {
-                resultCell.setCellValue(new HSSFRichTextString(inlineBandDataToCellString(templateCell, band)));
-            } else {
-                resultCell.setCellValue(inlineBandDataToCellString(templateCell, band));
+
+            if (cellType != HSSFCell.CELL_TYPE_FORMULA && cellType != HSSFCell.CELL_TYPE_NUMERIC) {
+                HSSFRichTextString richStringCellValue = templateCell.getRichStringCellValue();
+                templateCellValue = richStringCellValue != null ? richStringCellValue.getString() : "";
+
+                Map<String, Object> bandData = band.getData();
+                templateCellValue = extractStyles(templateCell, templateCell.getSheet(), resultRow.getSheet(),
+                        resultCell, templateCellValue, bandData);
             }
+
+            if (cellType == HSSFCell.CELL_TYPE_STRING && isOneValueCell(templateCell, templateCellValue))
+                updateValueCell(rootBand, band, templateCellValue, resultCell,
+                        drawingPatriarchsMap.get(resultCell.getSheet()));
+            else if (cellType == HSSFCell.CELL_TYPE_FORMULA) {
+                String cellValue = inlineBandDataToCellString(templateCell, templateCellValue, band);
+                if (StringUtils.isNotEmpty(cellValue))
+                    resultCell.setCellFormula(cellValue);
+                else
+                    resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            } else if (cellType == HSSFCell.CELL_TYPE_STRING) {
+                String cellValue = inlineBandDataToCellString(templateCell, templateCellValue, band);
+                if (StringUtils.isNotEmpty(cellValue))
+                    resultCell.setCellValue(new HSSFRichTextString(cellValue));
+                else
+                    resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            } else {
+                String cellValue = inlineBandDataToCellString(templateCell, templateCellValue, band);
+                if (StringUtils.isNotEmpty(cellValue))
+                    resultCell.setCellValue(cellValue);
+                else
+                    resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            }
+
             return resultCell;
         }
+
         return null;
     }
 
@@ -497,16 +554,15 @@ public class XLSFormatter extends AbstractFormatter {
      * @param band - data source
      * @return string with inlined band data
      */
-    public String inlineBandDataToCellString(HSSFCell cell, Band band) {
+    public String inlineBandDataToCellString(HSSFCell cell, String templateCellValue, Band band) {
         String resultStr = "";
         if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
-            HSSFRichTextString richString = cell.getRichStringCellValue();
-            if (richString != null) resultStr = richString.getString();
+            if (templateCellValue != null) resultStr = templateCellValue;
         } else {
             if (cell.toString() != null) resultStr = cell.toString();
         }
 
-        if (StringUtils.isNotEmpty(resultStr)) return insertBandDataToString(band, resultStr);
+        if (!"".equals(resultStr)) return insertBandDataToString(band, resultStr);
 
         return "";
     }
@@ -548,6 +604,97 @@ public class XLSFormatter extends AbstractFormatter {
                 resultCell.setCellFormula(calculatedFormula);
             }
         }
+    }
+
+    //todo - refactor code, not clear
+    private String extractStyles(HSSFCell templateCell,
+                                 HSSFSheet templateSheet, HSSFSheet resultSheet,
+                                 HSSFCell resultCell, String templateCellValue, Map<String, Object> bandData) {
+        // apply dynamic style
+        int stylePosition = StringUtils.indexOf(templateCellValue, CELL_DYNAMIC_STYLE_SELECTOR);
+        if (stylePosition >= 0) {
+            String stringTail = StringUtils.substring(templateCellValue, stylePosition + CELL_DYNAMIC_STYLE_SELECTOR.length());
+            int styleEndIndex = StringUtils.indexOf(stringTail, " ");
+            if (styleEndIndex < 0)
+                styleEndIndex = templateCellValue.length() - 1;
+
+            String styleSelector = StringUtils.substring(templateCellValue, stylePosition,
+                    styleEndIndex + CELL_DYNAMIC_STYLE_SELECTOR.length() + stylePosition);
+
+            templateCellValue = StringUtils.replace(templateCellValue, styleSelector, "");
+
+            styleSelector = StringUtils.substring(styleSelector, CELL_DYNAMIC_STYLE_SELECTOR.length());
+
+            if (styleSelector != null && bandData.containsKey(styleSelector) && bandData.get(styleSelector) != null) {
+                HSSFCellStyle cellStyle = styleCache.getStyleByName((String) bandData.get(styleSelector));
+
+                if (cellStyle != null) {
+                    optionContainer.add(new CustomCellStyleOption(resultCell, cellStyle,
+                            templateWorkbook, resultWorkbook, fontCache, styleCache));
+                }
+            }
+        }
+
+        // apply fixed width to column from template cell
+        if (StringUtils.contains(templateCellValue, COPY_COLUMN_WIDTH_SELECTOR)) {
+            templateCellValue = StringUtils.replace(templateCellValue, COPY_COLUMN_WIDTH_SELECTOR, "");
+            optionContainer.add(new CopyColumnWidthOption(resultSheet,
+                    resultCell.getColumnIndex(), templateSheet.getColumnWidth(templateCell.getColumnIndex())));
+        }
+
+        if (StringUtils.contains(templateCellValue, AUTO_WIDTH_SELECTOR)) {
+            templateCellValue = StringUtils.replace(templateCellValue, AUTO_WIDTH_SELECTOR, "");
+            optionContainer.add(new AutoWidthOption(resultSheet, resultCell.getColumnIndex()));
+        }
+
+
+        int widthPosition = StringUtils.indexOf(templateCellValue, CUSTOM_WIDTH_SELECTOR);
+        if (widthPosition >= 0) {
+            String stringTail = StringUtils.substring(templateCellValue, widthPosition + CUSTOM_WIDTH_SELECTOR.length());
+            int styleEndIndex = StringUtils.indexOf(stringTail, " ");
+            if (styleEndIndex < 0)
+                styleEndIndex = templateCellValue.length() - 1;
+
+            String widthLengthSelector = StringUtils.substring(templateCellValue, widthPosition,
+                    styleEndIndex + CUSTOM_WIDTH_SELECTOR.length() + widthPosition);
+
+            templateCellValue = StringUtils.replace(templateCellValue, widthLengthSelector, "");
+
+            widthLengthSelector = StringUtils.substring(widthLengthSelector, CUSTOM_WIDTH_SELECTOR.length());
+
+            if (widthLengthSelector != null && bandData.containsKey(widthLengthSelector) && bandData.get(widthLengthSelector) != null) {
+                Object width = bandData.get(widthLengthSelector);
+
+                if (width != null && width instanceof Integer) {
+                    optionContainer.add(new CustomWidthOption(resultSheet, resultCell.getColumnIndex(), (Integer) width));
+                }
+            }
+        }
+
+        templateCellValue = StringUtils.stripEnd(templateCellValue, null);
+        return templateCellValue;
+    }
+
+    private HSSFCellStyle copyCellStyle(HSSFCellStyle templateStyle) {
+        HSSFCellStyle style = styleCache.getCellStyleByTemplate(templateStyle);
+
+        if (style == null) {
+            HSSFCellStyle newStyle = resultWorkbook.createCellStyle();
+
+            newStyle.cloneStyleRelationsFrom(templateStyle);
+            HSSFFont templateFont = templateStyle.getFont(templateWorkbook);
+            HSSFFont font = fontCache.getFontByTemplate(templateFont);
+            if (font != null)
+                newStyle.setFont(font);
+            else {
+                newStyle.cloneFontFrom(templateStyle);
+                fontCache.addCachedFont(templateFont, newStyle.getFont(resultWorkbook));
+            }
+            styleCache.addCachedStyle(templateStyle, newStyle);
+            style = newStyle;
+        }
+
+        return style;
     }
 
     /**
