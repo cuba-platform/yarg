@@ -1,5 +1,6 @@
 package com.haulmont.newreport.formatters.impl.xls;
 
+import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.doc.UnoHelper;
 import com.haulmont.newreport.formatters.impl.doc.OfficeInputStream;
 import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
@@ -50,7 +51,7 @@ public class XlsToPdfConverter implements XlsToPdfConverterAPI {
                     XComponent xComponent = UnoHelper.loadXComponent(xComponentLoader, xis);
                     saveAndClose(xComponent, outputStream, XLS_TO_PDF_OUTPUT_FILE);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new ReportingException("An error occurred while running task in Open Office server",e);
                 }
             }
         };

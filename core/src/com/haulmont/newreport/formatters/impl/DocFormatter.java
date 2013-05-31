@@ -10,6 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.TableManager;
 import com.haulmont.newreport.formatters.impl.doc.connector.*;
@@ -75,9 +76,6 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     public void renderDocument() {
-        if (reportTemplate == null)
-            throw new NullPointerException("Template file can't be null");
-
         try {
             doCreateDocument(reportTemplate.getOutputType(), outputStream);
         } catch (Exception e) {//just try again if any exceptions occurred
@@ -106,7 +104,7 @@ public class DocFormatter extends AbstractFormatter {
                     // Saving document to output stream and closing
                     saveAndClose(xComponent, outputType, outputStream);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new ReportingException("An error occurred while running task in Open Office server",e);
                 }
             }
         };

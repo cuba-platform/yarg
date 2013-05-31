@@ -10,6 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.newreport.formatters.Formatter;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.impl.ReportValueFormat;
@@ -41,6 +42,9 @@ public abstract class AbstractFormatter implements Formatter {
     protected OutputStream outputStream;
 
     protected AbstractFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+        Preconditions.checkNotNull("\"rootBand\" parameter can not be null", reportTemplate);
+        Preconditions.checkNotNull("\"reportTemplate\" parameter can not be null", reportTemplate);
+
         this.rootBand = rootBand;
         this.reportTemplate = reportTemplate;
         this.outputStream = outputStream;

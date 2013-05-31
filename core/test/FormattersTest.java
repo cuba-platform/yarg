@@ -95,19 +95,58 @@ public class FormattersTest {
         root.setData(Collections.<String, Object>singletonMap("param1", "AAAAAA"));
         Band band1_1 = new Band("Band1", root, BandOrientation.HORIZONTAL);
         Band band1_2 = new Band("Band1", root, BandOrientation.HORIZONTAL);
+        Band band1_3 = new Band("Band1", root, BandOrientation.HORIZONTAL);
+        Band footer = new Band("Footer", root, BandOrientation.HORIZONTAL);
+        Band split = new Band("Split", root, BandOrientation.HORIZONTAL);
+
         Map<String, Object> datamap = new HashMap<String, Object>();
-        datamap.put("col1", 123);
-        datamap.put("col2", 321);
+        datamap.put("col1", 111);
+        datamap.put("col2", 222);
+        datamap.put("col3", 333);
         datamap.put("cwidth", 10000);
         band1_1.setData(datamap);
+
         Map<String, Object> datamap2 = new HashMap<String, Object>();
-        datamap2.put("col1", 456);
-        datamap2.put("col2", 654);
+        datamap2.put("col1", 444);
+        datamap2.put("col2", 555);
+        datamap2.put("col3", 666);
         datamap2.put("cwidth", 10000);
         band1_2.setData(datamap2);
 
+        Map<String, Object> datamap3 = new HashMap<String, Object>();
+        datamap3.put("col1", 1);
+        datamap3.put("col2", 2);
+        datamap3.put("col3", 3);
+        datamap3.put("cwidth", 10000);
+        band1_3.setData(datamap3);
+
+
+
+        Band band2_1 = new Band("Band2", root, BandOrientation.HORIZONTAL);
+        Band band2_2 = new Band("Band2", root, BandOrientation.HORIZONTAL);
+
+        Map<String, Object> datamap4 = new HashMap<String, Object>();
+        datamap4.put("col1", 111);
+        datamap4.put("col2", 222);
+        datamap4.put("col3", 333);
+        datamap4.put("col4", 4444);
+        band2_1.setData(datamap4);
+
+        Map<String, Object> datamap5 = new HashMap<String, Object>();
+        datamap5.put("col1", 111);
+        datamap5.put("col2", 222);
+        datamap5.put("col3", 333);
+        datamap5.put("col4", 444);
+        band2_2.setData(datamap5);
+
+
         root.addChild(band1_1);
         root.addChild(band1_2);
+        root.addChild(band1_3);
+        root.addChild(footer);
+        root.addChild(split);
+        root.addChild(band2_1);
+        root.addChild(band2_2);
         root.setFirstLevelBandDefinitionNames(new HashSet<String>());
         root.getFirstLevelBandDefinitionNames().add("Band1");
         root.getFirstLevelBandDefinitionNames().add("Band2");
