@@ -14,6 +14,9 @@ import com.google.common.base.Preconditions;
 import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.TableManager;
 import com.haulmont.newreport.formatters.impl.doc.connector.*;
+import com.haulmont.newreport.formatters.impl.tags.BitmapTagHandler;
+import com.haulmont.newreport.formatters.impl.tags.HtmlContentTagHandler;
+import com.haulmont.newreport.formatters.impl.tags.ImageTagHandler;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.structure.impl.ReportValueFormat;
@@ -73,6 +76,9 @@ public class DocFormatter extends AbstractFormatter {
     public DocFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OfficeIntegrationAPI officeIntegration) {
         super(rootBand, reportTemplate, outputStream);
         this.officeIntegration = officeIntegration;
+        this.tagHandlers.add(new BitmapTagHandler());
+        this.tagHandlers.add(new HtmlContentTagHandler());
+        this.tagHandlers.add(new ImageTagHandler());
     }
 
     public void renderDocument() {

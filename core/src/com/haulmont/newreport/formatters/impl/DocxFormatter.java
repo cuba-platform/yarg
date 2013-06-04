@@ -11,6 +11,9 @@
 package com.haulmont.newreport.formatters.impl;
 
 
+import com.haulmont.newreport.formatters.impl.tags.BitmapTagHandler;
+import com.haulmont.newreport.formatters.impl.tags.HtmlContentTagHandler;
+import com.haulmont.newreport.formatters.impl.tags.ImageTagHandler;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.structure.impl.ReportValueFormat;
@@ -46,6 +49,9 @@ public class DocxFormatter extends AbstractFormatter {
 
     public DocxFormatter(Band rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
+        this.tagHandlers.add(new BitmapTagHandler());
+        this.tagHandlers.add(new HtmlContentTagHandler());
+        this.tagHandlers.add(new ImageTagHandler());
     }
 
     @Override

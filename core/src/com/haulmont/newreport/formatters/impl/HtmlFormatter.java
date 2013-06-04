@@ -44,10 +44,10 @@ public class HtmlFormatter extends AbstractFormatter {
         if (ReportOutputType.custom.equals(outputType) || ReportOutputType.csv.equals(outputType) || ReportOutputType.html.equals(outputType)) {
             writeHtmlDocument(rootBand, outputStream);
         } else if (ReportOutputType.pdf.equals(outputType)) {
-            ByteArrayOutputStream htmlOuputStream = new ByteArrayOutputStream();
-            writeHtmlDocument(rootBand, htmlOuputStream);
+            ByteArrayOutputStream htmlOutputStream = new ByteArrayOutputStream();
+            writeHtmlDocument(rootBand, htmlOutputStream);
 
-            String htmlContent = new String(htmlOuputStream.toByteArray());
+            String htmlContent = new String(htmlOutputStream.toByteArray());
             renderPdfDocument(htmlContent, outputStream);
 
         } else {
