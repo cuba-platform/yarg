@@ -1,5 +1,7 @@
 package com.haulmont.newreport.structure.impl;
 
+import com.haulmont.newreport.structure.ReportValueFormat;
+
 import java.util.*;
 
 /**
@@ -11,15 +13,17 @@ import java.util.*;
 public class Band {
     public static final String ROOT_BAND_NAME = "Root";
 
-    private Map<String, Object> data;
-    private final Band parentBand;
+    protected Map<String, Object> data;
+    protected final Band parentBand;
 
-    private Map<String, List<Band>> childrenBands = new LinkedHashMap<String, List<Band>>();
+    protected Map<String, List<Band>> childrenBands = new LinkedHashMap<String, List<Band>>();
 
-    private final String name;
-    private final BandOrientation orientation;
-    private Set<String> firstLevelBandDefinitionNames = null;
-    private int level;
+    protected final String name;
+    protected final BandOrientation orientation;
+    protected Set<String> firstLevelBandDefinitionNames = null;
+    protected int level;
+    protected List<ReportValueFormat> reportValueFormats;
+
 
     public Band(String name) {
         this.name = name;
@@ -172,7 +176,11 @@ public class Band {
         this.firstLevelBandDefinitionNames = firstLevelBandDefinitionNames;
     }
 
-    public Map<String, ReportValueFormat> getValuesFormats() {
+    public void setReportValueFormats(List<ReportValueFormat> reportValueFormats) {
+        this.reportValueFormats = reportValueFormats;
+    }
+
+    public Map<String, ReportValueFormat> getReportValuesFormats() {
         return Collections.emptyMap();
     }
 

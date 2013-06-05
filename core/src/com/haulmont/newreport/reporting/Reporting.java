@@ -16,6 +16,7 @@ import com.haulmont.newreport.structure.DataSet;
 import com.haulmont.newreport.structure.Report;
 import com.haulmont.newreport.structure.ReportTemplate;
 import com.haulmont.newreport.structure.impl.Band;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -37,24 +38,21 @@ public class Reporting implements ReportingAPI {
 
     @Override
     public void runReport(RunParams runParams, OutputStream outputStream) {
-        runReport(runParams.report, runParams.templateCode, runParams.params, outputStream);
+        runReport(runParams.report, runParams.reportTemplate, runParams.params, outputStream);
     }
 
     @Override
     public byte[] runReport(RunParams runParams) {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
-        runReport(runParams.report, runParams.templateCode, runParams.params, result);
+        runReport(runParams.report, runParams.reportTemplate, runParams.params, result);
         return result.toByteArray();
     }
 
-    private void runReport(Report report, String templateCode, Map<String, Object> params, OutputStream outputStream) {
+    private void runReport(Report report, ReportTemplate reportTemplate, Map<String, Object> params, OutputStream outputStream) {
         Preconditions.checkNotNull(report, "\"report\" parameter can not be null");
-        Preconditions.checkNotNull(templateCode, "\"templateCode\" can not be null");
+        Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" can not be null");
         Preconditions.checkNotNull(params, "\"params\" can not be null");
         Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
-
-        ReportTemplate reportTemplate = report.getReportTemplates().get(templateCode);
-        Preconditions.checkNotNull(reportTemplate, String.format("Template not found for code [%s]. Report name [%s].", templateCode, report.getName()));
 
         String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
         Band rootBand = new Band(Band.ROOT_BAND_NAME);
@@ -62,8 +60,9 @@ public class Reporting implements ReportingAPI {
         FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputStream);
         Formatter formatter = formatterFactory.createFormatter(factoryInput);
 
+        rootBand.setReportValueFormats(report.getReportValueFormats());
         rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
-        for (BandDefinition definition : report.getRootBandDefinition().getChildrenBandDefinitions()) {
+        for (BandDefinition definition : report.getRootBandDefinition().getChildren()) {
             List<Band> bands = createBands(definition, rootBand, params);
             rootBand.addChildren(bands);
             rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
@@ -80,9 +79,9 @@ public class Reporting implements ReportingAPI {
     private List<Band> createBandsList(BandDefinition definition, Band parentBand, List<Map<String, Object>> outputData, Map<String, Object> params) {
         List<Band> bandsList = new ArrayList<Band>();
         for (Map<String, Object> data : outputData) {
-            Band band = new Band(definition.getName(), parentBand, definition.getOrientation());
+            Band band = new Band(definition.getName(), parentBand, definition.getBandOrientation());
             band.setData(data);
-            Collection<BandDefinition> childrenBandDefinitions = definition.getChildrenBandDefinitions();
+            Collection<BandDefinition> childrenBandDefinitions = definition.getChildren();
             for (BandDefinition childDefinition : childrenBandDefinitions) {
                 List<Band> childBands = createBands(childDefinition, band, params);
                 band.addChildren(childBands);
@@ -93,18 +92,16 @@ public class Reporting implements ReportingAPI {
     }
 
     private List<Map<String, Object>> getBandData(BandDefinition definition, Band parentBand, Map<String, Object> params) {
-        Collection<DataSet> dataSets = definition.getDataSets();
+        Collection<DataSet> dataSets = definition.getInnerDataSets();
         //add input params to band
-        if (dataSets == null || dataSets.size() == 0)
+        if (CollectionUtils.isEmpty(dataSets))
             return Collections.singletonList(params);
 
         Iterator<DataSet> dataSetIterator = dataSets.iterator();
         DataSet firstDataSet = dataSetIterator.next();
 
-        List<Map<String, Object>> result;
-
         //gets data from first dataset
-        result = getDataSetData(parentBand, firstDataSet, params);
+        List<Map<String, Object>> result = getDataSetData(parentBand, firstDataSet, params);
 
         //adds data from second and following datasets to result
         while (dataSetIterator.hasNext()) {//todo reimplement
@@ -114,11 +111,12 @@ public class Reporting implements ReportingAPI {
             }
         }
 
-        if (result != null)
+        if (result != null) {
             //add output params to band
             for (Map<String, Object> map : result) {
                 map.putAll(params);
             }
+        }
 
         return result;
     }

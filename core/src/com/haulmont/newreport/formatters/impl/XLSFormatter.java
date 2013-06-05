@@ -2,6 +2,7 @@ package com.haulmont.newreport.formatters.impl;
 
 import com.haulmont.newreport.exception.UnsupportedFormatException;
 import com.haulmont.newreport.formatters.impl.xls.options.*;
+import com.haulmont.newreport.structure.ReportValueFormat;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.impl.BandOrientation;
 import com.haulmont.newreport.structure.ReportOutputType;
@@ -9,7 +10,6 @@ import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.newreport.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.newreport.structure.ReportTemplate;
-import com.haulmont.newreport.structure.impl.ReportValueFormat;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
@@ -569,7 +569,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
 
         Object parameterValue = band.getData().get(parameterName);
-        Map<String, ReportValueFormat> valuesFormats = rootBand.getValuesFormats();
+        Map<String, ReportValueFormat> valuesFormats = rootBand.getReportValuesFormats();
 
         if (parameterValue == null) {
             resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
@@ -581,7 +581,7 @@ public class XLSFormatter extends AbstractFormatter {
             resultCell.setCellValue((Date) parameterValue);
         } else {
             if (valuesFormats.containsKey(parameterName)) {
-                String formatString = valuesFormats.get(parameterName).getFormatString();
+                String formatString = valuesFormats.get(parameterName).getFormat();
                 ImageExtractor imageExtractor = new ImageExtractor(formatString, parameterValue);
 
                 if (ImageExtractor.isImage(formatString)) {

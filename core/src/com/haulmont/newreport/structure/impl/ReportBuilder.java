@@ -1,10 +1,7 @@
 package com.haulmont.newreport.structure.impl;
 
 import com.google.common.base.Preconditions;
-import com.haulmont.newreport.structure.BandDefinition;
-import com.haulmont.newreport.structure.Report;
-import com.haulmont.newreport.structure.ReportParameter;
-import com.haulmont.newreport.structure.ReportTemplate;
+import com.haulmont.newreport.structure.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +12,7 @@ public class ReportBuilder {
 
     public ReportBuilder() {
         rootBandDefinition = new BandDefinitionImpl(Band.ROOT_BAND_NAME, null);
-        report = new ReportImpl(null, rootBandDefinition);
+        report = new ReportImpl("", rootBandDefinition);
     }
 
     public ReportBuilder band(BandDefinition bandDefinition) {
@@ -34,7 +31,13 @@ public class ReportBuilder {
 
     public ReportBuilder parameter(ReportParameter reportParameter) {
         Preconditions.checkNotNull(reportParameter, "\"reportParameter\" parameter can not be null");
-        report.getReportParameters().add(reportParameter);
+        report.reportParameters.add(reportParameter);
+        return this;
+    }
+
+    public ReportBuilder valueFormat(ReportValueFormat reportValueFormat) {
+        Preconditions.checkNotNull(reportValueFormat, "\"reportValueFormat\" parameter can not be null");
+        report.reportValueFormats.add(reportValueFormat);
         return this;
     }
 

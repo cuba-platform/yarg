@@ -5,7 +5,7 @@
  */
 package com.haulmont.newreport.structure;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public interface Report {
@@ -15,5 +15,7 @@ public interface Report {
 
     BandDefinition getRootBandDefinition();
 
-    Collection<ReportParameter> getReportParameters();
+    List<ReportParameter> getReportParameters();
+
+    List<ReportValueFormat> getReportValueFormats();
 }

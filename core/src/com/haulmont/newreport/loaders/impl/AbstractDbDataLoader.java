@@ -44,7 +44,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         private String query;
         private Object[] params;
 
-        protected QueryPack(String query, Object[] params) {
+        public QueryPack(String query, Object[] params) {
             this.query = query;
             this.params = params;
         }

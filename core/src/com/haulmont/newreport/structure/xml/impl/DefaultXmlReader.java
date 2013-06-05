@@ -27,10 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class DefaultXmlReader implements XmlReader {
@@ -65,7 +62,7 @@ public class DefaultXmlReader implements XmlReader {
             parseChildBandDefinitions(rootElement.element("rootBand"), rootBandDefinitionBuilder);
             BandDefinition rootBandDefinition = rootBandDefinitionBuilder.build();
 
-            ReportImpl report = new ReportImpl(rootElement.attribute("name").getText(), templateMap, rootBandDefinition, reportParameters);
+            ReportImpl report = new ReportImpl(rootElement.attribute("name").getText(), templateMap, rootBandDefinition, reportParameters, Collections.<ReportValueFormat>emptyList());
             return report;
         } catch (DocumentException e) {
             throw new ReportingXmlException(String.format("An error occurred while parsing report xml. \\n[%s]", xml), e);
@@ -111,7 +108,7 @@ public class DefaultXmlReader implements XmlReader {
             String name = parameter.attribute("name").getText();
             String alias = parameter.attribute("alias").getText();
             Boolean required = Boolean.valueOf(parameter.attribute("required").getText());
-            Class type = Class.forName(parameter.attribute("type").getText());
+            Class type = Class.forName(parameter.attribute("class").getText());
 
             ReportParameterImpl reportParameter = new ReportParameterImpl(name, alias, required, type);
             reportParameters.add(reportParameter);

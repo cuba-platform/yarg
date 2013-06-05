@@ -5,12 +5,8 @@
  */
 package com.haulmont.newreport.structure;
 
-public interface ReportParameter {
+public interface ReportValueFormat {
     String getName();
 
-    String getAlias();
-
-    Boolean getRequired();
-
-    Class getParameterClass();
+    String getFormat();
 }

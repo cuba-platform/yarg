@@ -14,9 +14,9 @@ package com.haulmont.newreport.formatters.impl;
 import com.haulmont.newreport.formatters.impl.tags.BitmapTagHandler;
 import com.haulmont.newreport.formatters.impl.tags.HtmlContentTagHandler;
 import com.haulmont.newreport.formatters.impl.tags.ImageTagHandler;
+import com.haulmont.newreport.structure.ReportValueFormat;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportOutputType;
-import com.haulmont.newreport.structure.impl.ReportValueFormat;
 import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.tags.TagHandler;
 import com.haulmont.newreport.structure.ReportTemplate;
@@ -173,10 +173,10 @@ public class DocxFormatter extends AbstractFormatter {
 
             Object paramValue = band.getParameterValue(bandAndParameter.parameterName);
 
-            Map<String, ReportValueFormat> valueFormats = rootBand.getValuesFormats();
+            Map<String, ReportValueFormat> valueFormats = rootBand.getReportValuesFormats();
             boolean handled = false;
             if (paramValue != null && valueFormats != null && valueFormats.containsKey(alias)) {
-                String format = valueFormats.get(alias).getFormatString();
+                String format = valueFormats.get(alias).getFormat();
                 // Handle doctags
                 for (TagHandler tagHandler : this.tagHandlers) {
                     Matcher matcher = tagHandler.getTagPattern().matcher(format);

@@ -12,8 +12,8 @@ package com.haulmont.newreport.formatters.impl;
 
 import com.google.common.base.Preconditions;
 import com.haulmont.newreport.formatters.Formatter;
+import com.haulmont.newreport.structure.ReportValueFormat;
 import com.haulmont.newreport.structure.impl.Band;
-import com.haulmont.newreport.structure.impl.ReportValueFormat;
 import com.haulmont.newreport.structure.ReportTemplate;
 import org.apache.commons.lang.StringUtils;
 
@@ -63,11 +63,11 @@ public abstract class AbstractFormatter implements Formatter {
 
     protected String formatValue(Object value, String valueName) {
         String valueString = "";
-        Map<String, ReportValueFormat> formats = rootBand.getValuesFormats();
+        Map<String, ReportValueFormat> formats = rootBand.getReportValuesFormats();
         if (value != null) {
             if (formats != null) {
                 if (formats.containsKey(valueName)) {
-                    String formatString = formats.get(valueName).getFormatString();
+                    String formatString = formats.get(valueName).getFormat();
                     if (value instanceof Number) {
                         DecimalFormat decimalFormat = new DecimalFormat(formatString);
                         valueString = decimalFormat.format(value);

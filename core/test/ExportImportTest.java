@@ -44,7 +44,7 @@ public class ExportImportTest {
                         .name("Band1")
                         .dataSet("Data_set_1", "return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]", "groovy")
                         .build()
-                );
+                ).parameter(new ReportParameterImpl("1", "1", true, String.class));
         report.template(new ReportTemplateImpl(ReportTemplate.DEFAULT_TEMPLATE_CODE, "test.xls", "./test/test.xls", ReportOutputType.xls));
         report.name("report");
 

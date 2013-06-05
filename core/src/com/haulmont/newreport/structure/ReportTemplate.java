@@ -5,8 +5,6 @@
  */
 package com.haulmont.newreport.structure;
 
-import com.haulmont.newreport.structure.ReportOutputType;
-
 import java.io.InputStream;
 
 public interface ReportTemplate {

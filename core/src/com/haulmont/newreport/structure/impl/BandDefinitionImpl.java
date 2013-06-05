@@ -43,10 +43,10 @@ public class BandDefinitionImpl implements BandDefinition {
 
     public BandDefinitionImpl(BandDefinition instanceToCopy) {
         name = instanceToCopy.getName();
-        parentBandDefinition = instanceToCopy.getParentBandDefinition();
-        childrenBandDefinitions = new ArrayList<BandDefinition>(instanceToCopy.getChildrenBandDefinitions());
-        dataSets = new ArrayList<DataSet>(instanceToCopy.getDataSets());
-        orientation = instanceToCopy.getOrientation();
+        parentBandDefinition = instanceToCopy.getParent();
+        childrenBandDefinitions = new ArrayList<BandDefinition>(instanceToCopy.getChildren());
+        dataSets = new ArrayList<DataSet>(instanceToCopy.getInnerDataSets());
+        orientation = instanceToCopy.getBandOrientation();
     }
 
 
@@ -54,19 +54,19 @@ public class BandDefinitionImpl implements BandDefinition {
         return name;
     }
 
-    public BandDefinition getParentBandDefinition() {
+    public BandDefinition getParent() {
         return parentBandDefinition;
     }
 
-    public List<BandDefinition> getChildrenBandDefinitions() {
+    public List<BandDefinition> getChildren() {
         return Collections.unmodifiableList(childrenBandDefinitions);
     }
 
-    public Collection<DataSet> getDataSets() {
+    public List<DataSet> getInnerDataSets() {
         return Collections.unmodifiableList(dataSets);
     }
 
-    public BandOrientation getOrientation() {
+    public BandOrientation getBandOrientation() {
         return orientation;
     }
 

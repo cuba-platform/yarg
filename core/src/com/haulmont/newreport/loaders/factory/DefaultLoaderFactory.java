@@ -23,6 +23,11 @@ import java.util.Properties;
 public class DefaultLoaderFactory implements LoaderFactory {
     protected Map<String, DataLoader> dataLoaders = new HashMap<String, DataLoader>();
 
+    public DefaultLoaderFactory setDataLoaders(Map<String, DataLoader> dataLoaders) {
+        this.dataLoaders.putAll(dataLoaders);
+        return this;
+    }
+
     public DefaultLoaderFactory setGroovyDataLoader(DataLoader dataLoader) {
         return registerDataLoader("groovy", dataLoader);
     }

@@ -41,6 +41,7 @@ repositories {
 
 configurations {
     deployerJars
+    sourceArchives
 }
 
 assemble {
@@ -102,4 +103,13 @@ uploadArchives.configure {
     }
 }
 
+task sourceJar(type: Jar) {
+    from sourceSets.main.java
+    classifier = 'sources'
+}
 
+artifacts{
+    archives sourceJar
+}
+
+install.configurations = configurations

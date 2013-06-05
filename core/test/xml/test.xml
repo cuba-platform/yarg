@@ -1,15 +1,18 @@
-<!--<?xml version="1.0" encoding="UTF-8" xmlns="http://cuba.haulmont.com/reporting.xsd"?>-->
+<?xml version="1.0" encoding="UTF-8"?>
+
 <report name="report">
     <templates>
-        <template code="DEFAULT" documentName="result.xls" documentPath="./test/test.xls" outputType="xls"/>
+        <template code="DEFAULT" documentName="test.xls" documentPath="./test/test.xls" outputType="xls"/>
     </templates>
-    <parameters/>
+    <parameters>
+        <parameter name="1" alias="1" required="true" class="java.lang.String"/>
+    </parameters>
     <rootBand name="Root" orientation="H">
         <bands>
             <band name="Band1" orientation="H">
                 <bands/>
                 <dataSets>
-                    <dataSet name="123" type="groovy">
+                    <dataSet name="Data_set_1" type="groovy">
                         <script>return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]</script>
                     </dataSet>
                 </dataSets>

@@ -52,7 +52,7 @@ public class DefaultXmlWriter implements XmlWriter {
             reportTemplateElement.addAttribute("name", reportParameter.getName());
             reportTemplateElement.addAttribute("alias", reportParameter.getAlias());
             reportTemplateElement.addAttribute("required", String.valueOf(reportParameter.getRequired()));
-            reportTemplateElement.addAttribute("type", reportParameter.getType().getCanonicalName());
+            reportTemplateElement.addAttribute("class", reportParameter.getParameterClass().getCanonicalName());
         }
     }
 
@@ -70,18 +70,18 @@ public class DefaultXmlWriter implements XmlWriter {
 
     protected void writeBandDefinition(Element element, BandDefinition bandDefinition) {
         element.addAttribute("name", bandDefinition.getName());
-        element.addAttribute("orientation", bandDefinition.getOrientation().id);
+        element.addAttribute("orientation", bandDefinition.getBandOrientation().id);
         Element childrenBandsElement = element.addElement("bands");
 
         Element dataSetsElement = element.addElement("dataSets");
-        for (DataSet dataSet : bandDefinition.getDataSets()) {
+        for (DataSet dataSet : bandDefinition.getInnerDataSets()) {
             Element dataSetElement = dataSetsElement.addElement("dataSet");
             dataSetElement.addAttribute("name", dataSet.getName());
             dataSetElement.addAttribute("type", dataSet.getLoaderType());
             dataSetElement.addElement("script").setText(dataSet.getScript());
         }
 
-        for (BandDefinition childBandDefinition : bandDefinition.getChildrenBandDefinitions()) {
+        for (BandDefinition childBandDefinition : bandDefinition.getChildren()) {
             Element childBandElement = childrenBandsElement.addElement("band");
             writeBandDefinition(childBandElement, childBandDefinition);
         }

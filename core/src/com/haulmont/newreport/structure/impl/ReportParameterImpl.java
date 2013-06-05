@@ -12,13 +12,13 @@ public class ReportParameterImpl implements ReportParameter {
     protected String name;
     protected String alias;
     protected Boolean required;
-    protected Class type;
+    protected Class paramClass;
 
-    public ReportParameterImpl(String name, String alias, Boolean required, Class type) {
+    public ReportParameterImpl(String name, String alias, Boolean required, Class paramClass) {
         this.name = name;
         this.alias = alias;
         this.required = required;
-        this.type = type;
+        this.paramClass = paramClass;
     }
 
     public String getName() {
@@ -33,7 +33,7 @@ public class ReportParameterImpl implements ReportParameter {
         return required;
     }
 
-    public Class getType() {
-        return type;
+    public Class getParameterClass() {
+        return paramClass;
     }
 }

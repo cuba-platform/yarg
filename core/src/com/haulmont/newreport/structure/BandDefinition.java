@@ -8,15 +8,16 @@ package com.haulmont.newreport.structure;
 import com.haulmont.newreport.structure.impl.BandOrientation;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface BandDefinition {
     String getName();
 
-    BandDefinition getParentBandDefinition();
+    BandDefinition getParent();
 
-    Collection<BandDefinition> getChildrenBandDefinitions();
+    List<BandDefinition> getChildren();
 
-    Collection<DataSet> getDataSets();
+    List<DataSet> getInnerDataSets();
 
-    BandOrientation getOrientation();
+    BandOrientation getBandOrientation();
 }

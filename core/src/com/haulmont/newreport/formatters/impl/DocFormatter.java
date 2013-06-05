@@ -10,16 +10,15 @@
  */
 package com.haulmont.newreport.formatters.impl;
 
-import com.google.common.base.Preconditions;
 import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.TableManager;
 import com.haulmont.newreport.formatters.impl.doc.connector.*;
 import com.haulmont.newreport.formatters.impl.tags.BitmapTagHandler;
 import com.haulmont.newreport.formatters.impl.tags.HtmlContentTagHandler;
 import com.haulmont.newreport.formatters.impl.tags.ImageTagHandler;
+import com.haulmont.newreport.structure.ReportValueFormat;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.ReportOutputType;
-import com.haulmont.newreport.structure.impl.ReportValueFormat;
 import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.doc.OfficeComponent;
 import com.haulmont.newreport.formatters.impl.tags.TagHandler;
@@ -257,13 +256,13 @@ public class DocFormatter extends AbstractFormatter {
         String fullParamName = band.getFullName() + "." + paramName;
         Object paramValue = band.getParameterValue(paramName);
 
-        Map<String, ReportValueFormat> formats = rootBand.getValuesFormats();
+        Map<String, ReportValueFormat> formats = rootBand.getReportValuesFormats();
         try {
             boolean handled = false;
 
             if (paramValue != null) {
                 if ((formats != null) && (formats.containsKey(fullParamName))) {
-                    String format = formats.get(fullParamName).getFormatString();
+                    String format = formats.get(fullParamName).getFormat();
                     // Handle doctags
                     for (TagHandler tagHandler : tagHandlers) {
                         Matcher matcher = tagHandler.getTagPattern().matcher(format);
