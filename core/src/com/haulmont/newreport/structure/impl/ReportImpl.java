@@ -31,19 +31,12 @@ public class ReportImpl implements Report {
         this.reportValueFormats = reportValueFormats;
     }
 
-    public ReportImpl(String name, BandDefinition rootBandDefinition) {
-        Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
-        Preconditions.checkNotNull(rootBandDefinition, "\"rootBandDefinition\" parameter can not be null");
-
-        this.name = name;
+    ReportImpl() {
+        this.name = "";
+        this.rootBandDefinition = null;
         this.reportTemplates = new HashMap<String, ReportTemplate>();
-        this.rootBandDefinition = rootBandDefinition;
         this.reportParameters = new ArrayList<ReportParameter>();
         this.reportValueFormats = new ArrayList<ReportValueFormat>();
-    }
-
-    void setName(String name) {
-        this.name = name;
     }
 
     @Override

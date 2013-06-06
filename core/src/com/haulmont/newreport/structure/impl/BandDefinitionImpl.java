@@ -14,11 +14,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class BandDefinitionImpl implements BandDefinition {
-
     protected String name;
     protected BandDefinition parentBandDefinition;
-    protected List<BandDefinition> childrenBandDefinitions = new ArrayList<BandDefinition>();
-    protected List<DataSet> dataSets = new ArrayList<DataSet>();
+    protected List<BandDefinition> childrenBandDefinitions;
+    protected List<DataSet> dataSets;
     protected BandOrientation orientation;
 
     public BandDefinitionImpl(String name, BandDefinition parentBandDefinition, Collection<BandDefinition> childrenBandDefinitions, Collection<DataSet> dataSets, BandOrientation orientation) {
@@ -33,12 +32,16 @@ public class BandDefinitionImpl implements BandDefinition {
         this.name = name;
         this.parentBandDefinition = parentBandDefinition;
         this.orientation = orientation;
+        childrenBandDefinitions = new ArrayList<BandDefinition>();
+        dataSets = new ArrayList<DataSet>();
     }
 
     public BandDefinitionImpl(String name, BandDefinition parentBandDefinition) {
         this.name = name;
         this.parentBandDefinition = parentBandDefinition;
         this.orientation = BandOrientation.HORIZONTAL;
+        childrenBandDefinitions = new ArrayList<BandDefinition>();
+        dataSets = new ArrayList<DataSet>();
     }
 
     public BandDefinitionImpl(BandDefinition instanceToCopy) {
@@ -68,17 +71,5 @@ public class BandDefinitionImpl implements BandDefinition {
 
     public BandOrientation getBandOrientation() {
         return orientation;
-    }
-
-    void setParentBandDefinition(BandDefinition parentBandDefinition) {
-        this.parentBandDefinition = parentBandDefinition;
-    }
-
-    void setName(String name) {
-        this.name = name;
-    }
-
-    void setOrientation(BandOrientation orientation) {
-        this.orientation = orientation;
     }
 }

@@ -12,14 +12,15 @@ public class ReportBuilder {
 
     public ReportBuilder() {
         rootBandDefinition = new BandDefinitionImpl(Band.ROOT_BAND_NAME, null);
-        report = new ReportImpl("", rootBandDefinition);
+        report = new ReportImpl();
+        report.rootBandDefinition = rootBandDefinition;
     }
 
     public ReportBuilder band(BandDefinition bandDefinition) {
         Preconditions.checkNotNull(bandDefinition, "\"bandDefinition\" parameter can not be null");
         BandDefinitionImpl wrapperBandDefinition = new BandDefinitionImpl(bandDefinition);
         rootBandDefinition.childrenBandDefinitions.add(wrapperBandDefinition);
-        wrapperBandDefinition.setParentBandDefinition(rootBandDefinition);
+        wrapperBandDefinition.parentBandDefinition = rootBandDefinition;
         return this;
     }
 
@@ -43,7 +44,7 @@ public class ReportBuilder {
 
     public ReportBuilder name(String name) {
         Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
-        report.setName(name);
+        report.name = name;
         return this;
     }
 

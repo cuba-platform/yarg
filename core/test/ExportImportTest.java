@@ -45,7 +45,15 @@ public class ExportImportTest {
                         .dataSet("Data_set_1", "return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]", "groovy")
                         .build()
                 ).parameter(new ReportParameterImpl("parameterName", "parameterAlias", true, String.class));
-        report.template(new ReportTemplateImpl(ReportTemplate.DEFAULT_TEMPLATE_CODE, "test.xls", "./test/test.xls", ReportOutputType.xls, "outputNamePattern"));
+        report.template(
+                new ReportTemplateBuilder()
+                        .code(ReportTemplate.DEFAULT_TEMPLATE_CODE)
+                        .documentName("test.xls")
+                        .documentPath("./test/test.xls").readFileFromPath()
+                        .outputType(ReportOutputType.xls)
+                        .outputNamePattern( "outputNamePattern")
+                        .build());
+
         report.name("report");
         report.valueFormat(new ReportValueFormatImpl("formatArgumentName", "format"));
 

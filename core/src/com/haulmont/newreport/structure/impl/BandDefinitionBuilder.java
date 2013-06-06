@@ -12,7 +12,7 @@ public class BandDefinitionBuilder {
     public BandDefinitionBuilder band(BandDefinition bandDefinition) {
         Preconditions.checkNotNull(bandDefinition, "\"bandDefinition\" parameter can not be null");
         BandDefinitionImpl copyBand = new BandDefinitionImpl(bandDefinition);
-        copyBand.setParentBandDefinition(this.bandDefinition);
+        copyBand.parentBandDefinition = this.bandDefinition;
         this.bandDefinition.childrenBandDefinitions.add(copyBand);
         return this;
     }
@@ -27,14 +27,14 @@ public class BandDefinitionBuilder {
 
     public BandDefinitionBuilder name(String name) {
         Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
-        bandDefinition.setName(name);
+        bandDefinition.name = name;
         return this;
 
     }
 
     public BandDefinitionBuilder orientation(BandOrientation orientation) {
         Preconditions.checkNotNull(orientation, "\"orientation\" parameter can not be null");
-        bandDefinition.setOrientation(orientation);
+        bandDefinition.orientation = orientation;
         return this;
 
     }

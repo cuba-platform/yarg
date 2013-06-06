@@ -5,6 +5,7 @@
  */
 package com.haulmont.newreport.structure.impl;
 
+import com.haulmont.newreport.formatters.CustomReport;
 import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.structure.ReportTemplate;
 import org.apache.commons.io.FileUtils;
@@ -13,29 +14,33 @@ import org.apache.commons.io.IOUtils;
 import java.io.*;
 
 public class ReportTemplateImpl implements ReportTemplate {
-    protected String code;
+    protected String code = ReportTemplate.DEFAULT_TEMPLATE_CODE;
     protected String documentName;
     protected String documentPath;
     protected byte[] documentContent;
     protected ReportOutputType reportOutputType;
     protected String outputNamePattern;
 
-    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType, String outputNamePattern) throws IOException {
+    protected CustomReport customReport;
+    protected boolean custom = false;
+
+    ReportTemplateImpl() {
+    }
+
+    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType) throws IOException {
         this.code = code;
         this.documentName = documentName;
         this.documentPath = documentPath;
         this.documentContent = FileUtils.readFileToByteArray(new File(documentPath));
         this.reportOutputType = reportOutputType;
-        this.outputNamePattern = outputNamePattern;
     }
 
-    public ReportTemplateImpl(String code, String documentName, String documentPath, InputStream documentContent, ReportOutputType reportOutputType, String outputNamePattern) throws IOException {
+    public ReportTemplateImpl(String code, String documentName, String documentPath, InputStream documentContent, ReportOutputType reportOutputType) throws IOException {
         this.code = code;
         this.documentName = documentName;
         this.documentPath = documentPath;
         this.documentContent = IOUtils.toByteArray(documentContent);
         this.reportOutputType = reportOutputType;
-        this.outputNamePattern = outputNamePattern;
     }
 
     @Override
@@ -64,5 +69,15 @@ public class ReportTemplateImpl implements ReportTemplate {
 
     public String getOutputNamePattern() {
         return outputNamePattern;
+    }
+
+    @Override
+    public boolean isCustom() {
+        return custom;
+    }
+
+    @Override
+    public CustomReport getCustomReport() {
+        return customReport;
     }
 }

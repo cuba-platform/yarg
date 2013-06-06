@@ -5,6 +5,7 @@ import com.haulmont.newreport.structure.ReportOutputType;
 import com.haulmont.newreport.formatters.Formatter;
 import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.newreport.structure.impl.Band;
+import com.haulmont.newreport.structure.impl.ReportTemplateBuilder;
 import com.haulmont.newreport.structure.impl.ReportTemplateImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class FormattersTest {
         FileOutputStream outputStream = new FileOutputStream("./result/result.xls");
 
         Formatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
-                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.xls, null), outputStream));
+                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.xls), outputStream));
 
         formatter.renderDocument();
 
@@ -44,7 +45,7 @@ public class FormattersTest {
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
-                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.pdf, null), outputStream));
+                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.pdf), outputStream));
 
         formatter.renderDocument();
 
@@ -57,7 +58,7 @@ public class FormattersTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.docx");
         Formatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl(null, "test.docx", "./test/test.docx", ReportOutputType.docx, null), outputStream));
+                new ReportTemplateImpl(null, "test.docx", "./test/test.docx", ReportOutputType.docx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -70,7 +71,7 @@ public class FormattersTest {
         FileOutputStream outputStream = new FileOutputStream("./result/result.html");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
-                new ReportTemplateImpl(null, "test.ftl", "./test/test.ftl", ReportOutputType.html, null), outputStream));
+                new ReportTemplateImpl(null, "test.ftl", "./test/test.ftl", ReportOutputType.html), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -84,7 +85,7 @@ public class FormattersTest {
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
-                new ReportTemplateImpl(null, "test.odt", "./test/test.odt", ReportOutputType.doc, null), outputStream));
+                new ReportTemplateImpl(null, "test.odt", "./test/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

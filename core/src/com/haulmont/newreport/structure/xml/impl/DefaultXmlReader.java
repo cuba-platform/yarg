@@ -95,7 +95,15 @@ public class DefaultXmlReader implements XmlReader {
             String outputType = template.attribute("outputType").getText();
             String outputNamePattern = template.attribute("outputNamePattern").getText();
 
-            ReportTemplateImpl reportTemplate = new ReportTemplateImpl(code, documentName, documentPath, getDocumentContent(documentPath), ReportOutputType.getOutputTypeById(outputType), outputNamePattern);
+            ReportTemplate reportTemplate = new ReportTemplateBuilder()
+                    .code(code)
+                    .documentName(documentName)
+                    .documentPath(documentPath)
+                    .documentContent(getDocumentContent(documentPath))
+                    .outputType(ReportOutputType.getOutputTypeById(outputType))
+                    .outputNamePattern(outputNamePattern).build();
+
+
             templateMap.put(reportTemplate.getCode(), reportTemplate);
         }
 

@@ -15,9 +15,11 @@ import com.haulmont.newreport.loaders.factory.LoaderFactory;
 import com.haulmont.newreport.structure.*;
 import com.haulmont.newreport.structure.impl.Band;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -50,34 +52,46 @@ public class Reporting implements ReportingAPI {
     }
 
     protected ReportOutputDocument runReport(Report report, ReportTemplate reportTemplate, Map<String, Object> params, OutputStream outputStream) {
-        Preconditions.checkNotNull(report, "\"report\" parameter can not be null");
-        Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" can not be null");
-        Preconditions.checkNotNull(params, "\"params\" can not be null");
-        Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
+        try {
+            Preconditions.checkNotNull(report, "\"report\" parameter can not be null");
+            Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" can not be null");
+            Preconditions.checkNotNull(params, "\"params\" can not be null");
+            Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
 
-        String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
-        Band rootBand = new Band(Band.ROOT_BAND_NAME);
-        rootBand.setData(new HashMap<String, Object>(params));
-        FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputStream);
-        Formatter formatter = formatterFactory.createFormatter(factoryInput);
+            String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
+            Band rootBand = new Band(Band.ROOT_BAND_NAME);
+            rootBand.setData(new HashMap<String, Object>(params));
+            rootBand.setReportValueFormats(report.getReportValueFormats());
+            rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
-        rootBand.setReportValueFormats(report.getReportValueFormats());
-        rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
+            List<Map<String, Object>> rootBandData = getBandData(report.getRootBandDefinition(), null, params);
+            if (CollectionUtils.isNotEmpty(rootBandData)) {
+                rootBand.getData().putAll(rootBandData.get(0));
+            }
 
-        List<Map<String, Object>> rootBandData = getBandData(report.getRootBandDefinition(), null, params);
-        if (CollectionUtils.isNotEmpty(rootBandData)) {
-            rootBand.getData().putAll(rootBandData.get(0));
+            for (BandDefinition definition : report.getRootBandDefinition().getChildren()) {
+                List<Band> bands = createBands(definition, rootBand, params);
+                rootBand.addChildren(bands);
+                rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
+            }
+
+            if (reportTemplate.isCustom()) {
+                try {
+                    byte[] bytes = reportTemplate.getCustomReport().createReport(report, rootBand, params);
+                    IOUtils.write(bytes, outputStream);
+                } catch (IOException e) {
+                    throw new ReportingException(String.format("An error occurred while processing custom template [%s].", reportTemplate.getDocumentName()), e);
+                }
+            } else {
+                FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputStream);
+                Formatter formatter = formatterFactory.createFormatter(factoryInput);
+                formatter.renderDocument();
+            }
+            String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
+            return new ReportOutputDocument(report, null, outputName, reportTemplate.getOutputType());
+        } catch (ReportingException e) {
+            throw new ReportingException(String.format("%s Report name [%s]", e.getMessage(), report.getName()), e.getCause());
         }
-
-        for (BandDefinition definition : report.getRootBandDefinition().getChildren()) {
-            List<Band> bands = createBands(definition, rootBand, params);
-            rootBand.addChildren(bands);
-            rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
-        }
-
-        formatter.renderDocument();
-        String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
-        return new ReportOutputDocument(report, null, outputName, reportTemplate.getOutputType());
     }
 
     protected String resolveOutputFileName(Report report, ReportTemplate reportTemplate, Band rootBand) {

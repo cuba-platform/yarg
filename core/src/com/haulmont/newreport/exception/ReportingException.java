@@ -25,4 +25,6 @@ public class ReportingException extends RuntimeException {
     public ReportingException(Throwable cause) {
         super(cause);
     }
+
+
 }
