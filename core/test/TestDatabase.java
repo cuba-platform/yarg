@@ -37,4 +37,12 @@ public class TestDatabase {
     public DataSource getDs() {
         return ds;
     }
+
+    public void stop() {
+        try {
+            hsqlServer.stop();
+        } catch (Exception e) {
+            //ignore
+        }
+    }
 }

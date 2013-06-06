@@ -10,7 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl.doc.connector;
 
-import com.haulmont.newreport.exception.FailedToConnectToOpenOfficeException;
+import com.haulmont.newreport.exception.OpenOfficeException;
 import com.sun.star.comp.helper.BootstrapException;
 
 import java.util.Collections;
@@ -65,11 +65,11 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
             future.get(timeoutInSeconds, TimeUnit.SECONDS);
         } catch (ExecutionException ex) {
             if (ex.getCause() instanceof BootstrapException) {
-                throw new FailedToConnectToOpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
+                throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
             }
             throw new RuntimeException(ex.getCause());
         } catch (java.lang.Exception ex) {
-            throw new RuntimeException(ex);
+            throw new OpenOfficeException(ex);
         } finally {
             if (future != null) {
                 future.cancel(true);

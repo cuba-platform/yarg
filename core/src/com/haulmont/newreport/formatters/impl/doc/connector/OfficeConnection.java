@@ -10,7 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl.doc.connector;
 
-import com.haulmont.newreport.exception.FailedToConnectToOpenOfficeException;
+import com.haulmont.newreport.exception.OpenOfficeException;
 import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.uno.Exception;
 import com.sun.star.uno.XComponentContext;
@@ -34,9 +34,9 @@ class OfficeConnection {
             this.xComponentContext = bsc.connect("localhost", port);
             this.officeResourceProvider = new OfficeResourceProvider(xComponentContext);
         } catch (Exception e) {
-            throw new FailedToConnectToOpenOfficeException("Unable to create Open office components.", e);
+            throw new OpenOfficeException("Unable to create Open office components.", e);
         } catch (BootstrapException e) {
-            throw new FailedToConnectToOpenOfficeException("Unable to start Open office instance.", e);
+            throw new OpenOfficeException("Unable to start Open office instance.", e);
         }
     }
 

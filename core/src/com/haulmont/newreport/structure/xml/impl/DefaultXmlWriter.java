@@ -29,6 +29,7 @@ public class DefaultXmlWriter implements XmlWriter {
             root.addAttribute("name", report.getName());
             writeTemplates(report, root);
             writeInputParameters(report, root);
+            writeValueFormats(report, root);
             writeRootBand(report, root);
 
             StringWriter stringWriter = new StringWriter();
@@ -56,6 +57,15 @@ public class DefaultXmlWriter implements XmlWriter {
         }
     }
 
+    protected void writeValueFormats(Report report, Element root) {
+        Element reportTemplatesElement = root.addElement("formats");
+        for (ReportValueFormat reportValueFormat : report.getReportValueFormats()) {
+            Element reportTemplateElement = reportTemplatesElement.addElement("format");
+            reportTemplateElement.addAttribute("name", reportValueFormat.getName());
+            reportTemplateElement.addAttribute("format", reportValueFormat.getFormat());
+        }
+    }
+
     protected void writeTemplates(Report report, Element root) {
         Map<String, ReportTemplate> reportTemplates = report.getReportTemplates();
         Element reportTemplatesElement = root.addElement("templates");
@@ -65,6 +75,7 @@ public class DefaultXmlWriter implements XmlWriter {
             reportTemplateElement.addAttribute("documentName", reportTemplate.getDocumentName());
             reportTemplateElement.addAttribute("documentPath", reportTemplate.getDocumentPath());
             reportTemplateElement.addAttribute("outputType", reportTemplate.getOutputType().getId());
+            reportTemplateElement.addAttribute("outputNamePattern", reportTemplate.getOutputNamePattern());
         }
     }
 

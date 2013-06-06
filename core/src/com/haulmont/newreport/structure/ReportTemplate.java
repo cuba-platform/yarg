@@ -19,4 +19,6 @@ public interface ReportTemplate {
     InputStream getDocumentContent();
 
     ReportOutputType getOutputType();
+
+    String getOutputNamePattern();
 }

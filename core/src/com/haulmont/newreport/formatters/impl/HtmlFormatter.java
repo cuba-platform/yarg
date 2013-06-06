@@ -72,7 +72,7 @@ public class HtmlFormatter extends AbstractFormatter {
 
             FileUtils.deleteQuietly(tmpFile);
         } catch (Exception e) {
-            throw new ReportingException(e);
+            throw wrapWithReportingException("", e);
         }
     }
 
@@ -86,11 +86,11 @@ public class HtmlFormatter extends AbstractFormatter {
             htmlTemplate.process(templateModel, htmlWriter);
             htmlWriter.close();
         } catch (TemplateException fmException) {
-            throw new ReportingException("FreeMarkerException: " + fmException.getMessage());
+            throw wrapWithReportingException("FreeMarkerException: " + fmException.getMessage());
         } catch (ReportingException e) {
             throw e;
         } catch (Exception e) {
-            throw new ReportingException(e);
+            throw wrapWithReportingException("An error occurred while rendering html document.", e);
         }
     }
 
@@ -132,8 +132,7 @@ public class HtmlFormatter extends AbstractFormatter {
             Template htmlTemplate = fmConfiguration.getTemplate(reportTemplate.getDocumentName());
             return htmlTemplate;
         } catch (Exception e) {
-            throw new ReportingException(e);
+            throw wrapWithReportingException("An error occurred while creating freemarker template", e);
         }
-
     }
 }

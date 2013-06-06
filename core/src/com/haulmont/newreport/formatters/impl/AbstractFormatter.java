@@ -11,6 +11,7 @@
 package com.haulmont.newreport.formatters.impl;
 
 import com.google.common.base.Preconditions;
+import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.Formatter;
 import com.haulmont.newreport.structure.ReportValueFormat;
 import com.haulmont.newreport.structure.impl.Band;
@@ -151,4 +152,11 @@ public abstract class AbstractFormatter implements Formatter {
         return new BandPathAndParameterName(bandPathPart, paramNamePart);
     }
 
+    protected ReportingException wrapWithReportingException(String message, Exception e) {
+        return new ReportingException(message + " Template name [" + reportTemplate.getDocumentName() + "]", e);
+    }
+
+    protected ReportingException wrapWithReportingException(String message) {
+        return new ReportingException(message + " Template name [" + reportTemplate.getDocumentName() + "]");
+    }
 }

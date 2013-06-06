@@ -36,6 +36,8 @@ public class DataLoadersTest {
             e.printStackTrace();
             Assert.fail();
         }
+
+        testDatabase.stop();
     }
 
     private void printResult(List<Map<String, Object>> result) {

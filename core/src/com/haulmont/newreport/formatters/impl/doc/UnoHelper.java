@@ -10,6 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl.doc;
 
+import com.haulmont.newreport.exception.OpenOfficeException;
 import com.haulmont.newreport.structure.ReportTemplate;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.frame.XComponentLoader;
@@ -31,7 +32,7 @@ public final class UnoHelper {
         try {
             return new OfficeInputStream(IOUtils.toByteArray(reportTemplate.getDocumentContent()));
         } catch (java.io.IOException e) {
-            throw new RuntimeException(e);//todo exception
+            throw new OpenOfficeException("An error occurred while converting template to XInputStream", e);
         }
     }
 

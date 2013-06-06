@@ -6,15 +6,13 @@
 package com.haulmont.newreport.reporting;
 
 import com.google.common.base.Preconditions;
+import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.Formatter;
 import com.haulmont.newreport.formatters.factory.FormatterFactoryInput;
 import com.haulmont.newreport.formatters.factory.FormatterFactory;
 import com.haulmont.newreport.loaders.DataLoader;
 import com.haulmont.newreport.loaders.factory.LoaderFactory;
-import com.haulmont.newreport.structure.BandDefinition;
-import com.haulmont.newreport.structure.DataSet;
-import com.haulmont.newreport.structure.Report;
-import com.haulmont.newreport.structure.ReportTemplate;
+import com.haulmont.newreport.structure.*;
 import com.haulmont.newreport.structure.impl.Band;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Reporting implements ReportingAPI {
     protected FormatterFactory formatterFactory;
@@ -37,18 +37,19 @@ public class Reporting implements ReportingAPI {
     }
 
     @Override
-    public void runReport(RunParams runParams, OutputStream outputStream) {
-        runReport(runParams.report, runParams.reportTemplate, runParams.params, outputStream);
+    public ReportOutputDocument runReport(RunParams runParams, OutputStream outputStream) {
+        return runReport(runParams.report, runParams.reportTemplate, runParams.params, outputStream);
     }
 
     @Override
-    public byte[] runReport(RunParams runParams) {
+    public ReportOutputDocument runReport(RunParams runParams) {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
-        runReport(runParams.report, runParams.reportTemplate, runParams.params, result);
-        return result.toByteArray();
+        ReportOutputDocument reportOutputDocument = runReport(runParams.report, runParams.reportTemplate, runParams.params, result);
+        reportOutputDocument.content = result.toByteArray();
+        return reportOutputDocument;
     }
 
-    private void runReport(Report report, ReportTemplate reportTemplate, Map<String, Object> params, OutputStream outputStream) {
+    protected ReportOutputDocument runReport(Report report, ReportTemplate reportTemplate, Map<String, Object> params, OutputStream outputStream) {
         Preconditions.checkNotNull(report, "\"report\" parameter can not be null");
         Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" can not be null");
         Preconditions.checkNotNull(params, "\"params\" can not be null");
@@ -62,6 +63,12 @@ public class Reporting implements ReportingAPI {
 
         rootBand.setReportValueFormats(report.getReportValueFormats());
         rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
+
+        List<Map<String, Object>> rootBandData = getBandData(report.getRootBandDefinition(), null, params);
+        if (CollectionUtils.isNotEmpty(rootBandData)) {
+            rootBand.getData().putAll(rootBandData.get(0));
+        }
+
         for (BandDefinition definition : report.getRootBandDefinition().getChildren()) {
             List<Band> bands = createBands(definition, rootBand, params);
             rootBand.addChildren(bands);
@@ -69,14 +76,51 @@ public class Reporting implements ReportingAPI {
         }
 
         formatter.renderDocument();
+        String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
+        return new ReportOutputDocument(report, null, outputName, reportTemplate.getOutputType());
     }
 
-    private List<Band> createBands(BandDefinition definition, Band parentBand, Map<String, Object> params) {
+    protected String resolveOutputFileName(Report report, ReportTemplate reportTemplate, Band rootBand) {
+        String outputNamePattern = reportTemplate.getOutputNamePattern();
+        String outputName = reportTemplate.getDocumentName();
+        Pattern pattern = Pattern.compile("\\$\\{([A-z0-9_]+)\\.([A-z0-9_]+)\\}");
+        if (outputNamePattern != null) {
+            Matcher matcher = pattern.matcher(outputNamePattern);
+            if (matcher.find()) {
+                String bandName = matcher.group(1);
+                String paramName = matcher.group(2);
+
+                Band bandWithFileName = null;
+                if (Band.ROOT_BAND_NAME.equals(bandName)) {
+                    bandWithFileName = rootBand;
+                } else {
+                    bandWithFileName = rootBand.findBandRecursively(bandName);
+                }
+
+                if (bandWithFileName != null) {
+                    Object fileName = bandWithFileName.getData().get(paramName);
+
+                    if (fileName == null) {
+                        throw new ReportingException(String.format("No data in band [%s] parameter [%s] found.This band and parameter is used for output file name generation.", bandWithFileName, paramName));
+                    } else {
+                        outputName = fileName.toString();
+                    }
+                } else {
+                    throw new ReportingException(String.format("No data in band [%s] found.This band is used for output file name generation.", bandWithFileName));
+                }
+            } else {
+                return outputNamePattern;
+            }
+        }
+        return outputName;
+    }
+
+    protected List<Band> createBands(BandDefinition definition, Band parentBand, Map<String, Object> params) {
         List<Map<String, Object>> outputData = getBandData(definition, parentBand, params);
         return createBandsList(definition, parentBand, outputData, params);
     }
 
-    private List<Band> createBandsList(BandDefinition definition, Band parentBand, List<Map<String, Object>> outputData, Map<String, Object> params) {
+    protected List<Band> createBandsList(BandDefinition definition, Band parentBand, List<Map<String, Object>> outputData, Map<String, Object> params) {
         List<Band> bandsList = new ArrayList<Band>();
         for (Map<String, Object> data : outputData) {
             Band band = new Band(definition.getName(), parentBand, definition.getBandOrientation());
@@ -91,7 +135,7 @@ public class Reporting implements ReportingAPI {
         return bandsList;
     }
 
-    private List<Map<String, Object>> getBandData(BandDefinition definition, Band parentBand, Map<String, Object> params) {
+    protected List<Map<String, Object>> getBandData(BandDefinition definition, Band parentBand, Map<String, Object> params) {
         Collection<DataSet> dataSets = definition.getInnerDataSets();
         //add input params to band
         if (CollectionUtils.isEmpty(dataSets))
@@ -121,7 +165,7 @@ public class Reporting implements ReportingAPI {
         return result;
     }
 
-    private List<Map<String, Object>> getDataSetData(Band parentBand, DataSet dataSet, Map<String, Object> paramsMap) {
+    protected List<Map<String, Object>> getDataSetData(Band parentBand, DataSet dataSet, Map<String, Object> paramsMap) {
         DataLoader dataLoader = loaderFactory.createDataLoader(dataSet.getLoaderType());
         return dataLoader.loadData(dataSet, parentBand, paramsMap);
     }

@@ -58,11 +58,12 @@ public class DefaultXmlReader implements XmlReader {
             Element rootElement = document.getRootElement();
             Map<String, ReportTemplate> templateMap = parseTemplates(rootElement);
             List<ReportParameter> reportParameters = parseInputParameters(rootElement);
+            List<ReportValueFormat> reportValueFormats = parseValueFormats(rootElement);
             BandDefinitionBuilder rootBandDefinitionBuilder = new BandDefinitionBuilder().name(Band.ROOT_BAND_NAME);
             parseChildBandDefinitions(rootElement.element("rootBand"), rootBandDefinitionBuilder);
             BandDefinition rootBandDefinition = rootBandDefinitionBuilder.build();
-
-            ReportImpl report = new ReportImpl(rootElement.attribute("name").getText(), templateMap, rootBandDefinition, reportParameters, Collections.<ReportValueFormat>emptyList());
+            String reportName = rootElement.attribute("name").getText();
+            ReportImpl report = new ReportImpl(reportName, templateMap, rootBandDefinition, reportParameters, reportValueFormats);
             return report;
         } catch (DocumentException e) {
             throw new ReportingXmlException(String.format("An error occurred while parsing report xml. \\n[%s]", xml), e);
@@ -92,8 +93,9 @@ public class DefaultXmlReader implements XmlReader {
             String documentName = template.attribute("documentName").getText();
             String documentPath = template.attribute("documentPath").getText();
             String outputType = template.attribute("outputType").getText();
+            String outputNamePattern = template.attribute("outputNamePattern").getText();
 
-            ReportTemplateImpl reportTemplate = new ReportTemplateImpl(code, documentName, documentPath, getDocumentContent(documentPath), ReportOutputType.getOutputTypeById(outputType));
+            ReportTemplateImpl reportTemplate = new ReportTemplateImpl(code, documentName, documentPath, getDocumentContent(documentPath), ReportOutputType.getOutputTypeById(outputType), outputNamePattern);
             templateMap.put(reportTemplate.getCode(), reportTemplate);
         }
 
@@ -112,6 +114,19 @@ public class DefaultXmlReader implements XmlReader {
 
             ReportParameterImpl reportParameter = new ReportParameterImpl(name, alias, required, type);
             reportParameters.add(reportParameter);
+        }
+
+        return reportParameters;
+    }
+
+    protected List<ReportValueFormat> parseValueFormats(Element rootElement) throws FileNotFoundException, ClassNotFoundException {
+        Element inputParametersElement = rootElement.element("formats");
+        List<Element> parameters = inputParametersElement.elements("format");
+        List<ReportValueFormat> reportParameters = new ArrayList<ReportValueFormat>();
+        for (Element parameter : parameters) {
+            String name = parameter.attribute("name").getText();
+            String format = parameter.attribute("format").getText();
+            reportParameters.add(new ReportValueFormatImpl(name, format));
         }
 
         return reportParameters;

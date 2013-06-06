@@ -36,7 +36,7 @@ public class XlsToPdfConverter implements XlsToPdfConverterAPI {
             try {
                 doConvertXlsToPdf(documentBytes, outputStream);
             } catch (NoFreePortsException e1) {
-                //todo handle
+                throw new ReportingException("An error occurred while converting xls to pdf.", e);
             }
         }
     }
@@ -51,7 +51,7 @@ public class XlsToPdfConverter implements XlsToPdfConverterAPI {
                     XComponent xComponent = UnoHelper.loadXComponent(xComponentLoader, xis);
                     saveAndClose(xComponent, outputStream, XLS_TO_PDF_OUTPUT_FILE);
                 } catch (Exception e) {
-                    throw new ReportingException("An error occurred while running task in Open Office server",e);
+                    throw new ReportingException("An error occurred while running task in Open Office server", e);
                 }
             }
         };

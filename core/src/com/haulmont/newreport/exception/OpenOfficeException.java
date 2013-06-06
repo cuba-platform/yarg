@@ -10,19 +10,19 @@
  */
 package com.haulmont.newreport.exception;
 
-public class FailedToConnectToOpenOfficeException extends ReportingException {
-    public FailedToConnectToOpenOfficeException() {
+public class OpenOfficeException extends ReportingException {
+    public OpenOfficeException() {
     }
 
-    public FailedToConnectToOpenOfficeException(String message) {
+    public OpenOfficeException(String message) {
         super(message);
     }
 
-    public FailedToConnectToOpenOfficeException(String message, Throwable cause) {
+    public OpenOfficeException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public FailedToConnectToOpenOfficeException(Throwable cause) {
+    public OpenOfficeException(Throwable cause) {
         super(cause);
     }
 }

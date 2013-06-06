@@ -10,6 +10,7 @@
  */
 package com.haulmont.newreport.formatters.impl;
 
+import com.haulmont.newreport.exception.OpenOfficeException;
 import com.haulmont.newreport.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.newreport.formatters.impl.doc.TableManager;
 import com.haulmont.newreport.formatters.impl.doc.connector.*;
@@ -23,13 +24,15 @@ import com.haulmont.newreport.exception.ReportingException;
 import com.haulmont.newreport.formatters.impl.doc.OfficeComponent;
 import com.haulmont.newreport.formatters.impl.tags.TagHandler;
 import com.haulmont.newreport.structure.ReportTemplate;
+import com.sun.star.beans.PropertyVetoException;
+import com.sun.star.beans.UnknownPropertyException;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XIndexAccess;
 import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.io.IOException;
 import com.sun.star.io.XInputStream;
-import com.sun.star.lang.WrappedTargetException;
-import com.sun.star.lang.XComponent;
+import com.sun.star.lang.*;
+import com.sun.star.lang.IndexOutOfBoundsException;
 import com.sun.star.table.XCell;
 import com.sun.star.text.*;
 import com.sun.star.util.XReplaceable;
@@ -84,11 +87,11 @@ public class DocFormatter extends AbstractFormatter {
         try {
             doCreateDocument(reportTemplate.getOutputType(), outputStream);
         } catch (Exception e) {//just try again if any exceptions occurred
-            log.warn("An error occurred while generating doc report. System will retry to generate report once again.", e);
+            log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report once again.", reportTemplate.getDocumentName()), e);
             try {
                 doCreateDocument(reportTemplate.getOutputType(), outputStream);
             } catch (NoFreePortsException e1) {
-                //todo handle
+                throw wrapWithReportingException("An error occurred while generating doc report.", e);
             }
         }
     }
@@ -109,7 +112,7 @@ public class DocFormatter extends AbstractFormatter {
                     // Saving document to output stream and closing
                     saveAndClose(xComponent, outputType, outputStream);
                 } catch (Exception e) {
-                    throw new ReportingException("An error occurred while running task in Open Office server",e);
+                    throw wrapWithReportingException("An error occurred while running task in Open Office server", e);
                 }
             }
         };
@@ -233,8 +236,13 @@ public class DocFormatter extends AbstractFormatter {
         searchDescriptor.setSearchString(ALIAS_WITH_BAND_NAME_REGEXP);
         try {
             searchDescriptor.setPropertyValue(SEARCH_REGULAR_EXPRESSION, true);
-            XIndexAccess indexAccess = xReplaceable.findAll(searchDescriptor);
-            for (int i = 0; i < indexAccess.getCount(); i++) {
+        } catch (Exception e) {
+            throw new OpenOfficeException("An error occurred while setting search properties in Open office", e);
+        }
+
+        XIndexAccess indexAccess = xReplaceable.findAll(searchDescriptor);
+        for (int i = 0; i < indexAccess.getCount(); i++) {
+            try {
                 XTextRange textRange = asXTextRange(indexAccess.getByIndex(i));
                 String alias = unwrapParameterName(textRange.getString());
 
@@ -242,13 +250,16 @@ public class DocFormatter extends AbstractFormatter {
 
                 Band band = findBandByPath(rootBand, bandAndParameter.bandPath);
 
-                if (band == null)
-                    throw new ReportingException("No band for alias : " + alias);
+                if (band == null) {
+                    throw wrapWithReportingException(String.format("No band for alias : [%s] found", alias));
+                }
 
                 insertValue(textRange.getText(), textRange, band, bandAndParameter.parameterName);
+            } catch (ReportingException e) {
+                throw e;
+            } catch (Exception e) {
+                throw  wrapWithReportingException(String.format("An error occurred while replacing aliases in document. Regexp [%s]. Replacement number [%d]", ALIAS_WITH_BAND_NAME_REGEXP, i), e);
             }
-        } catch (Exception ex) {
-            throw new ReportingException(ex);
         }
     }
 
@@ -280,7 +291,7 @@ public class DocFormatter extends AbstractFormatter {
                 text.insertString(textRange, "", true);
             }
         } catch (Exception ex) {
-            throw new ReportingException("Insert data error");
+            throw wrapWithReportingException(String.format("An error occurred while inserting parameter [%s] into text line [%s]", paramName, text.getString()), ex);
         }
     }
 

@@ -18,21 +18,24 @@ public class ReportTemplateImpl implements ReportTemplate {
     protected String documentPath;
     protected byte[] documentContent;
     protected ReportOutputType reportOutputType;
+    protected String outputNamePattern;
 
-    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType) throws IOException {
+    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType, String outputNamePattern) throws IOException {
         this.code = code;
         this.documentName = documentName;
         this.documentPath = documentPath;
         this.documentContent = FileUtils.readFileToByteArray(new File(documentPath));
         this.reportOutputType = reportOutputType;
+        this.outputNamePattern = outputNamePattern;
     }
 
-    public ReportTemplateImpl(String code, String documentName, String documentPath, InputStream documentContent, ReportOutputType reportOutputType) throws IOException {
+    public ReportTemplateImpl(String code, String documentName, String documentPath, InputStream documentContent, ReportOutputType reportOutputType, String outputNamePattern) throws IOException {
         this.code = code;
         this.documentName = documentName;
         this.documentPath = documentPath;
         this.documentContent = IOUtils.toByteArray(documentContent);
         this.reportOutputType = reportOutputType;
+        this.outputNamePattern = outputNamePattern;
     }
 
     @Override
@@ -57,5 +60,9 @@ public class ReportTemplateImpl implements ReportTemplate {
 
     public String getDocumentPath() {
         return documentPath;
+    }
+
+    public String getOutputNamePattern() {
+        return outputNamePattern;
     }
 }

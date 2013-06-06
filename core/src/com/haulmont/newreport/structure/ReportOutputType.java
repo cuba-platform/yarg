@@ -10,10 +10,11 @@
  */
 package com.haulmont.newreport.structure;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ReportOutputType {
+public class ReportOutputType implements Serializable {
     public final static ReportOutputType xls = new ReportOutputType("xls");
     public final static ReportOutputType doc = new ReportOutputType("doc");
     public final static ReportOutputType docx = new ReportOutputType("docx");

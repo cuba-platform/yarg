@@ -61,7 +61,7 @@ public class DocxFormatter extends AbstractFormatter {
         try {
             wordprocessingMLPackage = WordprocessingMLPackage.load(reportTemplate.getDocumentContent());
         } catch (Docx4JException e) {
-            throw new ReportingException(String.format("An error occurred while reading docx template. File name [%s]", reportTemplate.getDocumentName()), e);
+            throw wrapWithReportingException(String.format("An error occurred while reading docx template. File name [%s]", reportTemplate.getDocumentName()), e);
         }
 
         MainDocumentPart mainDocumentPart = wordprocessingMLPackage.getMainDocumentPart();
@@ -98,9 +98,9 @@ public class DocxFormatter extends AbstractFormatter {
                 throw new UnsupportedOperationException(String.format("DocxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
             }
         } catch (Docx4JException e) {
-            throw new ReportingException("An error occurred while saving result report", e);
+            throw wrapWithReportingException("An error occurred while saving result report", e);
         } catch (IOException e) {
-            throw new ReportingException("An error occurred while saving result report to PDF", e);
+            throw wrapWithReportingException("An error occurred while saving result report to PDF", e);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
@@ -162,13 +162,13 @@ public class DocxFormatter extends AbstractFormatter {
                     return;
                 }
 
-                throw new ReportingException("Bad alias : " + text.getValue());
+                throw wrapWithReportingException("Bad alias : " + text.getValue());
             }
 
             Band band = findBandByPath(rootBand, bandAndParameter.bandPath);
 
             if (band == null) {
-                throw new ReportingException("No band found for alias : " + alias);
+                throw wrapWithReportingException("No band found for alias : " + alias);
             }
 
             Object paramValue = band.getParameterValue(bandAndParameter.parameterName);

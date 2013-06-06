@@ -32,6 +32,8 @@ public class SqlLoaderTest {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
+        } finally {
+            testDatabase.stop();
         }
     }
 
@@ -54,7 +56,11 @@ public class SqlLoaderTest {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
+        } finally {
+            testDatabase.stop();
         }
+
+
     }
 
     private void printResult(List<Map<String, Object>> result) {

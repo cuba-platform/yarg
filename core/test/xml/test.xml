@@ -2,11 +2,14 @@
 
 <report name="report">
     <templates>
-        <template code="DEFAULT" documentName="test.xls" documentPath="./test/test.xls" outputType="xls"/>
+        <template code="DEFAULT" documentName="test.xls" documentPath="./test/test.xls" outputType="xls" outputNamePattern="outputNamePattern"/>
     </templates>
     <parameters>
-        <parameter name="1" alias="1" required="true" class="java.lang.String"/>
+        <parameter name="parameterName" alias="parameterAlias" required="true" class="java.lang.String"/>
     </parameters>
+    <formats>
+        <format name="formatArgumentName" format="format"/>
+    </formats>
     <rootBand name="Root" orientation="H">
         <bands>
             <band name="Band1" orientation="H">

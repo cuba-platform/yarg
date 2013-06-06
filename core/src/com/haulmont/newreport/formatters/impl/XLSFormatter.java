@@ -1,15 +1,15 @@
 package com.haulmont.newreport.formatters.impl;
 
 import com.haulmont.newreport.exception.UnsupportedFormatException;
+import com.haulmont.newreport.formatters.impl.xls.*;
+import com.haulmont.newreport.formatters.impl.xls.caches.XlsFontCache;
+import com.haulmont.newreport.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.newreport.formatters.impl.xls.options.*;
+import com.haulmont.newreport.structure.ReportOutputType;
+import com.haulmont.newreport.structure.ReportTemplate;
 import com.haulmont.newreport.structure.ReportValueFormat;
 import com.haulmont.newreport.structure.impl.Band;
 import com.haulmont.newreport.structure.impl.BandOrientation;
-import com.haulmont.newreport.structure.ReportOutputType;
-import com.haulmont.newreport.exception.ReportingException;
-import com.haulmont.newreport.formatters.impl.xls.caches.XlsFontCache;
-import com.haulmont.newreport.formatters.impl.xls.caches.XlsStyleCache;
-import com.haulmont.newreport.structure.ReportTemplate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
@@ -24,7 +24,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
-import com.haulmont.newreport.formatters.impl.xls.*;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +32,8 @@ import java.io.OutputStream;
 import java.util.*;
 import java.util.List;
 
-import static com.haulmont.newreport.formatters.impl.xls.HSSFCellHelper.*;
+import static com.haulmont.newreport.formatters.impl.xls.HSSFCellHelper.getCellFromReference;
+import static com.haulmont.newreport.formatters.impl.xls.HSSFCellHelper.isOneValueCell;
 import static com.haulmont.newreport.formatters.impl.xls.HSSFPicturesHelper.getAllAnchors;
 import static com.haulmont.newreport.formatters.impl.xls.HSSFRangeHelper.*;
 
@@ -101,7 +101,7 @@ public class XLSFormatter extends AbstractFormatter {
             templateWorkbook = new HSSFWorkbook(reportTemplate.getDocumentContent());
             resultWorkbook = new HSSFWorkbook(reportTemplate.getDocumentContent());
         } catch (IOException e) {
-            throw new ReportingException("An error occurred while parsing xls template " + reportTemplate.getDocumentName(), e);
+            throw wrapWithReportingException("An error occurred while parsing xls template " + reportTemplate.getDocumentName(), e);
         }
 
         for (int sheetNumber = 0; sheetNumber < templateWorkbook.getNumberOfSheets(); sheetNumber++) {
@@ -139,7 +139,7 @@ public class XLSFormatter extends AbstractFormatter {
             try {
                 resultWorkbook.write(outputStream);
             } catch (Exception e) {
-                throw new ReportingException(e);
+                throw wrapWithReportingException("An error occurred while writing result to file.", e);
             }
         } else if (ReportOutputType.pdf.equals(outputType)) {
             if (xlsToPdfConverter != null) {
@@ -148,7 +148,7 @@ public class XLSFormatter extends AbstractFormatter {
                     resultWorkbook.write(stream);
                     xlsToPdfConverter.convertXlsToPdf(stream.toByteArray(), outputStream);
                 } catch (IOException e) {
-                    throw new ReportingException(e);
+                    throw wrapWithReportingException("An error occurred while converting xls to pdf.", e);
                 }
             } else {
                 throw new UnsupportedFormatException("Could not convert xls files to pdf because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
@@ -232,7 +232,7 @@ public class XLSFormatter extends AbstractFormatter {
         String rangeName = band.getName();
         AreaReference templateRange = getAreaForRange(templateWorkbook, rangeName);
         if (templateRange == null) {
-            throw new ReportingException(String.format("No such named range in xls file: %s", rangeName));
+            throw wrapWithReportingException(String.format("No such named range in xls file: %s", rangeName));
         }
         CellReference[] crefs = templateRange.getAllReferencedCells();
 
