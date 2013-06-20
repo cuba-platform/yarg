@@ -1,16 +1,15 @@
-import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
-import com.haulmont.newreport.structure.ReportOutputType;
-import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
-import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
-import com.haulmont.newreport.reporting.Reporting;
-import com.haulmont.newreport.reporting.RunParams;
-import com.haulmont.newreport.structure.Report;
-import com.haulmont.newreport.structure.ReportTemplate;
-import com.haulmont.newreport.structure.impl.*;
-import com.haulmont.newreport.structure.xml.impl.DefaultXmlReader;
-import com.haulmont.newreport.structure.xml.impl.DefaultXmlWriter;
-import com.haulmont.newreport.util.groovy.DefaultScriptingImpl;
-import com.haulmont.newreport.util.properties.DefaultPropertiesLoader;
+import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
+import com.haulmont.yarg.structure.ReportOutputType;
+import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
+import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
+import com.haulmont.yarg.reporting.Reporting;
+import com.haulmont.yarg.reporting.RunParams;
+import com.haulmont.yarg.structure.Report;
+import com.haulmont.yarg.structure.ReportTemplate;
+import com.haulmont.yarg.structure.impl.*;
+import com.haulmont.yarg.structure.xml.impl.DefaultXmlReader;
+import com.haulmont.yarg.structure.xml.impl.DefaultXmlWriter;
+import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -40,7 +39,7 @@ public class ExportImportTest {
 
     private Report createReport() throws IOException {
         ReportBuilder report = new ReportBuilder()
-                .band(new BandDefinitionBuilder()
+                .band(new BandBuilder()
                         .name("Band1")
                         .dataSet("Data_set_1", "return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]", "groovy")
                         .build()
@@ -55,7 +54,7 @@ public class ExportImportTest {
                         .build());
 
         report.name("report");
-        report.valueFormat(new ReportValueFormatImpl("formatArgumentName", "format"));
+        report.valueFormat(new ReportFieldFormatImpl("formatArgumentName", "format"));
 
         return report.build();
     }

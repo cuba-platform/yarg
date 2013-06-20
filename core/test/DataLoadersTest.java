@@ -1,9 +1,9 @@
-import com.haulmont.newreport.structure.impl.BandOrientation;
-import com.haulmont.newreport.loaders.impl.GroovyDataLoader;
-import com.haulmont.newreport.loaders.impl.SqlDataLoader;
-import com.haulmont.newreport.structure.impl.Band;
-import com.haulmont.newreport.structure.impl.DataSetImpl;
-import com.haulmont.newreport.util.groovy.DefaultScriptingImpl;
+import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.impl.BandOrientation;
+import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
+import com.haulmont.yarg.loaders.impl.SqlDataLoader;
+import com.haulmont.yarg.structure.impl.ReportQueryImpl;
+import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -26,11 +26,11 @@ public class DataLoadersTest {
             params.put("startDate", new Timestamp(new Date().getTime()));
             params.put("start", "login%");
             SqlDataLoader sqlDataLoader = new SqlDataLoader(testDatabase.getDs());
-            Band rootBand = new Band("band1", null, BandOrientation.HORIZONTAL);
+            BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new DataSetImpl("", "select login, password from user where create_ts > ${startDate} and login like ${start} limit 10", "sql"), rootBand, params);
+                    new ReportQueryImpl("", "select login, password from user where create_ts > ${startDate} and login like ${start} limit 10", "sql"), rootBand, params);
             printResult(result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,11 +52,11 @@ public class DataLoadersTest {
     @Test
     public void testGroovyLoader() throws Exception {
         GroovyDataLoader groovyDataLoader = new GroovyDataLoader(new DefaultScriptingImpl());
-        Band rootBand = new Band("band1", null, BandOrientation.HORIZONTAL);
+        BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
         rootBand.setData(Collections.<String, Object>emptyMap());
 
         List<Map<String, Object>> result = groovyDataLoader.loadData(
-                new DataSetImpl("", "return [['a':123, 'b':321], ['a':456, 'b':654]]", "groovy")
+                new ReportQueryImpl("", "return [['a':123, 'b':321], ['a':456, 'b':654]]", "groovy")
                 , rootBand, Collections.<String, Object>emptyMap());
         printResult(result);
     }

@@ -47,10 +47,10 @@
                 </xs:complexType>
             </xs:element>
 
-            <xs:element name="dataSets">
+            <xs:element name="reportQueries">
                 <xs:complexType>
                     <xs:sequence minOccurs="0">
-                        <xs:element name="dataSet" type="dataSet"/>
+                        <xs:element name="reportQuery" type="reportQuery"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -60,7 +60,7 @@
         <xs:attribute name="orientation" type="Orientation"/>
     </xs:complexType>
 
-    <xs:complexType name="dataSet">
+    <xs:complexType name="reportQuery">
         <xs:sequence>
             <xs:element name="script" type="xs:string"/>
         </xs:sequence>

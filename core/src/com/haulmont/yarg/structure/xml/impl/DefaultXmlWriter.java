@@ -1,0 +1,100 @@
+/**
+ *
+ * @author degtyarjov
+ * @version $Id$
+ */
+package com.haulmont.yarg.structure.xml.impl;
+
+import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.structure.*;
+import com.haulmont.yarg.structure.xml.XmlWriter;
+import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Map;
+
+public class DefaultXmlWriter implements XmlWriter {
+
+    @Override
+    public String buildXml(Report report) {
+        try {
+            Document document = DocumentFactory.getInstance().createDocument();
+            Element root = document.addElement("report");
+
+            root.addAttribute("name", report.getName());
+            writeTemplates(report, root);
+            writeInputParameters(report, root);
+            writeValueFormats(report, root);
+            writeRootBand(report, root);
+
+            StringWriter stringWriter = new StringWriter();
+            new XMLWriter(stringWriter, OutputFormat.createPrettyPrint()).write(document);
+            return stringWriter.toString();
+        } catch (IOException e) {
+            throw new ReportingException(e);
+        }
+    }
+
+    protected void writeRootBand(Report report, Element root) {
+        ReportBand rootBandDefinition = report.getRootBandDefinition();
+        Element rootBandDefinitionElement = root.addElement("rootBand");
+        writeBandDefinition(rootBandDefinitionElement, rootBandDefinition);
+    }
+
+    protected void writeInputParameters(Report report, Element root) {
+        Element reportTemplatesElement = root.addElement("parameters");
+        for (ReportParameter reportParameter : report.getReportParameters()) {
+            Element reportTemplateElement = reportTemplatesElement.addElement("parameter");
+            reportTemplateElement.addAttribute("name", reportParameter.getName());
+            reportTemplateElement.addAttribute("alias", reportParameter.getAlias());
+            reportTemplateElement.addAttribute("required", String.valueOf(reportParameter.getRequired()));
+            reportTemplateElement.addAttribute("class", reportParameter.getParameterClass().getCanonicalName());
+        }
+    }
+
+    protected void writeValueFormats(Report report, Element root) {
+        Element reportTemplatesElement = root.addElement("formats");
+        for (ReportFieldFormat reportFieldFormat : report.getReportFieldFormats()) {
+            Element reportTemplateElement = reportTemplatesElement.addElement("format");
+            reportTemplateElement.addAttribute("name", reportFieldFormat.getName());
+            reportTemplateElement.addAttribute("format", reportFieldFormat.getFormat());
+        }
+    }
+
+    protected void writeTemplates(Report report, Element root) {
+        Map<String, ReportTemplate> reportTemplates = report.getReportTemplates();
+        Element reportTemplatesElement = root.addElement("templates");
+        for (ReportTemplate reportTemplate : reportTemplates.values()) {
+            Element reportTemplateElement = reportTemplatesElement.addElement("template");
+            reportTemplateElement.addAttribute("code", reportTemplate.getCode());
+            reportTemplateElement.addAttribute("documentName", reportTemplate.getDocumentName());
+            reportTemplateElement.addAttribute("documentPath", reportTemplate.getDocumentPath());
+            reportTemplateElement.addAttribute("outputType", reportTemplate.getOutputType().getId());
+            reportTemplateElement.addAttribute("outputNamePattern", reportTemplate.getOutputNamePattern());
+        }
+    }
+
+    protected void writeBandDefinition(Element element, ReportBand bandDefinition) {
+        element.addAttribute("name", bandDefinition.getName());
+        element.addAttribute("orientation", bandDefinition.getBandOrientation().id);
+        Element childrenBandsElement = element.addElement("bands");
+
+        Element dataSetsElement = element.addElement("reportQueries");
+        for (ReportQuery reportQuery : bandDefinition.getInnerDataSets()) {
+            Element dataSetElement = dataSetsElement.addElement("reportQuery");
+            dataSetElement.addAttribute("name", reportQuery.getName());
+            dataSetElement.addAttribute("type", reportQuery.getLoaderType());
+            dataSetElement.addElement("script").setText(reportQuery.getScript());
+        }
+
+        for (ReportBand childBandDefinition : bandDefinition.getChildren()) {
+            Element childBandElement = childrenBandsElement.addElement("band");
+            writeBandDefinition(childBandElement, childBandDefinition);
+        }
+    }
+}

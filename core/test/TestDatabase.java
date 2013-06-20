@@ -1,4 +1,4 @@
-import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
+import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import org.hsqldb.Server;
 
 import javax.sql.DataSource;

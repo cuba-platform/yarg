@@ -1,7 +1,7 @@
-import com.haulmont.newreport.loaders.impl.SqlDataLoader;
-import com.haulmont.newreport.structure.impl.Band;
-import com.haulmont.newreport.structure.impl.BandOrientation;
-import com.haulmont.newreport.structure.impl.DataSetImpl;
+import com.haulmont.yarg.loaders.impl.SqlDataLoader;
+import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.impl.BandOrientation;
+import com.haulmont.yarg.structure.impl.ReportQueryImpl;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -22,11 +22,11 @@ public class SqlLoaderTest {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("login", Arrays.asList("login1", "login2"));
             SqlDataLoader sqlDataLoader = new SqlDataLoader(testDatabase.getDs());
-            Band rootBand = new Band("band1", null, BandOrientation.HORIZONTAL);
+            BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new DataSetImpl("", "select login, password from user where login in (${login})", "sql"), rootBand, params);
+                    new ReportQueryImpl("", "select login, password from user where login in (${login})", "sql"), rootBand, params);
             printResult(result);
             Assert.assertEquals(2, result.size());
         } catch (Exception e) {
@@ -46,11 +46,11 @@ public class SqlLoaderTest {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("login", new String[]{"login1", "login2"});
             SqlDataLoader sqlDataLoader = new SqlDataLoader(testDatabase.getDs());
-            Band rootBand = new Band("band1", null, BandOrientation.HORIZONTAL);
+            BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new DataSetImpl("", "select login, password from user where login in (${login})", "sql"), rootBand, params);
+                    new ReportQueryImpl("", "select login, password from user where login in (${login})", "sql"), rootBand, params);
             printResult(result);
             Assert.assertEquals(2, result.size());
         } catch (Exception e) {

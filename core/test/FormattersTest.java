@@ -1,20 +1,21 @@
-import com.haulmont.newreport.formatters.factory.FormatterFactoryInput;
-import com.haulmont.newreport.formatters.impl.doc.connector.OfficeIntegration;
-import com.haulmont.newreport.structure.impl.BandOrientation;
-import com.haulmont.newreport.structure.ReportOutputType;
-import com.haulmont.newreport.formatters.Formatter;
-import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
-import com.haulmont.newreport.structure.impl.Band;
-import com.haulmont.newreport.structure.impl.ReportTemplateBuilder;
-import com.haulmont.newreport.structure.impl.ReportTemplateImpl;
+import com.haulmont.yarg.formatters.ReportFormatter;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
+import com.haulmont.yarg.structure.ReportFieldFormat;
+import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.impl.BandOrientation;
+import com.haulmont.yarg.structure.ReportOutputType;
+import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
+import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
+import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author degtyarjov
@@ -24,11 +25,11 @@ import java.util.Map;
 public class FormattersTest {
     @Test
     public void testXlsFormatter() throws Exception {
-        Band root = createRootBand();
+        BandData root = createRootBand();
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.xls");
 
-        Formatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
                 new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.xls), outputStream));
 
         formatter.renderDocument();
@@ -38,13 +39,13 @@ public class FormattersTest {
 
     @Test
     public void testXlsToPdfFormatter() throws Exception {
-        Band root = createRootBand();
+        BandData root = createRootBand();
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.pdf");
 
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
-        Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
                 new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.pdf), outputStream));
 
         formatter.renderDocument();
@@ -54,10 +55,10 @@ public class FormattersTest {
 
     @Test
     public void testDocx() throws Exception {
-        Band root = createRootBand();
+        BandData root = createRootBand();
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.docx");
-        Formatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
                 new ReportTemplateImpl(null, "test.docx", "./test/test.docx", ReportOutputType.docx), outputStream));
         formatter.renderDocument();
 
@@ -66,11 +67,11 @@ public class FormattersTest {
 
     @Test
     public void testHtml() throws Exception {
-        Band root = createRootBand();
+        BandData root = createRootBand();
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.html");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
                 new ReportTemplateImpl(null, "test.ftl", "./test/test.ftl", ReportOutputType.html), outputStream));
         formatter.renderDocument();
 
@@ -79,26 +80,29 @@ public class FormattersTest {
 
     @Test
     public void testDoc() throws Exception {
-        Band root = createRootBand();
+        BandData root = createRootBand();
 
         FileOutputStream outputStream = new FileOutputStream("./result/result.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
-        Formatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl(null, "test.odt", "./test/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
     }
 
-    private Band createRootBand() {
-        Band root = new Band("Root", null, BandOrientation.HORIZONTAL);
-        root.setData(Collections.<String, Object>singletonMap("param1", "AAAAAA"));
-        Band band1_1 = new Band("Band1", root, BandOrientation.HORIZONTAL);
-        Band band1_2 = new Band("Band1", root, BandOrientation.HORIZONTAL);
-        Band band1_3 = new Band("Band1", root, BandOrientation.HORIZONTAL);
-        Band footer = new Band("Footer", root, BandOrientation.HORIZONTAL);
-        Band split = new Band("Split", root, BandOrientation.HORIZONTAL);
+    private BandData createRootBand() {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<>();
+        rootData.put("param1", "AAAAAA");
+        root.setData(rootData);
+        BandData band1_1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        BandData band1_2 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        BandData band1_3 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        BandData footer = new BandData("Footer", root, BandOrientation.HORIZONTAL);
+        BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
+        split.setData(new HashMap<String, Object>());
 
         Map<String, Object> datamap = new HashMap<String, Object>();
         datamap.put("col1", 111);
@@ -121,10 +125,8 @@ public class FormattersTest {
         datamap3.put("cwidth", 10000);
         band1_3.setData(datamap3);
 
-
-
-        Band band2_1 = new Band("Band2", root, BandOrientation.HORIZONTAL);
-        Band band2_2 = new Band("Band2", root, BandOrientation.HORIZONTAL);
+        BandData band2_1 = new BandData("Band2", root, BandOrientation.HORIZONTAL);
+        BandData band2_2 = new BandData("Band2", root, BandOrientation.HORIZONTAL);
 
         Map<String, Object> datamap4 = new HashMap<String, Object>();
         datamap4.put("col1", 111);
@@ -151,6 +153,15 @@ public class FormattersTest {
         root.setFirstLevelBandDefinitionNames(new HashSet<String>());
         root.getFirstLevelBandDefinitionNames().add("Band1");
         root.getFirstLevelBandDefinitionNames().add("Band2");
+
+        root.setReportFieldConverters(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"), new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
+        try {
+            root.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));
+            split.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         return root;
     }
 

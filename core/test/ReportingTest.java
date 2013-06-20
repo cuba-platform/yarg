@@ -1,16 +1,15 @@
-import com.haulmont.newreport.formatters.factory.DefaultFormatterFactory;
-import com.haulmont.newreport.loaders.factory.DefaultLoaderFactory;
-import com.haulmont.newreport.loaders.factory.PropertiesSqlLoaderFactory;
-import com.haulmont.newreport.reporting.ReportOutputDocument;
-import com.haulmont.newreport.reporting.Reporting;
-import com.haulmont.newreport.reporting.RunParams;
-import com.haulmont.newreport.structure.Report;
-import com.haulmont.newreport.structure.ReportOutputType;
-import com.haulmont.newreport.structure.impl.BandDefinitionBuilder;
-import com.haulmont.newreport.structure.impl.ReportBuilder;
-import com.haulmont.newreport.structure.impl.ReportTemplateBuilder;
-import com.haulmont.newreport.structure.impl.ReportTemplateImpl;
-import com.haulmont.newreport.util.properties.DefaultPropertiesLoader;
+import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
+import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
+import com.haulmont.yarg.loaders.factory.PropertiesSqlLoaderFactory;
+import com.haulmont.yarg.reporting.ReportOutputDocument;
+import com.haulmont.yarg.reporting.Reporting;
+import com.haulmont.yarg.reporting.RunParams;
+import com.haulmont.yarg.structure.Report;
+import com.haulmont.yarg.structure.ReportOutputType;
+import com.haulmont.yarg.structure.impl.BandBuilder;
+import com.haulmont.yarg.structure.impl.ReportBuilder;
+import com.haulmont.yarg.structure.impl.ReportTemplateBuilder;
+import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class ReportingTest {
 
     private Report createReport() throws IOException {
         ReportBuilder report = new ReportBuilder()
-                .band(new BandDefinitionBuilder()
+                .band(new BandBuilder()
                         .name("Band1")
                         .dataSet("", "select 'myFileName.txt' as file_name,login as col1, password as col2 from user", "sql")
                         .build()
