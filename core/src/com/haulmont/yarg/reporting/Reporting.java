@@ -150,22 +150,22 @@ public class Reporting implements ReportingAPI {
     }
 
     protected List<Map<String, Object>> getBandData(ReportBand definition, BandData parentBand, Map<String, Object> params) {
-        Collection<ReportQuery> reportQueries = definition.getInnerDataSets();
+        Collection<ReportQuery> reportQueries = definition.getReportQueries();
         //add input params to band
         if (CollectionUtils.isEmpty(reportQueries))
             return Collections.singletonList(params);
 
-        Iterator<ReportQuery> dataSetIterator = reportQueries.iterator();
-        ReportQuery firstReportQuery = dataSetIterator.next();
+        Iterator<ReportQuery> queryIterator = reportQueries.iterator();
+        ReportQuery firstReportQuery = queryIterator.next();
 
         //gets data from first dataset
-        List<Map<String, Object>> result = getDataSetData(parentBand, firstReportQuery, params);
+        List<Map<String, Object>> result = getQueryData(parentBand, firstReportQuery, params);
 
         //adds data from second and following datasets to result
-        while (dataSetIterator.hasNext()) {//todo reimplement
-            List<Map<String, Object>> dataSetData = getDataSetData(parentBand, dataSetIterator.next(), params);
-            for (int j = 0; (j < result.size()) && (j < dataSetData.size()); j++) {
-                result.get(j).putAll(dataSetData.get(j));
+        while (queryIterator.hasNext()) {//todo reimplement
+            List<Map<String, Object>> queryData = getQueryData(parentBand, queryIterator.next(), params);
+            for (int j = 0; (j < result.size()) && (j < queryData.size()); j++) {
+                result.get(j).putAll(queryData.get(j));
             }
         }
 
@@ -179,7 +179,7 @@ public class Reporting implements ReportingAPI {
         return result;
     }
 
-    protected List<Map<String, Object>> getDataSetData(BandData parentBand, ReportQuery reportQuery, Map<String, Object> paramsMap) {
+    protected List<Map<String, Object>> getQueryData(BandData parentBand, ReportQuery reportQuery, Map<String, Object> paramsMap) {
         ReportDataLoader dataLoader = loaderFactory.createDataLoader(reportQuery.getLoaderType());
         return dataLoader.loadData(reportQuery, parentBand, paramsMap);
     }

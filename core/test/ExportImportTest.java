@@ -41,7 +41,7 @@ public class ExportImportTest {
         ReportBuilder report = new ReportBuilder()
                 .band(new BandBuilder()
                         .name("Band1")
-                        .dataSet("Data_set_1", "return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]", "groovy")
+                        .query("Data_set_1", "return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]", "groovy")
                         .build()
                 ).parameter(new ReportParameterImpl("parameterName", "parameterAlias", true, String.class));
         report.template(
@@ -54,7 +54,7 @@ public class ExportImportTest {
                         .build());
 
         report.name("report");
-        report.valueFormat(new ReportFieldFormatImpl("formatArgumentName", "format"));
+        report.format(new ReportFieldFormatImpl("formatArgumentName", "format"));
 
         return report.build();
     }

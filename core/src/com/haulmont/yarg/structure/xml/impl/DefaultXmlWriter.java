@@ -84,12 +84,12 @@ public class DefaultXmlWriter implements XmlWriter {
         element.addAttribute("orientation", bandDefinition.getBandOrientation().id);
         Element childrenBandsElement = element.addElement("bands");
 
-        Element dataSetsElement = element.addElement("reportQueries");
-        for (ReportQuery reportQuery : bandDefinition.getInnerDataSets()) {
-            Element dataSetElement = dataSetsElement.addElement("reportQuery");
-            dataSetElement.addAttribute("name", reportQuery.getName());
-            dataSetElement.addAttribute("type", reportQuery.getLoaderType());
-            dataSetElement.addElement("script").setText(reportQuery.getScript());
+        Element reportQueriesElement = element.addElement("queries");
+        for (ReportQuery reportQuery : bandDefinition.getReportQueries()) {
+            Element reportQueryElement = reportQueriesElement.addElement("query");
+            reportQueryElement.addAttribute("name", reportQuery.getName());
+            reportQueryElement.addAttribute("type", reportQuery.getLoaderType());
+            reportQueryElement.addElement("script").setText(reportQuery.getScript());
         }
 
         for (ReportBand childBandDefinition : bandDefinition.getChildren()) {

@@ -151,14 +151,14 @@ public class DefaultXmlReader implements XmlReader {
                             .name(childBandName)
                             .orientation(orientation);
 
-            Element dataSetsElement = childBandElement.element("reportQueries");
-            List<Element> dataSetElements = dataSetsElement.elements("dataSet");
-            for (Element dataSetElement : dataSetElements) {
-                String script = dataSetElement.element("script").getText();
-                String type = dataSetElement.attribute("type").getText();
-                String dataSetName = dataSetElement.attribute("name").getText();
+            Element reportQueriesElement = childBandElement.element("queries");
+            List<Element> reportQueryElements = reportQueriesElement.elements("query");
+            for (Element queryElement : reportQueryElements) {
+                String script = queryElement.element("script").getText();
+                String type = queryElement.attribute("type").getText();
+                String queryName = queryElement.attribute("name").getText();
 
-                childBandDefinitionBuilder.dataSet(dataSetName, script, type);
+                childBandDefinitionBuilder.query(queryName, script, type);
             }
 
             parseChildBandDefinitions(childBandElement, childBandDefinitionBuilder);

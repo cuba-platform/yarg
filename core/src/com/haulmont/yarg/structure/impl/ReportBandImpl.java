@@ -48,7 +48,7 @@ public class ReportBandImpl implements ReportBand {
         name = instanceToCopy.getName();
         parentBandDefinition = instanceToCopy.getParent();
         childrenBandDefinitions = new ArrayList<ReportBand>(instanceToCopy.getChildren());
-        reportQueries = new ArrayList<ReportQuery>(instanceToCopy.getInnerDataSets());
+        reportQueries = new ArrayList<ReportQuery>(instanceToCopy.getReportQueries());
         orientation = instanceToCopy.getBandOrientation();
     }
 
@@ -65,7 +65,7 @@ public class ReportBandImpl implements ReportBand {
         return Collections.unmodifiableList(childrenBandDefinitions);
     }
 
-    public List<ReportQuery> getInnerDataSets() {
+    public List<ReportQuery> getReportQueries() {
         return Collections.unmodifiableList(reportQueries);
     }
 

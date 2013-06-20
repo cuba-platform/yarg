@@ -14,13 +14,13 @@
         <bands>
             <band name="Band1" orientation="H">
                 <bands/>
-                <reportQueries>
-                    <reportQuery name="Data_set_1" type="groovy">
+                <queries>
+                    <query name="Data_set_1" type="groovy">
                         <script>return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]</script>
-                    </reportQuery>
-                </reportQueries>
+                    </query>
+                </queries>
             </band>
         </bands>
-        <reportQueries/>
+        <queries/>
     </rootBand>
 </report>

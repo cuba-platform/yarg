@@ -17,7 +17,7 @@ public class BandBuilder {
         return this;
     }
 
-    public BandBuilder dataSet(String name, String script, String loaderType) {
+    public BandBuilder query(String name, String script, String loaderType) {
         Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
         Preconditions.checkNotNull(script, "\"script\" parameter can not be null");
         Preconditions.checkNotNull(loaderType, "\"loaderType\" parameter can not be null");

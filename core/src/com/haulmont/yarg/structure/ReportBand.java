@@ -16,7 +16,7 @@ public interface ReportBand {
 
     List<ReportBand> getChildren();
 
-    List<ReportQuery> getInnerDataSets();
+    List<ReportQuery> getReportQueries();
 
     BandOrientation getBandOrientation();
 }

@@ -33,7 +33,7 @@ public class ReportBuilder {
         return this;
     }
 
-    public ReportBuilder valueFormat(ReportFieldFormat reportFieldFormat) {
+    public ReportBuilder format(ReportFieldFormat reportFieldFormat) {
         Preconditions.checkNotNull(reportFieldFormat, "\"reportFieldFormat\" parameter can not be null");
         report.reportFieldFormats.add(reportFieldFormat);
         return this;

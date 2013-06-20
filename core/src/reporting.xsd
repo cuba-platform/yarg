@@ -47,10 +47,10 @@
                 </xs:complexType>
             </xs:element>
 
-            <xs:element name="reportQueries">
+            <xs:element name="queries">
                 <xs:complexType>
                     <xs:sequence minOccurs="0">
-                        <xs:element name="reportQuery" type="reportQuery"/>
+                        <xs:element name="query" type="reportQuery"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>

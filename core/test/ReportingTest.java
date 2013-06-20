@@ -43,7 +43,7 @@ public class ReportingTest {
         ReportBuilder report = new ReportBuilder()
                 .band(new BandBuilder()
                         .name("Band1")
-                        .dataSet("", "select 'myFileName.txt' as file_name,login as col1, password as col2 from user", "sql")
+                        .query("", "select 'myFileName.txt' as file_name,login as col1, password as col2 from user", "sql")
                         .build()
                 );
         report.template(
