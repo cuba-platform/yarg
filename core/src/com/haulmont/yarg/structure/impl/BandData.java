@@ -176,7 +176,7 @@ public class BandData {
         this.firstLevelBandDefinitionNames = firstLevelBandDefinitionNames;
     }
 
-    public void setReportFieldConverters(List<ReportFieldFormat> reportFieldFormats) {
+    public void setReportFieldFormats(List<ReportFieldFormat> reportFieldFormats) {
         for (ReportFieldFormat reportFieldFormat : reportFieldFormats) {
             this.reportFieldConverters.put(reportFieldFormat.getName(), reportFieldFormat);
         }

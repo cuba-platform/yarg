@@ -58,6 +58,10 @@ public abstract class AbstractFormatter implements ReportFormatter {
         this.rootBand = rootBand;
         this.reportTemplate = reportTemplate;
         this.outputStream = outputStream;
+
+        this.contentInliners.add(new BitmapContentInliner());
+        this.contentInliners.add(new HtmlContentContentInliner());
+        this.contentInliners.add(new ImageContentInliner());
     }
 
     @Override
@@ -67,44 +71,38 @@ public abstract class AbstractFormatter implements ReportFormatter {
         return ((ByteArrayOutputStream) outputStream).toByteArray();
     }
 
-    protected String unwrapParameterName(String nameWithAlias) {
-        return nameWithAlias.replaceAll("[\\$|\\{|\\}]", "");
+    public List<ContentInliner> getContentInliners() {
+        return contentInliners;
     }
 
-    protected void setupContentInliners() {
-        this.contentInliners.add(new BitmapContentInliner());
-        this.contentInliners.add(new HtmlContentContentInliner());
-        this.contentInliners.add(new ImageContentInliner());
+    public void setContentInliners(List<ContentInliner> contentInliners) {
+        this.contentInliners = contentInliners;
+    }
+
+    protected String unwrapParameterName(String nameWithAlias) {
+        return nameWithAlias.replaceAll("[\\$|\\{|\\}]", "");
     }
 
     protected String formatValue(Object value, String valueName) {
         String valueString = "";
         Map<String, ReportFieldFormat> formats = rootBand.getReportFieldConverters();
         if (value != null) {
-            if (formats != null) {
-                if (formats.containsKey(valueName)) {
-                    String formatString = formats.get(valueName).getFormat();
-                    if (value instanceof Number) {
-                        DecimalFormat decimalFormat = new DecimalFormat(formatString);
-                        valueString = decimalFormat.format(value);
-                    } else if (value instanceof Date) {
-                        SimpleDateFormat dateformat = new SimpleDateFormat(formatString);
-                        valueString = dateformat.format(value);
-                    } else
-                        valueString = value.toString();
+            if (formats != null && formats.containsKey(valueName)) {
+                String formatString = formats.get(valueName).getFormat();
+                if (value instanceof Number) {
+                    DecimalFormat decimalFormat = new DecimalFormat(formatString);
+                    valueString = decimalFormat.format(value);
+                } else if (value instanceof Date) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
+                    valueString = dateFormat.format(value);
                 } else {
-                    if (value instanceof Date) {
-                        valueString = defaultFormat(value);
-                    } else {
-                        valueString = value.toString();
-                    }
+                    valueString = value.toString();
                 }
-            } else if (value instanceof Date) {
-                valueString = defaultFormat(value);
             } else {
-                valueString = value.toString();
+                valueString = defaultFormat(value);
             }
         }
+
         return valueString;
     }
 

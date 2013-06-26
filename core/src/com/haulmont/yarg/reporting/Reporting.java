@@ -61,7 +61,7 @@ public class Reporting implements ReportingAPI {
             String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
             BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
             rootBand.setData(new HashMap<String, Object>(params));
-            rootBand.setReportFieldConverters(report.getReportFieldFormats());
+            rootBand.setReportFieldFormats(report.getReportFieldFormats());
             rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
             List<Map<String, Object>> rootBandData = getBandData(report.getRootBandDefinition(), null, params);

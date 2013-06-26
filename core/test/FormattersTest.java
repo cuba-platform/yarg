@@ -154,7 +154,7 @@ public class FormattersTest {
         root.getFirstLevelBandDefinitionNames().add("Band1");
         root.getFirstLevelBandDefinitionNames().add("Band2");
 
-        root.setReportFieldConverters(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"), new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
+        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"), new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
         try {
             root.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));
             split.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));

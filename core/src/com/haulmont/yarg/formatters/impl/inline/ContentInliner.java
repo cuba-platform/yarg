@@ -20,9 +20,6 @@ import org.docx4j.wml.Text;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-//todo : how to override inliners
-//todo : probably we can load content using com.haulmont.yarg.loaders.FieldsConverter
 /**
  * Handle tags in format strings
  */
