@@ -330,7 +330,7 @@ public class XLSFormatter extends AbstractFormatter {
 
             Bounds thisBounds = templateBounds.get(band.getName());
             Bounds parentBounds = templateBounds.get(band.getParentBand().getName());
-            int localRowNum = parentBounds != null ? rownum + thisBounds.row0 - parentBounds.row0 : rownum;
+            int localRowNum = parentBounds != null ? rownum + (rowsAddedByHorizontalBand - 1) + thisBounds.row0 - parentBounds.row0 : rownum;
 
             colnum = colnum == 0 ? getCellFromReference(crefs[0], templateSheet).getColumnIndex() : colnum;
             copyMergeRegions(resultSheet, rangeName, localRowNum, colnum);
