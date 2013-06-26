@@ -5,13 +5,13 @@
  */
 package com.haulmont.yarg.loaders.impl;
 
-import com.haulmont.yarg.loaders.FieldsConverter;
+import com.haulmont.yarg.loaders.ReportFieldsConverter;
 import com.haulmont.yarg.loaders.ReportDataLoader;
-import com.haulmont.yarg.loaders.ParametersConverter;
+import com.haulmont.yarg.loaders.ReportParametersConverter;
 
 public abstract class AbstractDataLoader implements ReportDataLoader {
-    protected ParametersConverter parametersConverter = null;
-    protected FieldsConverter fieldsConverter = null;
+    protected ReportParametersConverter parametersConverter = null;
+    protected ReportFieldsConverter fieldsConverter = null;
 
 
     protected <T> T convertParameter(Object input) {
@@ -30,19 +30,19 @@ public abstract class AbstractDataLoader implements ReportDataLoader {
         }
     }
 
-    public void setParametersConverter(ParametersConverter parametersConverter) {
-        this.parametersConverter = parametersConverter;
+    public void setParametersConverter(ReportParametersConverter reportParametersConverter) {
+        this.parametersConverter = reportParametersConverter;
     }
 
-    public void setFieldsConverter(FieldsConverter fieldsConverter) {
-        this.fieldsConverter = fieldsConverter;
+    public void setFieldsConverter(ReportFieldsConverter reportFieldsConverter) {
+        this.fieldsConverter = reportFieldsConverter;
     }
 
-    public ParametersConverter getParametersConverter() {
+    public ReportParametersConverter getParametersConverter() {
         return parametersConverter;
     }
 
-    public FieldsConverter getFieldsConverter() {
+    public ReportFieldsConverter getFieldsConverter() {
         return fieldsConverter;
     }
 }

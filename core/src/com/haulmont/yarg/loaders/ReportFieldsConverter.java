@@ -5,6 +5,6 @@
  */
 package com.haulmont.yarg.loaders;
 
-public interface FieldsConverter {
+public interface ReportFieldsConverter {
     <T> T convert(Object input);
 }
