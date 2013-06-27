@@ -6,8 +6,8 @@
 package com.haulmont.yarg.formatters.impl.xls;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.poi.hssf.record.formula.AreaPtg;
-import org.apache.poi.hssf.record.formula.RefPtg;
+import org.apache.poi.ss.formula.ptg.AreaPtg;
+import org.apache.poi.ss.formula.ptg.RefPtg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
