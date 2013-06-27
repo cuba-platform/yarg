@@ -26,6 +26,7 @@ import java.util.Map;
  */
 
 public class CustomTemplateTest {
+
     @Test
     public void testReporting() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
@@ -36,7 +37,7 @@ public class CustomTemplateTest {
         reporting.setFormatterFactory(new DefaultFormatterFactory());
         reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader()).create()));
 
-        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/result.custom"));
+        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/smoke/result.custom"));
 
         Assert.assertEquals("myFileName.txt", reportOutputDocument.getDocumentName());
 

@@ -47,8 +47,8 @@ public class ExportImportTest {
         report.template(
                 new ReportTemplateBuilder()
                         .code(ReportTemplate.DEFAULT_TEMPLATE_CODE)
-                        .documentName("test.xls")
-                        .documentPath("./test/test.xls").readFileFromPath()
+                        .documentName("smoketest/test.xls")
+                        .documentPath("./test/smoketest/test.xls").readFileFromPath()
                         .outputType(ReportOutputType.xls)
                         .outputNamePattern( "outputNamePattern")
                         .build());

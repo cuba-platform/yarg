@@ -13,6 +13,7 @@ import java.util.*;
  */
 
 public class SqlLoaderTest {
+
     @Test
     public void testListParameter() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
@@ -36,6 +37,7 @@ public class SqlLoaderTest {
             testDatabase.stop();
         }
     }
+
 
     @Test
     public void testArrayParameter() throws Exception {

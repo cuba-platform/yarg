@@ -10,6 +10,7 @@
  */
 package com.haulmont.yarg.formatters.impl.xls;
 
+import com.haulmont.yarg.exception.ReportingException;
 import org.apache.poi.hssf.usermodel.HSSFName;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -35,7 +36,12 @@ public final class HSSFRangeHelper {
     }
 
     public static CellReference[] getRangeContent(HSSFWorkbook workbook, String rangeName) {
-        return getAreaForRange(workbook, rangeName).getAllReferencedCells();
+        AreaReference areaForRange = getAreaForRange(workbook, rangeName);
+        if (areaForRange == null) {
+            return null;
+        }
+
+        return areaForRange.getAllReferencedCells();
     }
 
     public static AreaReference getAreaForRange(HSSFWorkbook workbook, String rangeName) {

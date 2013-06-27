@@ -1,3 +1,5 @@
+package smoketest;
+
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
@@ -22,15 +24,15 @@ import java.util.*;
  * @version $Id$
  */
 
-public class FormattersTest {
+public class FormattersSmokeTest {
     @Test
     public void testXlsFormatter() throws Exception {
         BandData root = createRootBand();
 
-        FileOutputStream outputStream = new FileOutputStream("./result/result.xls");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xls");
 
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
-                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.xls), outputStream));
+                new ReportTemplateImpl(null, "./test/smoketest/test.xls", "./test/smoketest/test.xls", ReportOutputType.xls), outputStream));
 
         formatter.renderDocument();
 
@@ -41,12 +43,12 @@ public class FormattersTest {
     public void testXlsToPdfFormatter() throws Exception {
         BandData root = createRootBand();
 
-        FileOutputStream outputStream = new FileOutputStream("./result/result.pdf");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.pdf");
 
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
-                new ReportTemplateImpl(null, "test.xls", "./test/test.xls", ReportOutputType.pdf), outputStream));
+                new ReportTemplateImpl(null, "./test/smoketest/test.xls", "./test/smoketest/test.xls", ReportOutputType.pdf), outputStream));
 
         formatter.renderDocument();
 
@@ -57,9 +59,9 @@ public class FormattersTest {
     public void testDocx() throws Exception {
         BandData root = createRootBand();
 
-        FileOutputStream outputStream = new FileOutputStream("./result/result.docx");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.docx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl(null, "test.docx", "./test/test.docx", ReportOutputType.docx), outputStream));
+                new ReportTemplateImpl(null, "./test/smoketest/test.docx", "./test/smoketest/test.docx", ReportOutputType.docx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -69,10 +71,10 @@ public class FormattersTest {
     public void testHtml() throws Exception {
         BandData root = createRootBand();
 
-        FileOutputStream outputStream = new FileOutputStream("./result/result.html");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.html");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
-                new ReportTemplateImpl(null, "test.ftl", "./test/test.ftl", ReportOutputType.html), outputStream));
+                new ReportTemplateImpl(null, "test.ftl", "./test/smoketest/test.ftl", ReportOutputType.html), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -82,11 +84,11 @@ public class FormattersTest {
     public void testDoc() throws Exception {
         BandData root = createRootBand();
 
-        FileOutputStream outputStream = new FileOutputStream("./result/result.doc");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
-                new ReportTemplateImpl(null, "test.odt", "./test/test.odt", ReportOutputType.doc), outputStream));
+                new ReportTemplateImpl(null, "./test/smoketest/test.odt", "./test/smoketest/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

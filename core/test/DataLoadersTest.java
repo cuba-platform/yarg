@@ -16,7 +16,8 @@ import java.util.*;
  */
 
 public class DataLoadersTest {
-    @org.junit.Test
+
+    @Test
     public void testSqlLoader() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
         testDatabase.setUpDatabase();

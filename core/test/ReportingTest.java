@@ -22,6 +22,7 @@ import java.io.IOException;
  */
 
 public class ReportingTest {
+
     @Test
     public void testReporting() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
@@ -32,7 +33,7 @@ public class ReportingTest {
         reporting.setFormatterFactory(new DefaultFormatterFactory());
         reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader()).create()));
 
-        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).templateCode("XLS"), new FileOutputStream("./result/result.xls"));
+        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).templateCode("XLS"), new FileOutputStream("./result/smoke/result.xls"));
 
         Assert.assertEquals("myFileName.txt", reportOutputDocument.getDocumentName());
 
@@ -50,7 +51,7 @@ public class ReportingTest {
                 new ReportTemplateBuilder()
                         .code("XLS")
                         .documentName("result.xls")
-                        .documentPath("./test/test.xls").readFileFromPath()
+                        .documentPath("./test/smoketest/test.xls").readFileFromPath()
                         .outputType(ReportOutputType.xls)
                         .outputNamePattern("${Band1.FILE_NAME}")
                         .build())
