@@ -14,7 +14,7 @@ import com.haulmont.yarg.formatters.impl.XLSFormatter;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverter;
 import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverterAPI;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 
 import java.io.OutputStream;

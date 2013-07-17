@@ -11,10 +11,17 @@
 package com.haulmont.yarg.formatters;
 
 /**
- * Stateful classes, converting report definition, loaded data and parameters into resulting document
+ * This interface describes a logic which construct resulting document
  */
 public interface ReportFormatter {
+
+    /**
+     * Creates document and put it into byte array
+     */
     byte[] createDocument();
 
+    /**
+     * Creates document and serialize it to predefined stream or smth like this
+     */
     void renderDocument();
 }

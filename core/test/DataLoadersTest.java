@@ -1,4 +1,4 @@
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;

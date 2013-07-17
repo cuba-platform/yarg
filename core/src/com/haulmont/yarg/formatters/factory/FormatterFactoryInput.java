@@ -5,7 +5,7 @@
  */
 package com.haulmont.yarg.formatters.factory;
 
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 
 import java.io.OutputStream;

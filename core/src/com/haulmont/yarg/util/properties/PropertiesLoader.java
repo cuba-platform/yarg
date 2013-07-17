@@ -3,6 +3,9 @@ package com.haulmont.yarg.util.properties;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * This interface describes logic which load properties for application
+ */
 public interface PropertiesLoader {
     String CUBA_REPORTING_SQL_DRIVER = "cuba.reporting.sql.driver";
     String CUBA_REPORTING_SQL_DB_URL = "cuba.reporting.sql.dbUrl";

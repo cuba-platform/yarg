@@ -10,7 +10,7 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.structure.ReportOutputType;

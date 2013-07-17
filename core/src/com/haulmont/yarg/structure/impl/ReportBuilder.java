@@ -10,7 +10,7 @@ public class ReportBuilder {
     public ReportBuilder() {
         rootBandDefinition = new ReportBandImpl(BandData.ROOT_BAND_NAME, null);
         report = new ReportImpl();
-        report.rootBandDefinition = rootBandDefinition;
+        report.rootBand = rootBandDefinition;
     }
 
     public ReportBuilder band(ReportBand bandDefinition) {

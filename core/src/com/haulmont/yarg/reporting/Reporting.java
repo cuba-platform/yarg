@@ -13,7 +13,7 @@ import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -64,12 +64,12 @@ public class Reporting implements ReportingAPI {
             rootBand.setReportFieldFormats(report.getReportFieldFormats());
             rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
-            List<Map<String, Object>> rootBandData = getBandData(report.getRootBandDefinition(), null, params);
+            List<Map<String, Object>> rootBandData = getBandData(report.getRootBand(), null, params);
             if (CollectionUtils.isNotEmpty(rootBandData)) {
                 rootBand.getData().putAll(rootBandData.get(0));
             }
 
-            for (ReportBand definition : report.getRootBandDefinition().getChildren()) {
+            for (ReportBand definition : report.getRootBand().getChildren()) {
                 List<BandData> bands = createBands(definition, rootBand, params);
                 rootBand.addChildren(bands);
                 rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());

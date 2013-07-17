@@ -4,7 +4,7 @@ import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
 import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;

@@ -1,6 +1,6 @@
-package com.haulmont.yarg.structure.impl;
+package com.haulmont.yarg.structure;
 
-import com.haulmont.yarg.structure.ReportFieldFormat;
+import com.haulmont.yarg.structure.impl.BandOrientation;
 
 import java.util.*;
 

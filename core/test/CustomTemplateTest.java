@@ -9,7 +9,7 @@ import com.haulmont.yarg.structure.Report;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 import com.haulmont.yarg.structure.impl.BandBuilder;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.ReportBuilder;
 import com.haulmont.yarg.structure.impl.ReportTemplateBuilder;
 import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;

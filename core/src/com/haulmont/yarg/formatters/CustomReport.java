@@ -1,7 +1,7 @@
 package com.haulmont.yarg.formatters;
 
 import com.haulmont.yarg.structure.Report;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 
 import java.util.Map;
 

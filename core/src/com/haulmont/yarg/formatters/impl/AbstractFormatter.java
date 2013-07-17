@@ -18,7 +18,7 @@ import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.HtmlContentContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ImageContentInliner;
 import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 import org.apache.commons.lang.StringUtils;
 

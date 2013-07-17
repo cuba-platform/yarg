@@ -10,11 +10,19 @@
  */
 package com.haulmont.yarg.structure;
 
+import com.google.common.base.Preconditions;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class contains list of supported output types. It can be extended, new types can be added at runtime
+ */
 public class ReportOutputType implements Serializable {
+    /*
+     * Following constants are predefined output types containing in base reporting
+     */
     public final static ReportOutputType xls = new ReportOutputType("xls");
     public final static ReportOutputType doc = new ReportOutputType("doc");
     public final static ReportOutputType docx = new ReportOutputType("docx");
@@ -36,8 +44,8 @@ public class ReportOutputType implements Serializable {
     }
 
     public static void registerOutputType(ReportOutputType outputType) {
+        Preconditions.checkNotNull(outputType, "\"outputType\" parameter can not be null");
         typeMap.put(outputType.id, outputType);
-
     }
 
     public static ReportOutputType getOutputTypeById(String id) {

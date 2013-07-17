@@ -8,7 +8,7 @@ package com.haulmont.yarg.structure.xml.impl;
 import com.haulmont.yarg.structure.*;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.exception.ReportingXmlException;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.*;
 import com.haulmont.yarg.structure.xml.XmlReader;
 import org.dom4j.Document;
@@ -163,7 +163,7 @@ public class DefaultXmlReader implements XmlReader {
 
             parseChildBandDefinitions(childBandElement, childBandDefinitionBuilder);
             ReportBand childBandDefinition = childBandDefinitionBuilder.build();
-            parentBandDefinitionBuilder.band(childBandDefinition);
+            parentBandDefinitionBuilder.child(childBandDefinition);
         }
     }
 }

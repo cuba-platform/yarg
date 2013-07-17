@@ -41,7 +41,7 @@ public class DefaultXmlWriter implements XmlWriter {
     }
 
     protected void writeRootBand(Report report, Element root) {
-        ReportBand rootBandDefinition = report.getRootBandDefinition();
+        ReportBand rootBandDefinition = report.getRootBand();
         Element rootBandDefinitionElement = root.addElement("rootBand");
         writeBandDefinition(rootBandDefinitionElement, rootBandDefinition);
     }

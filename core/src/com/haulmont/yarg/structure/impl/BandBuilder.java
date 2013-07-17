@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class BandBuilder {
     ReportBandImpl bandDefinition = new ReportBandImpl(null, null, new ArrayList<ReportBand>(), new ArrayList<ReportQuery>(), BandOrientation.HORIZONTAL);
 
-    public BandBuilder band(ReportBand bandDefinition) {
+    public BandBuilder child(ReportBand bandDefinition) {
         Preconditions.checkNotNull(bandDefinition, "\"bandDefinition\" parameter can not be null");
         ReportBandImpl copyBand = new ReportBandImpl(bandDefinition);
         copyBand.parentBandDefinition = this.bandDefinition;

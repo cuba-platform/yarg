@@ -1,5 +1,5 @@
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.structure.impl.ReportQueryImpl;
 import junit.framework.Assert;

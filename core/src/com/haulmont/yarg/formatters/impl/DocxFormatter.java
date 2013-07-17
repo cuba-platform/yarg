@@ -11,10 +11,8 @@
 package com.haulmont.yarg.formatters.impl;
 
 
-import com.haulmont.yarg.formatters.impl.inline.*;
-import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
 import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.structure.ReportTemplate;

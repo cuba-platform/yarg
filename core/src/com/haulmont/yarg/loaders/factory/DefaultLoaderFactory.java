@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DefaultLoaderFactory implements ReportLoaderFactory {
+    public static final String GROOVY_DATA_LOADER = "groovy";
+    public static final String SQL_DATA_LOADER = "sql";
+
     protected Map<String, ReportDataLoader> dataLoaders = new HashMap<String, ReportDataLoader>();
 
     public DefaultLoaderFactory setDataLoaders(Map<String, ReportDataLoader> dataLoaders) {
@@ -23,11 +26,11 @@ public class DefaultLoaderFactory implements ReportLoaderFactory {
     }
 
     public DefaultLoaderFactory setGroovyDataLoader(ReportDataLoader dataLoader) {
-        return registerDataLoader("groovy", dataLoader);
+        return registerDataLoader(GROOVY_DATA_LOADER, dataLoader);
     }
 
     public DefaultLoaderFactory setSqlDataLoader(ReportDataLoader dataLoader) {
-        return registerDataLoader("sql", dataLoader);
+        return registerDataLoader(SQL_DATA_LOADER, dataLoader);
     }
 
     public DefaultLoaderFactory registerDataLoader(String key, ReportDataLoader dataLoader) {

@@ -1,6 +1,6 @@
 package com.haulmont.yarg.loaders.impl;
 
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

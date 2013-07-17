@@ -7,7 +7,7 @@ package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.structure.ReportQuery;
-import com.haulmont.yarg.structure.impl.BandData;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.util.groovy.Scripting;
 
 import java.util.HashMap;
