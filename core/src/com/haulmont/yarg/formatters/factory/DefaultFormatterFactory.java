@@ -7,10 +7,7 @@ package com.haulmont.yarg.formatters.factory;
 
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.*;
-import com.haulmont.yarg.formatters.impl.DocFormatter;
-import com.haulmont.yarg.formatters.impl.DocxFormatter;
-import com.haulmont.yarg.formatters.impl.HtmlFormatter;
-import com.haulmont.yarg.formatters.impl.XLSFormatter;
+import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverter;
 import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverterAPI;
@@ -38,7 +35,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         OutputStream outputStream = factoryInput.outputStream;
 
         if ("xls".equalsIgnoreCase(templateExtension)) {
-            XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
+            XlsFormatter xlsFormatter = new XlsFormatter(rootBand, reportTemplate, outputStream);
             xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
             return xlsFormatter;
         } else if ("doc".equalsIgnoreCase(templateExtension) || "odt".equalsIgnoreCase(templateExtension)) {
@@ -52,6 +49,9 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             return new HtmlFormatter(rootBand, reportTemplate, outputStream);
         } else if ("html".equalsIgnoreCase(templateExtension)) {
             return new HtmlFormatter(rootBand, reportTemplate, outputStream);
+        } else if ("xlsx".equalsIgnoreCase(templateExtension)){
+            XlsxFormatter xlsxFormatter = new XlsxFormatter(rootBand, reportTemplate, outputStream);
+            return xlsxFormatter;
         }
 
         throw new UnsupportedFormatException(String.format("Unsupported template extension [%s]", templateExtension));

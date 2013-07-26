@@ -26,6 +26,7 @@ public class ReportOutputType implements Serializable {
     public final static ReportOutputType xls = new ReportOutputType("xls");
     public final static ReportOutputType doc = new ReportOutputType("doc");
     public final static ReportOutputType docx = new ReportOutputType("docx");
+    public final static ReportOutputType xlsx = new ReportOutputType("xlsx");
     public final static ReportOutputType html = new ReportOutputType("html");
     public final static ReportOutputType pdf = new ReportOutputType("pdf");
     public final static ReportOutputType csv = new ReportOutputType("csv");
@@ -41,6 +42,7 @@ public class ReportOutputType implements Serializable {
         typeMap.put(pdf.id, pdf);
         typeMap.put(csv.id, csv);
         typeMap.put(custom.id, custom);
+        typeMap.put(xlsx.id, xlsx);
     }
 
     public static void registerOutputType(ReportOutputType outputType) {

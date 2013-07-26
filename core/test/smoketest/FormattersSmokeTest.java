@@ -68,6 +68,29 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testXlsx() throws Exception {
+        BandData band3_1 = new BandData("Band3", null, BandOrientation.VERTICAL);
+        band3_1.addData("col1", "123");
+        band3_1.addData("col2", "321");
+        BandData band3_2 = new BandData("Band3", null, BandOrientation.VERTICAL);
+        band3_2.addData("col1", "456");
+        band3_2.addData("col2", "654");
+        BandData band3_3 = new BandData("Band3", null, BandOrientation.VERTICAL);
+        band3_3.addData("col1", "789");
+        band3_3.addData("col2", "987");
+
+        BandData root = createRootBand(Arrays.asList(band3_1, band3_2, band3_3));
+
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl(null, "./test/smoketest/test.xlsx", "./test/smoketest/test.xlsx", ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testHtml() throws Exception {
         BandData root = createRootBand();
 
@@ -95,6 +118,10 @@ public class FormattersSmokeTest {
     }
 
     private BandData createRootBand() {
+        return createRootBand(null);
+    }
+
+    private BandData createRootBand(List<BandData> bands) {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("param1", "AAAAAA");
@@ -121,9 +148,9 @@ public class FormattersSmokeTest {
         band1_2.setData(datamap2);
 
         Map<String, Object> datamap3 = new HashMap<String, Object>();
-        datamap3.put("col1", 1);
-        datamap3.put("col2", 2);
-        datamap3.put("col3", 3);
+        datamap3.put("col1", 777);
+        datamap3.put("col2", 888);
+        datamap3.put("col3", 999);
         datamap3.put("cwidth", 10000);
         band1_3.setData(datamap3);
 
@@ -134,27 +161,42 @@ public class FormattersSmokeTest {
         datamap4.put("col1", 111);
         datamap4.put("col2", 222);
         datamap4.put("col3", 333);
-        datamap4.put("col4", 4444);
+        datamap4.put("col4", 444);
         band2_1.setData(datamap4);
 
         Map<String, Object> datamap5 = new HashMap<String, Object>();
-        datamap5.put("col1", 111);
-        datamap5.put("col2", 222);
-        datamap5.put("col3", 333);
-        datamap5.put("col4", 444);
+        datamap5.put("col1", 555);
+        datamap5.put("col2", 666);
+        datamap5.put("col3", 777);
+        datamap5.put("col4", 888);
         band2_2.setData(datamap5);
 
+        Map<String, Object> datamap6 = new HashMap<String, Object>();
+        datamap6.put("col1", 123);
+        datamap6.put("col2", 456);
+        datamap6.put("col3", 789);
+        footer.setData(datamap6);
+
+        if (bands != null) {
+            for (BandData band : bands) {
+                root.addChild(band);
+                band.setParentBand(root);
+            }
+        }
 
         root.addChild(band1_1);
         root.addChild(band1_2);
         root.addChild(band1_3);
-        root.addChild(footer);
-        root.addChild(split);
         root.addChild(band2_1);
         root.addChild(band2_2);
+        root.addChild(split);
+        root.addChild(footer);
         root.setFirstLevelBandDefinitionNames(new HashSet<String>());
         root.getFirstLevelBandDefinitionNames().add("Band1");
         root.getFirstLevelBandDefinitionNames().add("Band2");
+        root.getFirstLevelBandDefinitionNames().add("Split");
+        root.getFirstLevelBandDefinitionNames().add("Footer");
+
 
         root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"), new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
         try {

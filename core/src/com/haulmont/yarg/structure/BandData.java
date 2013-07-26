@@ -13,8 +13,8 @@ import java.util.*;
 public class BandData {
     public static final String ROOT_BAND_NAME = "Root";
 
-    protected Map<String, Object> data;
-    protected final BandData parentBand;
+    protected Map<String, Object> data = new HashMap<>(10);
+    protected BandData parentBand;
 
     protected Map<String, List<BandData>> childrenBands = new LinkedHashMap<String, List<BandData>>();
 
@@ -79,6 +79,10 @@ public class BandData {
 
     public BandData getParentBand() {
         return parentBand;
+    }
+
+    public void setParentBand(BandData parentBand) {
+        this.parentBand = parentBand;
     }
 
     public BandOrientation getOrientation() {
