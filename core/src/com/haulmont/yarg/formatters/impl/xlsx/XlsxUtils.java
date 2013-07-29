@@ -63,9 +63,10 @@ public class XlsxUtils {
             Row row = data.getRow().get(i - 1);
             if (range.firstRow <= row.getR() && row.getR() <= range.lastRow) {
                 List<Cell> c = row.getC();
-                for (int j = 1; j <= c.size(); j++) {
-                    if (range.firstColumn <= j && j <= range.lastColumn) {
-                        Cell cell = c.get(j - 1);
+
+                for (Cell cell : c) {
+                    CellReference cellReference = new CellReference(cell.getR());
+                    if (range.firstColumn <= cellReference.column && cellReference.column <= range.lastColumn) {
                         result.add(cell);
                     }
                 }

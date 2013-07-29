@@ -112,6 +112,21 @@ public class FormattersSmokeTest {
         band12_2.addData("col2", "200");
         band12_2.addData("col3", "300");
 
+        BandData band13_1 = new BandData("Band13", band1_1, BandOrientation.VERTICAL);
+        band13_1.addData("col1", "v1");
+        band13_1.addData("col2", "v2");
+
+        BandData band13_2 = new BandData("Band13", band1_1, BandOrientation.VERTICAL);
+        band13_2.addData("col1", "v3");
+        band13_2.addData("col2", "v4");
+
+        BandData band14_1 = new BandData("Band14", band1_1, BandOrientation.VERTICAL);
+        band14_1.addData("col1", "v5");
+        band14_1.addData("col2", "v6");
+
+        BandData band14_2 = new BandData("Band14", band1_1, BandOrientation.VERTICAL);
+        band14_2.addData("col1", "v7");
+        band14_2.addData("col2", "v8");
 
         BandData band1_2 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
         band1_2.addData("col1", "11");
@@ -133,6 +148,10 @@ public class FormattersSmokeTest {
 
         band1_1.addChild(band12_1);
         band1_1.addChild(band12_2);
+        band1_1.addChild(band13_1);
+        band1_1.addChild(band13_2);
+        band1_1.addChild(band14_1);
+        band1_1.addChild(band14_2);
 
         band1_2.addChild(band12_3);
         band1_2.addChild(band12_4);

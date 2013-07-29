@@ -4,9 +4,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Range {
-    private static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
-    private static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*)");
-    private static Pattern RANGE_PATTERN = Pattern.compile("(.*):(.*)");
+    public static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
+    public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*)");
+    public static Pattern RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
 
     public final String sheet;
     public final int firstColumn;
@@ -25,22 +25,12 @@ public class Range {
     public static Range fromCells(String sheetName, String firstCellRef, String lastCellRef) {
         int startColumn, startRow, lastColumn, lastRow;
 
-        Pattern pattern = Pattern.compile("([A-z]+)([0-9]+)");
-        Matcher matcher = pattern.matcher(firstCellRef);
-        if (matcher.find()) {
-            startColumn = XlsxUtils.getNumberFromColumnReference(matcher.group(1));
-            startRow = Integer.valueOf(matcher.group(2));
-        } else {
-            throw new RuntimeException("Wrong cell " + firstCellRef);
-        }
-
-        matcher = pattern.matcher(lastCellRef);
-        if (matcher.find()) {
-            lastColumn = XlsxUtils.getNumberFromColumnReference(matcher.group(1));
-            lastRow = Integer.valueOf(matcher.group(2));
-        } else {
-            throw new RuntimeException("Wrong cell " + firstCellRef);
-        }
+        CellReference firstCell = new CellReference(firstCellRef);
+        CellReference lastCell = new CellReference(lastCellRef);
+        startColumn = firstCell.column;
+        startRow = firstCell.row;
+        lastColumn = lastCell.column;
+        lastRow = lastCell.row;
 
         Range result = new Range(sheetName, startColumn, startRow, lastColumn, lastRow);
         return result;
@@ -86,6 +76,11 @@ public class Range {
         } else {
             throw new RuntimeException("Wrong range value " + range);
         }
+    }
+
+    public boolean contains(CellReference cellReference) {
+        return firstColumn <= cellReference.column && firstRow <= cellReference.row
+                && lastColumn >= cellReference.column && lastRow >= cellReference.row;
     }
 
     public boolean contains(Range range) {
