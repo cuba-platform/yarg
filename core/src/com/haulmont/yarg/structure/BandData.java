@@ -137,6 +137,21 @@ public class BandData {
         return null;
     }
 
+    public boolean visit(BandVisitor bandVisitor) {
+        if (bandVisitor.visit(this)) {
+            return true;
+        }
+
+        for (BandData child : getChildrenList()) {
+            if (child.visit(bandVisitor)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //todo use visitor
     public BandData findBandRecursively(String name) {
         if (getName().equals(name)) {
             return this;
@@ -162,11 +177,9 @@ public class BandData {
         }
 
         List<BandData> children = new ArrayList<BandData>();
-        if (getChildrenList() != null) {
-            for (BandData child : getChildrenList()) {
-                if (bandName.equals(child.getName())) {
-                    children.add(child);
-                }
+        for (BandData child : getChildrenList()) {
+            if (bandName.equals(child.getName())) {
+                children.add(child);
             }
         }
         return children;
