@@ -35,7 +35,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         OutputStream outputStream = factoryInput.outputStream;
 
         if ("xls".equalsIgnoreCase(templateExtension)) {
-            XlsFormatter xlsFormatter = new XlsFormatter(rootBand, reportTemplate, outputStream);
+            XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
             xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
             return xlsFormatter;
         } else if ("doc".equalsIgnoreCase(templateExtension) || "odt".equalsIgnoreCase(templateExtension)) {

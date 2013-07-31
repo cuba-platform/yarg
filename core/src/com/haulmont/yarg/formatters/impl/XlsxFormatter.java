@@ -42,7 +42,6 @@ import org.xlsx4j.sml.*;
 
 import java.io.OutputStream;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class XlsxFormatter extends AbstractFormatter {
     protected Document template;
@@ -58,7 +57,8 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BiMap<BandData, Range> bandsToTemplateRanges = HashBiMap.create();
     protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
-    protected Set<Cell> cellsToUpdateFormulas = new HashSet<>();
+    protected Set<Cell> innerFormulas = new HashSet<>();
+    protected Set<Cell> outerFormulas = new HashSet<>();
 
     public XlsxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
@@ -191,27 +191,48 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     private void updateFormulas() {
-        //todo also for formulas for external band
-        for (Cell cellWithFormula : cellsToUpdateFormulas) {
-            Matcher matcher = Range.RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
-            if (matcher.find()) {
-                String rangeStr = matcher.group();
-                Range formulaRange = Range.fromRange("data", rangeStr);
-                for (Range templateRange : rangeDependencies.keySet()) {
-                    if (templateRange.contains(formulaRange)) {
-                        List<Range> __ranges = rangeDependencies.get(templateRange);
+        //todo support growing formulas inside 1 parent band
+        for (Cell cellWithFormula : innerFormulas) {
+            Row row = (Row) cellWithFormula.getParent();
+            SheetData sheetData = (SheetData) row.getParent();
+            Worksheet worksheet = (Worksheet) sheetData.getParent();
+            Range formulaRange = Range.fromCellFormula(resultUtils.getSheetName(worksheet), cellWithFormula);
+            Range originalFormulaRange = formulaRange;
+            for (Range templateRange : rangeDependencies.keySet()) {
+                if (templateRange.contains(formulaRange)) {
+                    List<Range> __ranges = rangeDependencies.get(templateRange);
 
-                        CellReference cellReference = new CellReference(cellWithFormula.getR());
-                        for (Range resultRange : __ranges) {
-                            if (resultRange.contains(cellReference)) {
-                                int offset = resultRange.firstRow - templateRange.firstRow;
+                    CellReference cellReference = new CellReference(cellWithFormula.getR());
+                    for (Range resultRange : __ranges) {
+                        if (resultRange.contains(cellReference)) {
+                            int offset = resultRange.firstRow - templateRange.firstRow;
 
-                                formulaRange = formulaRange.shiftUpDown(offset);
-                                cellWithFormula.getF().setValue(cellWithFormula.getF().getValue().replace(rangeStr, formulaRange.toRange()));
-                                break;
-                            }
+                            formulaRange = formulaRange.shiftUpDown(offset);
+                            cellWithFormula.getF().setValue(cellWithFormula.getF().getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
+                            break;
                         }
                     }
+                }
+            }
+        }
+
+        for (Cell cellWithFormula : outerFormulas) {
+            Row row = (Row) cellWithFormula.getParent();
+            SheetData sheetData = (SheetData) row.getParent();
+            Worksheet worksheet = (Worksheet) sheetData.getParent();
+            Range formulaRange = Range.fromCellFormula(resultUtils.getSheetName(worksheet), cellWithFormula);
+            Range originalFormulaRange = formulaRange;
+            for (Range templateRange : rangeDependencies.keySet()) {
+                if (templateRange.contains(formulaRange)) {
+                    List<Range> __ranges = rangeDependencies.get(templateRange);
+
+                    int offset = __ranges.get(0).firstRow - templateRange.firstRow;
+                    int grow = __ranges.get(__ranges.size() - 1).firstRow - __ranges.get(0).firstRow;
+
+                    formulaRange = formulaRange.shiftUpDown(offset);
+                    formulaRange = formulaRange.growUpDown(grow);
+                    cellWithFormula.getF().setValue(cellWithFormula.getF().getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
+                    break;
                 }
             }
         }
@@ -295,11 +316,9 @@ public class XlsxFormatter extends AbstractFormatter {
         }
 
         if (firstRow == null) {// create all necessary rows
-            firstRow = createNewRow();
-            thisSheetRows.add(firstRow);
+            firstRow = createNewRow(resultSheet);
             for (int i = 0; i < templateRange.lastRow - templateRange.firstRow; i++) {
-                Row row = createNewRow();
-                thisSheetRows.add(row);
+                Row row = createNewRow(resultSheet);
             }
         }
 
@@ -308,7 +327,7 @@ public class XlsxFormatter extends AbstractFormatter {
             Range oneRowRange = new Range(templateRange.sheet, templateRange.firstColumn, templateRange.firstRow + i, templateRange.lastColumn, templateRange.firstRow + i);
             List<Cell> templateCells = templateUtils.getCellsByRange(oneRowRange);
             Row currentRow = thisSheetRows.get((int) (firstRow.getR() + i - 1));
-            List<Cell> currentRowResultCells = copyCells(band, currentRow, templateCells);
+            List<Cell> currentRowResultCells = copyCells(templateRange, band, currentRow, templateCells);
             resultCells.addAll(currentRowResultCells);
         }
 
@@ -374,12 +393,10 @@ public class XlsxFormatter extends AbstractFormatter {
         }
 
         if (firstRow == null) {
-            firstRow = createNewRow();
-            thisSheetRows.add(firstRow);
+            firstRow = createNewRow(resultSheet);
 
             for (int i = 0; i < templateRange.lastRow - templateRange.firstRow; i++) {
-                Row row = createNewRow();
-                thisSheetRows.add(row);
+                Row row = createNewRow(resultSheet);
             }
         }
 
@@ -389,7 +406,7 @@ public class XlsxFormatter extends AbstractFormatter {
             Range oneRowRange = new Range(templateRange.sheet, templateRange.firstColumn, templateRange.firstRow + i, templateRange.lastColumn, templateRange.firstRow + i);
             List<Cell> templateCells = templateUtils.getCellsByRange(oneRowRange);
             Row currentRow = thisSheetRows.get((int) (firstRow.getR() + i - 1));
-            List<Cell> currentRowResultCells = copyCells(band, currentRow, templateCells);
+            List<Cell> currentRowResultCells = copyCells(templateRange, band, currentRow, templateCells);
 
             //shift cells vertically
             for (Cell resultCell : currentRowResultCells) {
@@ -430,19 +447,30 @@ public class XlsxFormatter extends AbstractFormatter {
         return Range.fromFormula(targetRange.getValue());
     }
 
-    private Row createNewRow() {
+    private Row createNewRow(Worksheet resultSheet) {
         Row newRow = Context.getsmlObjectFactory().createRow();
         currentRow++;
         newRow.setR(currentRow);
+        resultSheet.getSheetData().getRow().add(newRow);
+        newRow.setParent(resultSheet.getSheetData());
+
         return newRow;
     }
 
-    private List<Cell> copyCells(BandData childBand, Row newRow, List<Cell> templateCells) {
+    private List<Cell> copyCells(Range templateRange, BandData childBand, Row newRow, List<Cell> templateCells) {
         List<Cell> resultCells = new ArrayList<>();
         for (Cell templateCell : templateCells) {
             Cell newCell = XmlUtils.deepCopy(templateCell, Context.jcSML);
+
             if (newCell.getF() != null) {
-                cellsToUpdateFormulas.add(newCell);
+                SheetData sheetData = (SheetData) newRow.getParent();
+                Worksheet worksheet = (Worksheet) sheetData.getParent();
+                Range formulaRange = Range.fromCellFormula(resultUtils.getSheetName(worksheet), templateCell);
+                if (templateRange.contains(formulaRange)) {
+                    innerFormulas.add(newCell);
+                } else {
+                    outerFormulas.add(newCell);
+                }
             }
 
             resultCells.add(newCell);
@@ -450,17 +478,41 @@ public class XlsxFormatter extends AbstractFormatter {
             newCell.setR(newCell.getR().replaceAll("[0-9]+", String.valueOf(newRow.getR())));
             newRow.getC().add(newCell);
             newCell.setParent(newRow);
-            //todo normal copy
-            String cellValue = templateUtils.getCellValue(newCell);
-            if (cellValue != null) {
-                String value = insertBandDataToString(childBand, cellValue);
-                newCell.setV(value);
+            updateCell(childBand, newCell);
+        }
+        return resultCells;
+    }
+
+    private void updateCell(BandData childBand, Cell newCell) {
+        String cellValue = templateUtils.getCellValue(newCell);
+
+        if (cellValue == null) {
+            newCell.setV("");
+            return;
+        }
+
+        if (UNIVERSAL_ALIAS_PATTERN.matcher(cellValue).matches()) {
+            String paramName = unwrapParameterName(cellValue);
+            Object value = childBand.getData().get(paramName);
+            if (value != null) {
+                if (value instanceof Number) {
+                    newCell.setT(STCellType.N);
+                } else {
+                    newCell.setT(STCellType.STR);
+                }
+                newCell.setV(value.toString());
+
             } else {
                 newCell.setV("");
             }
-            newCell.setT(STCellType.N);
+        } else {
+            String value = insertBandDataToString(childBand, cellValue);
+            newCell.setV(value);
+
+            if (newCell.getT() == STCellType.S) {
+                newCell.setT(STCellType.STR);
+            }
         }
-        return resultCells;
     }
 
     private Document initWorkbook(SpreadsheetMLPackage thePackage) {

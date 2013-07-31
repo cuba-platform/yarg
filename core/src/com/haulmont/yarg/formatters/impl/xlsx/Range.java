@@ -1,5 +1,7 @@
 package com.haulmont.yarg.formatters.impl.xlsx;
 
+import org.xlsx4j.sml.Cell;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,6 +79,18 @@ public class Range {
             throw new RuntimeException("Wrong range value " + range);
         }
     }
+
+    public static Range fromCellFormula(String sheet, Cell cellWithFormula) {
+        Matcher matcher = Range.RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
+        if (matcher.find()) {
+            String rangeStr = matcher.group();
+            Range formulaRange = Range.fromRange(sheet, rangeStr);
+            return formulaRange;
+        }
+
+        return null;
+    }
+
 
     public boolean contains(CellReference cellReference) {
         return firstColumn <= cellReference.column && firstRow <= cellReference.row

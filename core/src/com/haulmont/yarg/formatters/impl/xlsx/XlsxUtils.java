@@ -6,6 +6,7 @@
 package com.haulmont.yarg.formatters.impl.xlsx;
 
 import com.haulmont.yarg.formatters.impl.XlsxFormatter;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.xlsx4j.sml.*;
 
 import java.util.ArrayList;
@@ -37,6 +38,23 @@ public class XlsxUtils {
         return null;
     }
 
+
+    public String getSheetName(Worksheet worksheet) {
+        List<WorksheetPart> worksheets = document.worksheets;
+        for (int i = 0, worksheetsSize = worksheets.size(); i < worksheetsSize; i++) {
+            WorksheetPart worksheetPart = worksheets.get(i);
+            if (worksheetPart.getJaxbElement() == worksheet) {
+                for (Sheet sheet : document.workbook.getSheets().getSheet()) {
+                    if (sheet.getSheetId() == i + 1) {
+                        return sheet.getName();
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public CTDefinedName getDefinedName(String name) {
         List<CTDefinedName> definedName = document.workbook.getDefinedNames().getDefinedName();
         CTDefinedName targetRange = null;
@@ -47,11 +65,6 @@ public class XlsxUtils {
         }
 
         return targetRange;
-    }
-
-    public List<Cell> getCellsByRange(String formula) {
-        Range range = Range.fromFormula(formula);
-        return getCellsByRange(range);
     }
 
     public List<Cell> getCellsByRange(Range range) {

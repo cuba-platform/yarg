@@ -95,22 +95,22 @@ public class FormattersSmokeTest {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
 
         BandData band1_1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
-        band1_1.addData("col1", "1");
-        band1_1.addData("col2", "2");
-        band1_1.addData("col3", "3");
-        band1_1.addData("col4", "4");
-        band1_1.addData("col5", "5");
-        band1_1.addData("col6", "6");
+        band1_1.addData("col1", 1);
+        band1_1.addData("col2", 2);
+        band1_1.addData("col3", 3);
+        band1_1.addData("col4", 4);
+        band1_1.addData("col5", 5);
+        band1_1.addData("col6", 6);
 
         BandData band12_1 = new BandData("Band12", band1_1, BandOrientation.HORIZONTAL);
-        band12_1.addData("col1", "10");
-        band12_1.addData("col2", "20");
-        band12_1.addData("col3", "30");
+        band12_1.addData("col1", 10);
+        band12_1.addData("col2", 20);
+        band12_1.addData("col3", 30);
 
         BandData band12_2 = new BandData("Band12", band1_1, BandOrientation.HORIZONTAL);
-        band12_2.addData("col1", "100");
-        band12_2.addData("col2", "200");
-        band12_2.addData("col3", "300");
+        band12_2.addData("col1", 100);
+        band12_2.addData("col2", 200);
+        band12_2.addData("col3", 300);
 
         BandData band13_1 = new BandData("Band13", band1_1, BandOrientation.VERTICAL);
         band13_1.addData("col1", "v1");
@@ -129,22 +129,22 @@ public class FormattersSmokeTest {
         band14_2.addData("col2", "v8");
 
         BandData band1_2 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
-        band1_2.addData("col1", "11");
-        band1_2.addData("col2", "22");
-        band1_2.addData("col3", "33");
-        band1_2.addData("col4", "44");
-        band1_2.addData("col5", "55");
-        band1_2.addData("col6", "66");
+        band1_2.addData("col1", 11);
+        band1_2.addData("col2", 22);
+        band1_2.addData("col3", 33);
+        band1_2.addData("col4", 44);
+        band1_2.addData("col5", 55);
+        band1_2.addData("col6", 66);
 
         BandData band12_3 = new BandData("Band12", band1_2, BandOrientation.HORIZONTAL);
-        band12_3.addData("col1", "40");
-        band12_3.addData("col2", "50");
-        band12_3.addData("col3", "60");
+        band12_3.addData("col1", 40);
+        band12_3.addData("col2", 50);
+        band12_3.addData("col3", 60);
 
         BandData band12_4 = new BandData("Band12", band1_2, BandOrientation.HORIZONTAL);
-        band12_4.addData("col1", "400");
-        band12_4.addData("col2", "500");
-        band12_4.addData("col3", "600");
+        band12_4.addData("col1", 400);
+        band12_4.addData("col2", 500);
+        band12_4.addData("col3", 600);
 
         band1_1.addChild(band12_1);
         band1_1.addChild(band12_2);
