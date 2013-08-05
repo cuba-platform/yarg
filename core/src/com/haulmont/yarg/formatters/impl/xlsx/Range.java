@@ -102,15 +102,20 @@ public class Range {
                 && lastColumn >= range.lastColumn && lastRow >= range.lastRow;
     }
 
-    public Range shiftLeftRight(int shift) {
+
+    public Range shift(int downShift, int rightShift) {
+        return new Range(sheet, firstColumn + rightShift, firstRow + downShift, lastColumn + rightShift, lastRow + downShift);
+    }
+
+    public Range shiftRight(int shift) {
         return new Range(sheet, firstColumn + shift, firstRow, lastColumn + shift, lastRow);
     }
 
-    public Range shiftUpDown(int shift) {
+    public Range shiftDown(int shift) {
         return new Range(sheet, firstColumn, firstRow + shift, lastColumn, lastRow + shift);
     }
 
-    public Range growUpDown(int grow) {
+    public Range growDown(int grow) {
         return new Range(sheet, firstColumn, firstRow, lastColumn, lastRow + grow);
     }
 
