@@ -24,13 +24,16 @@ import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
+import org.xlsx4j.sml.Cell;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -101,6 +104,11 @@ public class HtmlContentContentInliner implements ContentInliner {
 
     @Override
     public void inlineToXls(HSSFPatriarch patriarch, HSSFCell resultCell, Object paramValue, Matcher matcher) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void inlineToXlsx(SpreadsheetMLPackage pkg, WorksheetPart worksheetPart, Cell newCell, Object paramValue, Matcher matcher) {
         throw new UnsupportedOperationException();
     }
 

@@ -52,6 +52,10 @@ public class Document {
         return workbook;
     }
 
+    public List<SheetWrapper> getWorksheets() {
+        return worksheets;
+    }
+
     public Worksheet getSheetByName(String name) {
         for (Document.SheetWrapper sheetWrapper : worksheets) {
             if (sheetWrapper.getName().equals(name)) {

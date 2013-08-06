@@ -14,8 +14,11 @@ import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.sun.star.text.XText;
 import com.sun.star.text.XTextRange;
 import org.apache.poi.hssf.usermodel.*;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.wml.Text;
+import org.xlsx4j.sml.Cell;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +34,11 @@ public interface ContentInliner {
      * @return Pattern
      */
     Pattern getTagPattern();
+
+    /**
+     * Inline content to xlsx template
+     */
+    void inlineToXlsx(SpreadsheetMLPackage pkg, WorksheetPart worksheetPart, Cell newCell, Object paramValue, Matcher matcher);
 
     /**
      * Inline content into doc template

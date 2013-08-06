@@ -80,7 +80,10 @@ public class FormattersSmokeTest {
         band3_3.addData("col2", "987");
 
         BandData root = createRootBand(Arrays.asList(band3_1, band3_2, band3_3));
-
+        BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
+        split.setData(new HashMap<String, Object>());
+        split.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));
+        root.addChild(split);
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xlsx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,

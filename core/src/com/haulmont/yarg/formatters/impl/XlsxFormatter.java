@@ -10,26 +10,39 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.formatters.impl.xlsx.XlsxUtils;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandVisitor;
+import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportTemplate;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.*;
 import org.docx4j.dml.chart.*;
-import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
+import org.docx4j.dml.spreadsheetdrawing.*;
+import org.docx4j.dml.spreadsheetdrawing.CTMarker;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
+import org.docx4j.openpackaging.parts.DrawingML.Drawing;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
 
 import java.io.OutputStream;
 import java.util.*;
+import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
     protected Document template;
@@ -318,8 +331,15 @@ public class XlsxFormatter extends AbstractFormatter {
         for (int i = 0; i <= templateRange.lastRow - templateRange.firstRow; i++) {//copy cells from template row by row
             Range oneRowRange = new Range(templateRange.sheet, templateRange.firstColumn, templateRange.firstRow + i, templateRange.lastColumn, templateRange.firstRow + i);
             List<Cell> templateCells = template.getCellsByRange(oneRowRange);
-            Row currentRow = thisSheetRows.get((int) (firstRow.getR() + i - 1));
-            List<Cell> currentRowResultCells = copyCells(templateRange, band, currentRow, templateCells);
+            Row resultRow = thisSheetRows.get((int) (firstRow.getR() + i - 1));
+
+            if (CollectionUtils.isNotEmpty(templateCells)) {
+                Row templateRow = (Row) templateCells.get(0).getParent();
+                resultRow.setHt(templateRow.getHt());
+                resultRow.setCustomHeight(true);
+            }
+
+            List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
             resultCells.addAll(currentRowResultCells);
         }
 
@@ -473,12 +493,21 @@ public class XlsxFormatter extends AbstractFormatter {
             newCell.setR(newCell.getR().replaceAll("[0-9]+", String.valueOf(newRow.getR())));
             newRow.getC().add(newCell);
             newCell.setParent(newRow);
-            updateCell(childBand, newCell);
+            SheetData sheetData = (SheetData) newRow.getParent();
+            Worksheet worksheet = (Worksheet) sheetData.getParent();
+            WorksheetPart worksheetPart = null;
+            for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
+                if (sheetWrapper.getWorksheet().getJaxbElement() == worksheet) {
+                    worksheetPart = sheetWrapper.getWorksheet();
+                }
+            }
+
+            updateCell(worksheetPart, childBand, newCell);
         }
         return resultCells;
     }
 
-    private void updateCell(BandData childBand, Cell newCell) {
+    private void updateCell(WorksheetPart worksheetPart, BandData childBand, Cell newCell) {
         String cellValue = template.getCellValue(newCell);
 
         if (cellValue == null) {
@@ -488,17 +517,35 @@ public class XlsxFormatter extends AbstractFormatter {
 
         if (UNIVERSAL_ALIAS_PATTERN.matcher(cellValue).matches()) {
             String paramName = unwrapParameterName(cellValue);
+            String paramFullName = childBand.getName() + "." + paramName;
             Object value = childBand.getData().get(paramName);
-            if (value != null) {
-                if (value instanceof Number) {
-                    newCell.setT(STCellType.N);
-                } else {
-                    newCell.setT(STCellType.STR);
-                }
-                newCell.setV(value.toString());
 
-            } else {
-                newCell.setV("");
+            boolean handled = false;
+            Map<String, ReportFieldFormat> valueFormats = rootBand.getReportFieldConverters();
+            if (value != null && valueFormats != null && valueFormats.containsKey(paramFullName)) {
+                String format = valueFormats.get(paramFullName).getFormat();
+                // Handle doctags
+                for (ContentInliner contentInliner : contentInliners) {
+                    Matcher matcher = contentInliner.getTagPattern().matcher(format);
+                    if (matcher.find()) {
+                        contentInliner.inlineToXlsx(result.getPackage(), worksheetPart, newCell, value, matcher);
+                        handled = true;
+                    }
+                }
+            }
+
+            if (!handled) {
+                if (value != null) {
+                    if (value instanceof Number) {
+                        newCell.setT(STCellType.N);
+                    } else {
+                        newCell.setT(STCellType.STR);
+                    }
+                    newCell.setV(value.toString());
+
+                } else {
+                    newCell.setV("");
+                }
             }
         } else {
             String value = insertBandDataToString(childBand, cellValue);

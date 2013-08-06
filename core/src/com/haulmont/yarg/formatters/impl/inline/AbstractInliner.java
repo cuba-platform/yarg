@@ -8,6 +8,7 @@ package com.haulmont.yarg.formatters.impl.inline;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
+import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.sun.star.awt.Size;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.beans.XPropertySet;
@@ -28,13 +29,24 @@ import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.xmlgraphics.image.loader.ImageSize;
+import org.docx4j.dml.*;
+import org.docx4j.dml.spreadsheetdrawing.*;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.DrawingML.Drawing;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
+import org.xlsx4j.sml.Cell;
 
 import java.awt.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +62,106 @@ public abstract class AbstractInliner implements ContentInliner {
     protected int docxUniqueId1, docxUniqueId2;
 
     protected abstract byte[] getContent(Object paramValue);
+
+    //todo merge cells - set up right anchor for merged cells, cause now image it written only to 1 cell
+    public void inlineToXlsx(SpreadsheetMLPackage pkg, WorksheetPart worksheetPart, Cell newCell, Object paramValue, Matcher matcher) {
+        try {
+            Image image = new Image(paramValue, matcher);
+            if (image.isValid()) {
+                BinaryPartAbstractImage xlsxImage = null;
+                xlsxImage = BinaryPartAbstractImage.createImagePart(pkg, worksheetPart, image.imageContent);
+                CTTwoCellAnchor anchor = new CTTwoCellAnchor();
+                CTMarker from = new CTMarker();
+                CellReference cellReference = new CellReference(newCell.getR());
+                from.setCol(cellReference.column - 1);
+                from.setRow(cellReference.row - 1);
+                from.setColOff(0L);
+                from.setRowOff(0L);
+                CTMarker to = new CTMarker();
+                to.setCol(cellReference.column);
+                to.setRow(cellReference.row);
+                to.setColOff(0L);
+                to.setRowOff(0L);
+
+                anchor.setFrom(from);
+                anchor.setTo(to);
+
+
+                putImage(worksheetPart, pkg, xlsxImage, image, anchor);
+            }
+        } catch (Exception e) {
+            throw new ReportingException("An error occurred while inserting bitmap to xlsx file", e);
+        }
+    }
+
+    private void putImage(WorksheetPart worksheetPart, SpreadsheetMLPackage pkg, BinaryPartAbstractImage xlsxImage, Image image, CTTwoCellAnchor anchor) throws InvalidFormatException {
+        PartName drawingPartName = new PartName(worksheetPart.getPartName().getName().replace("worksheets/sheet", "drawings/drawing"));
+        Drawing drawing = (Drawing) pkg.getParts().get(drawingPartName);
+        java.util.List<Object> objects = drawing.getJaxbElement().getEGAnchor();
+        String rid = "rId" + (objects.size() + 1);
+
+        CTPicture pic = new CTPicture();
+        CTPictureNonVisual nvPicPr = new CTPictureNonVisual();
+        CTNonVisualDrawingProps nvpr = new CTNonVisualDrawingProps();
+        nvpr.setId(objects.size() + 2);
+        String name = xlsxImage.getPartName().getName();
+        name = name.substring(name.lastIndexOf("/") + 1);
+        nvpr.setName(name);
+        nvpr.setDescr(name);
+        nvPicPr.setCNvPr(nvpr);
+        CTPictureLocking ctPictureLocking = new CTPictureLocking();
+        ctPictureLocking.setNoChangeAspect(true);
+        CTNonVisualPictureProperties nvpp = new CTNonVisualPictureProperties();
+        nvpp.setPicLocks(ctPictureLocking);
+        nvPicPr.setCNvPicPr(nvpp);
+        pic.setNvPicPr(nvPicPr);
+        CTBlipFillProperties blipProps = new CTBlipFillProperties();
+        CTStretchInfoProperties props = new CTStretchInfoProperties();
+        CTRelativeRect rect = new CTRelativeRect();
+        props.setFillRect(rect);
+        blipProps.setStretch(props);
+        CTBlip blip = new CTBlip();
+        blip.setEmbed(rid);
+        blip.setCstate(STBlipCompression.PRINT);
+        blipProps.setBlip(blip);
+        pic.setBlipFill(blipProps);
+        CTShapeProperties sppr = new CTShapeProperties();
+        ImageSize imageSize = new ImageSize(image.width, image.height, 96);//todo this doesn't work unfortunately
+        imageSize.calcSizeFromPixels();
+        CTPoint2D off = new CTPoint2D();
+        off.setX(0);
+        off.setY(0);
+        CTPositiveSize2D ext = new CTPositiveSize2D();
+        ext.setCx(imageSize.getWidthMpt());
+        ext.setCy(imageSize.getHeightMpt());
+        CTTransform2D xfrm = new CTTransform2D();
+        xfrm.setOff(off);
+        xfrm.setExt(ext);
+        sppr.setXfrm(xfrm);
+        CTPresetGeometry2D prstGeom = new CTPresetGeometry2D();
+        prstGeom.setPrst(STShapeType.RECT);
+        prstGeom.setAvLst(new CTGeomGuideList());
+        sppr.setPrstGeom(prstGeom);
+        pic.setSpPr(sppr);
+        anchor.setPic(pic);
+        CTAnchorClientData data = new CTAnchorClientData();
+        anchor.setClientData(data);
+
+        drawing.getJaxbElement().getEGAnchor().add(anchor);
+
+        Relationship rel = new Relationship();
+        rel.setId(rid);
+        rel.setType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/image");
+        rel.setTarget("../media/" + name);
+
+        drawing.getRelationshipsPart().addRelationship(rel);
+        RelationshipsPart relPart = drawing.getRelationshipsPart();
+        pkg.getParts().remove(relPart.getPartName());
+        pkg.getParts().put(relPart);
+        pkg.getParts().remove(drawing.getPartName());
+        pkg.getParts().put(drawing);
+    }
+
 
     @Override
     public void inlineToDocx(WordprocessingMLPackage wordPackage, Text text, Object paramValue, Matcher paramsMatcher) {
