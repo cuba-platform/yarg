@@ -75,7 +75,7 @@ public class XlsIntegrationTest {
             HSSFRow etalonRow = etalonSheet.getRow(row);
             if (resultRow == null && etalonRow == null) {
                 continue;
-            } else if ((resultRow == null && etalonRow != null) || (resultRow != null && etalonRow == null)) {
+            } else if ((resultRow == null) || (etalonRow == null)) {
                 Assert.fail("fail on row [" + row + "]");
             }
 
@@ -85,7 +85,7 @@ public class XlsIntegrationTest {
 
                 if (resultCell != null && etalonCell != null) {
                     Assert.assertEquals(String.format("fail on cell [%d,%d]", row, cell), etalonCell.getNumericCellValue(), resultCell.getNumericCellValue());
-                } else if ((resultCell == null && etalonCell != null) || (resultCell != null && etalonCell == null)) {
+                } else if ((resultCell == null && etalonCell != null) || (resultCell != null)) {
                     Assert.fail(String.format("fail on cell [%d,%d]", row, cell));
                 }
             }

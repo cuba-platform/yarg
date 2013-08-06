@@ -5,7 +5,10 @@
  */
 package com.haulmont.yarg.formatters.impl.xlsx;
 
-public class XlsxUtils {
+public final class XlsxUtils {
+    private XlsxUtils() {
+    }
+
     public static int getNumberFromColumnReference(String columnReference) {
         int sum = 0;
 
