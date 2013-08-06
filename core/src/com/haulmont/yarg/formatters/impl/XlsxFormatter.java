@@ -87,6 +87,8 @@ public class XlsxFormatter extends AbstractFormatter {
 
 //            result = create(pkg);
             result = Document.create((SpreadsheetMLPackage) SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
+            result.getWorkbook().getCalcPr().setCalcMode(STCalcMode.AUTO);
+            result.getWorkbook().getCalcPr().setFullCalcOnLoad(true);
         } catch (Exception e) {
             throw new ReportingException(String.format("An error occurred while loading template [%s]", reportTemplate.getDocumentName()), e);
         }
