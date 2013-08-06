@@ -119,6 +119,15 @@ public class Range {
         return new Range(sheet, firstColumn, firstRow, lastColumn, lastRow + grow);
     }
 
+    public Range growRight(int grow) {
+        return new Range(sheet, firstColumn, firstRow, lastColumn + grow, lastRow);
+    }
+
+    public Range grow(int downGrow, int rightGrow) {
+        return new Range(sheet, firstColumn, firstRow, lastColumn + rightGrow, lastRow + downGrow);
+    }
+
+
     @Override
     public String toString() {
         return toFormula();

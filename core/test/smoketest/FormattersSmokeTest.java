@@ -116,12 +116,12 @@ public class FormattersSmokeTest {
         band12_2.addData("col3", 300);
 
         BandData band13_1 = new BandData("Band13", band1_1, BandOrientation.VERTICAL);
-        band13_1.addData("col1", "v1");
-        band13_1.addData("col2", "v2");
+        band13_1.addData("col1", 190);
+        band13_1.addData("col2", 290);
 
         BandData band13_2 = new BandData("Band13", band1_1, BandOrientation.VERTICAL);
-        band13_2.addData("col1", "v3");
-        band13_2.addData("col2", "v4");
+        band13_2.addData("col1", 390);
+        band13_2.addData("col2", 490);
 
         BandData band14_1 = new BandData("Band14", band1_1, BandOrientation.VERTICAL);
         band14_1.addData("col1", "v5");

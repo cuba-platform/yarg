@@ -221,8 +221,8 @@ public class XlsxFormatter extends AbstractFormatter {
                     Offset offset = calculateOffset(templateRange, firstResultRange);
                     formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
 
-                    int grow = lastResultRange.firstRow - firstResultRange.firstRow;
-                    formulaRange = formulaRange.growDown(grow);
+                    Offset grow = calculateOffset(firstResultRange, lastResultRange);
+                    formulaRange = formulaRange.grow(grow.downOffset, grow.rightOffset);
                     updateFormula(cellWithFormula, originalFormulaRange, formulaRange);
                     break;
                 }
