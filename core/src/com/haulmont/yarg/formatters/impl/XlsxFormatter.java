@@ -21,22 +21,13 @@ import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportTemplate;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
-import org.docx4j.dml.*;
 import org.docx4j.dml.chart.*;
-import org.docx4j.dml.spreadsheetdrawing.*;
-import org.docx4j.dml.spreadsheetdrawing.CTMarker;
+import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
-import org.docx4j.openpackaging.parts.DrawingML.Drawing;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationship;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
 
@@ -57,6 +48,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected Set<Cell> innerFormulas = new HashSet<>();
     protected Set<Cell> outerFormulas = new HashSet<>();
+    private int previousRangesRightOffset;
 
     public XlsxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
@@ -126,7 +118,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (templateRange.contains(entry.getKey())) {
                     List<Range> chartBandResultRanges = rangeDependencies.get(templateRange);
                     if (chartBandResultRanges.size() > 0) {
-                        Range firstResultRange = chartBandResultRanges.get(0);
+                        Range firstResultRange = getFirst(chartBandResultRanges);
 
                         shiftChart(entry.getValue(), templateRange, firstResultRange);
 
@@ -149,8 +141,8 @@ public class XlsxFormatter extends AbstractFormatter {
                                         if (range.contains(temlpateCaptionsRange)) {
                                             List<Range> seriesResultRanges = rangeDependencies.get(range);
 
-                                            Range seriesFirstRange = seriesResultRanges.get(0);
-                                            Range seriesLastRange = seriesResultRanges.get(seriesResultRanges.size() - 1);
+                                            Range seriesFirstRange = getFirst(seriesResultRanges);
+                                            Range seriesLastRange = getLast(seriesResultRanges);
 
                                             Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
                                             temlpateCaptionsRange = temlpateCaptionsRange.shift(offset.downOffset, offset.rightOffset);
@@ -221,8 +213,8 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (templateRange.contains(formulaRange)) {
                     List<Range> resultRanges = rangeDependencies.get(templateRange);
 
-                    Range firstResultRange = resultRanges.get(0);
-                    Range lastResultRange = resultRanges.get(resultRanges.size() - 1);
+                    Range firstResultRange = getFirst(resultRanges);
+                    Range lastResultRange = getLast(resultRanges);
 
                     Offset offset = calculateOffset(templateRange, firstResultRange);
                     formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
@@ -246,7 +238,6 @@ public class XlsxFormatter extends AbstractFormatter {
         int rightOffset = to.firstColumn - from.firstColumn;
         return new Offset(downOffset, rightOffset);
     }
-
 
     private void updateMergeRegions() {
         for (Range templateRange : rangeDependencies.keySet()) {
@@ -290,8 +281,53 @@ public class XlsxFormatter extends AbstractFormatter {
     private void writeHBand(BandData band) {
         Range templateRange = getBandRange(band);
         Worksheet resultSheet = result.getSheetByName(templateRange.sheet);
-        List<Row> thisSheetRows = resultSheet.getSheetData().getRow();
+        List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
 
+        Row firstRow = findNextRowForHBand(band, templateRange, resultSheetRows);
+        firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
+
+        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow);
+
+        updateRangeMappings(band, templateRange, resultCells);
+
+        //render children
+        if (CollectionUtils.isNotEmpty(resultCells)) {
+            for (BandData child : band.getChildrenList()) {
+                writeBand(child);
+            }
+        }
+    }
+
+    private void writeVBand(BandData band) {
+        Range templateRange = getBandRange(band);
+        Worksheet resultSheet = result.getSheetByName(templateRange.sheet);
+        List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
+
+        Row firstRow = findNextRowForVBand(band, templateRange, resultSheetRows);
+        firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
+
+        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow);
+
+        //shift cells right
+        for (Cell resultCell : resultCells) {
+            CellReference cellReference = new CellReference(resultCell.getR());
+            String newColumn = XlsxUtils.getColumnReferenceFromNumber(cellReference.column + previousRangesRightOffset);
+            resultCell.setR(newColumn + cellReference.row);
+        }
+
+        updateRangeMappings(band, templateRange, resultCells);
+    }
+
+    private void updateRangeMappings(BandData band, Range templateRange, List<Cell> resultCells) {
+        if (CollectionUtils.isNotEmpty(resultCells)) {
+            Range resultRange = Range.fromCells(templateRange.sheet, getFirst(resultCells).getR(), resultCells.get(resultCells.size() - 1).getR());
+            rangeDependencies.put(templateRange, resultRange);
+            bandsToTemplateRanges.forcePut(band, templateRange);
+            bandsToResultRanges.forcePut(band, resultRange);
+        }
+    }
+
+    private Row findNextRowForHBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
 
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
@@ -304,14 +340,14 @@ public class XlsxFormatter extends AbstractFormatter {
             LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
             lastRenderedBand.visit(bandVisitor);
 
-            if (thisSheetRows.size() > bandVisitor.lastRow) {//get next row
-                firstRow = thisSheetRows.get(bandVisitor.lastRow);
+            if (resultSheetRows.size() > bandVisitor.lastRow) {//get next row
+                firstRow = resultSheetRows.get(bandVisitor.lastRow);
             }
         } else if (!isFirstLevelBand) {
             LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
             band.getParentBand().visit(bandVisitor);
-            if (thisSheetRows.size() > bandVisitor.lastRow) {//get next row
-                firstRow = thisSheetRows.get(bandVisitor.lastRow);
+            if (resultSheetRows.size() > bandVisitor.lastRow) {//get next row
+                firstRow = resultSheetRows.get(bandVisitor.lastRow);
             }
         } else {//this is the first render
             Collection<Range> templateNeighbours = rangeVerticalIntersections.get(templateRange);
@@ -319,71 +355,24 @@ public class XlsxFormatter extends AbstractFormatter {
                 Collection<Range> resultRanges = rangeDependencies.get(templateNeighbour);
                 if (resultRanges.size() > 0) {
                     Range firstResultRange = resultRanges.iterator().next();
-                    firstRow = thisSheetRows.get(firstResultRange.firstRow - 1);//get current  row
+                    firstRow = resultSheetRows.get(firstResultRange.firstRow - 1);//get current  row
                     break;
                 }
-            }
-        }
-
-        firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
-
-        List<Cell> resultCells = new ArrayList<>();
-        for (int i = 0; i <= templateRange.lastRow - templateRange.firstRow; i++) {//copy cells from template row by row
-            Range oneRowRange = new Range(templateRange.sheet, templateRange.firstColumn, templateRange.firstRow + i, templateRange.lastColumn, templateRange.firstRow + i);
-            List<Cell> templateCells = template.getCellsByRange(oneRowRange);
-            Row resultRow = thisSheetRows.get((int) (firstRow.getR() + i - 1));
-
-            if (CollectionUtils.isNotEmpty(templateCells)) {
-                Row templateRow = (Row) templateCells.get(0).getParent();
-                resultRow.setHt(templateRow.getHt());
-                resultRow.setCustomHeight(true);
-            }
-
-            List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
-            resultCells.addAll(currentRowResultCells);
-        }
-
-        if (CollectionUtils.isNotEmpty(resultCells)) {
-            Range resultRange = Range.fromCells(templateRange.sheet, resultCells.get(0).getR(), resultCells.get(resultCells.size() - 1).getR());
-            rangeDependencies.put(templateRange, resultRange);
-            bandsToTemplateRanges.forcePut(band, templateRange);
-            bandsToResultRanges.forcePut(band, resultRange);
-
-            for (BandData child : band.getChildrenList()) {
-                writeBand(child);
-            }
-        }
-    }
-
-    private Row ensureNecessaryRowsCreated(Range templateRange, Worksheet resultSheet, Row firstRow) {
-        if (firstRow == null) {
-            firstRow = createNewRow(resultSheet);
-        }
-
-        if (resultSheet.getSheetData().getRow().size() < firstRow.getR() + templateRange.lastRow - templateRange.firstRow) {
-            for (int i = 0; i < templateRange.lastRow - templateRange.firstRow; i++) {
-                Row row = createNewRow(resultSheet);
             }
         }
         return firstRow;
     }
 
-    private void writeVBand(BandData band) {
-        Range templateRange = getBandRange(band);
-        Worksheet resultSheet = result.getSheetByName(templateRange.sheet);
-
+    private Row findNextRowForVBand(BandData band, Range templateRange, List<Row> thisSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
 
-        List<Range> alreadyRenderedRanges = null;
-        alreadyRenderedRanges = findAlreadyRenderedRanges(band);
-        List<Row> thisSheetRows = resultSheet.getSheetData().getRow();
+        List<Range> alreadyRenderedRanges = findAlreadyRenderedRanges(band);
 
-
-        int previousRangesVerticalOffset = 0;
+        previousRangesRightOffset = 0;
         if (CollectionUtils.isNotEmpty(alreadyRenderedRanges)) {//this band has been already rendered at least once
-            Range previousRange = alreadyRenderedRanges.get(alreadyRenderedRanges.size() - 1);
-            previousRangesVerticalOffset = previousRange.firstColumn - templateRange.firstColumn + 1;
+            Range previousRange = getLast(alreadyRenderedRanges);
+            previousRangesRightOffset = previousRange.firstColumn - templateRange.firstColumn + 1;
             if (thisSheetRows.size() > previousRange.firstRow - 1) {//get current row
                 firstRow = thisSheetRows.get(previousRange.firstRow - 1);
             }
@@ -416,32 +405,32 @@ public class XlsxFormatter extends AbstractFormatter {
                 }
             }
         }
+        return firstRow;
+    }
 
-        firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
+    private Row ensureNecessaryRowsCreated(Range templateRange, Worksheet resultSheet, Row firstRow) {
+        if (firstRow == null) {
+            firstRow = createNewRow(resultSheet);
+        }
 
+        if (resultSheet.getSheetData().getRow().size() < firstRow.getR() + templateRange.lastRow - templateRange.firstRow) {
+            for (int i = 0; i < templateRange.lastRow - templateRange.firstRow; i++) {
+                Row row = createNewRow(resultSheet);
+            }
+        }
+        return firstRow;
+    }
+
+    private List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow) {
         List<Cell> resultCells = new ArrayList<>();
-
         for (int i = 0; i <= templateRange.lastRow - templateRange.firstRow; i++) {
             Range oneRowRange = new Range(templateRange.sheet, templateRange.firstColumn, templateRange.firstRow + i, templateRange.lastColumn, templateRange.firstRow + i);
             List<Cell> templateCells = template.getCellsByRange(oneRowRange);
-            Row currentRow = thisSheetRows.get((int) (firstRow.getR() + i - 1));
-            List<Cell> currentRowResultCells = copyCells(templateRange, band, currentRow, templateCells);
-
-            //shift cells vertically
-            for (Cell resultCell : currentRowResultCells) {
-                CellReference cellReference = new CellReference(resultCell.getR());
-                String newColumn = XlsxUtils.getColumnReferenceFromNumber(cellReference.column + previousRangesVerticalOffset);
-                resultCell.setR(newColumn + cellReference.row);
-                resultCells.add(resultCell);
-            }
+            Row resultRow = resultSheetRows.get((int) (firstRow.getR() + i - 1));
+            List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
+            resultCells.addAll(currentRowResultCells);
         }
-
-        if (CollectionUtils.isNotEmpty(resultCells)) {
-            Range resultRange = Range.fromCells(templateRange.sheet, resultCells.get(0).getR(), resultCells.get(resultCells.size() - 1).getR());
-            rangeDependencies.put(templateRange, resultRange);
-            bandsToTemplateRanges.forcePut(band, templateRange);
-            bandsToResultRanges.forcePut(band, resultRange);
-        }
+        return resultCells;
     }
 
     private List<Range> findAlreadyRenderedRanges(BandData band) {
@@ -475,17 +464,12 @@ public class XlsxFormatter extends AbstractFormatter {
     private List<Cell> copyCells(Range templateRange, BandData childBand, Row newRow, List<Cell> templateCells) {
         List<Cell> resultCells = new ArrayList<>();
         for (Cell templateCell : templateCells) {
+            copyRowSettings((Row) templateCell.getParent(), newRow);
+
             Cell newCell = XmlUtils.deepCopy(templateCell, Context.jcSML);
 
             if (newCell.getF() != null) {
-                SheetData sheetData = (SheetData) newRow.getParent();
-                Worksheet worksheet = (Worksheet) sheetData.getParent();
-                Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), templateCell);
-                if (templateRange.contains(formulaRange)) {
-                    innerFormulas.add(newCell);
-                } else {
-                    outerFormulas.add(newCell);
-                }
+                addFormulaForPostProcessing(templateRange, newRow, templateCell, newCell);
             }
 
             resultCells.add(newCell);
@@ -493,6 +477,7 @@ public class XlsxFormatter extends AbstractFormatter {
             newCell.setR(newCell.getR().replaceAll("[0-9]+", String.valueOf(newRow.getR())));
             newRow.getC().add(newCell);
             newCell.setParent(newRow);
+
             SheetData sheetData = (SheetData) newRow.getParent();
             Worksheet worksheet = (Worksheet) sheetData.getParent();
             WorksheetPart worksheetPart = null;
@@ -505,6 +490,22 @@ public class XlsxFormatter extends AbstractFormatter {
             updateCell(worksheetPart, childBand, newCell);
         }
         return resultCells;
+    }
+
+    private void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {
+        SheetData sheetData = (SheetData) newRow.getParent();
+        Worksheet worksheet = (Worksheet) sheetData.getParent();
+        Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), templateCell);
+        if (templateRange.contains(formulaRange)) {
+            innerFormulas.add(newCell);
+        } else {
+            outerFormulas.add(newCell);
+        }
+    }
+
+    private void copyRowSettings(Row templateRow, Row newRow) {
+        newRow.setHt(templateRow.getHt());
+        newRow.setCustomHeight(true);
     }
 
     private void updateCell(WorksheetPart worksheetPart, BandData childBand, Cell newCell) {
@@ -521,9 +522,9 @@ public class XlsxFormatter extends AbstractFormatter {
             Object value = childBand.getData().get(paramName);
 
             boolean handled = false;
-            Map<String, ReportFieldFormat> valueFormats = rootBand.getReportFieldConverters();
-            if (value != null && valueFormats != null && valueFormats.containsKey(paramFullName)) {
-                String format = valueFormats.get(paramFullName).getFormat();
+            Map<String, ReportFieldFormat> converters = rootBand.getReportFieldConverters();
+            if (value != null && converters != null && converters.containsKey(paramFullName)) {
+                String format = converters.get(paramFullName).getFormat();
                 // Handle doctags
                 for (ContentInliner contentInliner : contentInliners) {
                     Matcher matcher = contentInliner.getTagPattern().matcher(format);
@@ -555,6 +556,22 @@ public class XlsxFormatter extends AbstractFormatter {
                 newCell.setT(STCellType.STR);
             }
         }
+    }
+
+    private <T> T getFirst(List<T> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.get(0);
+        }
+
+        return null;
+    }
+
+    private <T> T getLast(List<T> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.get(list.size() - 1);
+        }
+
+        return null;
     }
 
     private static class Offset {
