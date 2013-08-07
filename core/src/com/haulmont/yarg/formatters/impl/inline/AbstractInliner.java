@@ -72,7 +72,7 @@ public abstract class AbstractInliner implements ContentInliner {
                 xlsxImage = BinaryPartAbstractImage.createImagePart(pkg, worksheetPart, image.imageContent);
                 CTTwoCellAnchor anchor = new CTTwoCellAnchor();
                 CTMarker from = new CTMarker();
-                CellReference cellReference = new CellReference(newCell.getR());
+                CellReference cellReference = new CellReference("", newCell.getR());
                 from.setCol(cellReference.column - 1);
                 from.setRow(cellReference.row - 1);
                 from.setColOff(0L);

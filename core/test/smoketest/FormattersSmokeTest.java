@@ -69,17 +69,25 @@ public class FormattersSmokeTest {
 
     @Test
     public void testXlsx() throws Exception {
-        BandData band3_1 = new BandData("Band3", null, BandOrientation.VERTICAL);
-        band3_1.addData("col1", "123");
-        band3_1.addData("col2", "321");
-        BandData band3_2 = new BandData("Band3", null, BandOrientation.VERTICAL);
-        band3_2.addData("col1", "456");
-        band3_2.addData("col2", "654");
-        BandData band3_3 = new BandData("Band3", null, BandOrientation.VERTICAL);
-        band3_3.addData("col1", "789");
-        band3_3.addData("col2", "987");
+        BandData root = createRootBand();
 
-        BandData root = createRootBand(Arrays.asList(band3_1, band3_2, band3_3));
+        BandData band3_1 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_1.addData("col1", 123);
+        band3_1.addData("col2", 321);
+        BandData band3_2 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_2.addData("col1", 456);
+        band3_2.addData("col2", 654);
+        BandData band3_3 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_3.addData("col1", 789);
+        band3_3.addData("col2", 987);
+        BandData second = new BandData("Second", root, BandOrientation.HORIZONTAL);
+
+
+        root.addChild(band3_1);
+        root.addChild(band3_2);
+        root.addChild(band3_3);
+        root.addChild(second);
+
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
         split.setData(new HashMap<String, Object>());
         split.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));

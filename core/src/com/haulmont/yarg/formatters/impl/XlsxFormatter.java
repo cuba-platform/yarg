@@ -10,7 +10,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
-import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
@@ -37,8 +36,6 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Document template;
     protected Document result;
 
-    protected long currentRow = 0;
-
     protected ArrayListMultimap<Range, Range> rangeDependencies = ArrayListMultimap.create();
     protected LinkedHashMultimap<Range, Range> rangeVerticalIntersections = LinkedHashMultimap.create();
     protected BiMap<BandData, Range> bandsToTemplateRanges = HashBiMap.create();
@@ -46,6 +43,8 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected Set<Cell> innerFormulas = new HashSet<>();
     protected Set<Cell> outerFormulas = new HashSet<>();
+
+    private Map<Worksheet, Long> lastRowForSheet = new HashMap<>();
     private int previousRangesRightOffset;
 
     public XlsxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
@@ -100,10 +99,12 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (!name1.equals(name2)) {
                     Range range1 = Range.fromFormula(name1.getValue());
                     Range range2 = Range.fromFormula(name2.getValue());
-                    if (range1.firstRow >= range2.firstRow && range1.firstRow <= range2.lastRow ||
-                            range1.lastRow >= range2.firstRow && range1.lastRow <= range2.lastRow ||
-                            range2.firstRow >= range1.firstRow && range2.firstRow <= range1.lastRow ||
-                            range2.lastRow >= range1.firstRow && range2.lastRow <= range1.lastRow
+                    if (range1.sheet.equals(range2.sheet) && (
+                            range1.firstRow >= range2.firstRow && range1.firstRow <= range2.lastRow ||
+                                    range1.lastRow >= range2.firstRow && range1.lastRow <= range2.lastRow ||
+                                    range2.firstRow >= range1.firstRow && range2.firstRow <= range1.lastRow ||
+                                    range2.lastRow >= range1.firstRow && range2.lastRow <= range1.lastRow
+                    )
                             ) {
                         rangeVerticalIntersections.put(range1, range2);
                         rangeVerticalIntersections.put(range2, range1);
@@ -149,9 +150,9 @@ public class XlsxFormatter extends AbstractFormatter {
                                             temlpateCaptionsRange = temlpateCaptionsRange.shift(offset.downOffset, offset.rightOffset);
                                             templateDataRange = templateDataRange.shift(offset.downOffset, offset.rightOffset);
 
-                                            int grow = seriesLastRange.firstRow - seriesFirstRange.firstRow;
-                                            temlpateCaptionsRange = temlpateCaptionsRange.growDown(grow);
-                                            templateDataRange = templateDataRange.growDown(grow);
+                                            Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
+                                            temlpateCaptionsRange = temlpateCaptionsRange.grow(grow.downOffset, grow.rightOffset);
+                                            templateDataRange = templateDataRange.grow(grow.downOffset, grow.rightOffset);
 
                                             captions.getStrRef().setF(temlpateCaptionsRange.toFormula());
                                             data.getNumRef().setF(templateDataRange.toFormula());
@@ -190,7 +191,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (templateRange.contains(formulaRange)) {
                     List<Range> resultRanges = rangeDependencies.get(templateRange);
 
-                    CellReference cellReference = new CellReference(cellWithFormula.getR());
+                    CellReference cellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
                     for (Range resultRange : resultRanges) {
                         if (resultRange.contains(cellReference)) {
                             Offset offset = calculateOffset(templateRange, resultRange);
@@ -311,7 +312,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
         //shift cells right
         for (Cell resultCell : resultCells) {
-            CellReference cellReference = new CellReference(resultCell.getR());
+            CellReference cellReference = new CellReference(templateRange.sheet, resultCell.getR());
             String newColumn = XlsxUtils.getColumnReferenceFromNumber(cellReference.column + previousRangesRightOffset);
             resultCell.setR(newColumn + cellReference.row);
         }
@@ -454,8 +455,11 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected Row createNewRow(Worksheet resultSheet) {
         Row newRow = Context.getsmlObjectFactory().createRow();
+        Long currentRow = lastRowForSheet.get(resultSheet);
+        currentRow = currentRow != null ? currentRow : 0;
         currentRow++;
         newRow.setR(currentRow);
+        lastRowForSheet.put(resultSheet, currentRow);
         resultSheet.getSheetData().getRow().add(newRow);
         newRow.setParent(resultSheet.getSheetData());
 

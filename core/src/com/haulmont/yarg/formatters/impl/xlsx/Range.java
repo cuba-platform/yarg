@@ -27,8 +27,8 @@ public class Range {
     public static Range fromCells(String sheetName, String firstCellRef, String lastCellRef) {
         int startColumn, startRow, lastColumn, lastRow;
 
-        CellReference firstCell = new CellReference(firstCellRef);
-        CellReference lastCell = new CellReference(lastCellRef);
+        CellReference firstCell = new CellReference(sheetName, firstCellRef);
+        CellReference lastCell = new CellReference(sheetName, lastCellRef);
         startColumn = firstCell.column;
         startRow = firstCell.row;
         lastColumn = lastCell.column;
@@ -93,12 +93,12 @@ public class Range {
 
 
     public boolean contains(CellReference cellReference) {
-        return firstColumn <= cellReference.column && firstRow <= cellReference.row
+        return cellReference.sheet.equals(sheet) && firstColumn <= cellReference.column && firstRow <= cellReference.row
                 && lastColumn >= cellReference.column && lastRow >= cellReference.row;
     }
 
     public boolean contains(Range range) {
-        return firstColumn <= range.firstColumn && firstRow <= range.firstRow
+        return range.sheet.equals(sheet) && firstColumn <= range.firstColumn && firstRow <= range.firstRow
                 && lastColumn >= range.lastColumn && lastRow >= range.lastRow;
     }
 

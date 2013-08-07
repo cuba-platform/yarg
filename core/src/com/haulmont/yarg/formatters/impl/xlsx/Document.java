@@ -28,7 +28,7 @@ public class Document {
     protected Map<Range, ChartPair> chartSpaces = new HashMap<>();
     protected Workbook workbook;
     protected SharedStrings sharedStrings;
-    protected  HashSet<Part> handled = new HashSet<Part>();
+    protected HashSet<Part> handled = new HashSet<Part>();
 
 
     public static Document create(SpreadsheetMLPackage thePackage) {
@@ -109,7 +109,7 @@ public class Document {
                 List<Cell> c = row.getC();
 
                 for (Cell cell : c) {
-                    CellReference cellReference = new CellReference(cell.getR());
+                    CellReference cellReference = new CellReference(range.sheet, cell.getR());
                     if (range.firstColumn <= cellReference.column && cellReference.column <= range.lastColumn) {
                         result.add(cell);
                     }
@@ -120,6 +120,7 @@ public class Document {
     }
 
     private void traverse(Part parent, RelationshipsPart rp) {
+        int chartNum = 0;
         for (Relationship r : rp.getRelationships().getRelationship()) {
             Part part = rp.getPart(r);
             if (handled.contains(part)) {
@@ -132,7 +133,7 @@ public class Document {
                 if (o instanceof CTChartSpace) {
                     Drawing drawing = (Drawing) parent;
                     CTDrawing ctDrawing = drawing.getJaxbElement();
-                    Object anchorObj = ctDrawing.getEGAnchor().get(0);
+                    Object anchorObj = ctDrawing.getEGAnchor().get(chartNum++);
 
                     Range range = null;
                     if (anchorObj instanceof CTTwoCellAnchor) {
@@ -152,8 +153,17 @@ public class Document {
             }
 
             if (part instanceof WorksheetPart) {
-                Sheet sheet = workbook.getSheets().getSheet().get(worksheets.size());
-                worksheets.add(new SheetWrapper((WorksheetPart) part, sheet.getName()));
+                for (Relationship relationship : part.getSourceRelationships()) {
+                    if (relationship.getType().endsWith("worksheet")) {
+                        String sheetId = relationship.getId();
+                        for (Sheet sheet : workbook.getSheets().getSheet()) {
+                            if (sheet.getId().equals(sheetId)) {
+                                worksheets.add(new SheetWrapper((WorksheetPart) part, sheet.getName()));
+                            }
+                        }
+
+                    }
+                }
             } else if (part instanceof SharedStrings) {
                 sharedStrings = (SharedStrings) part;
             }
