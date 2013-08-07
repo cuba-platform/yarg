@@ -67,6 +67,8 @@ public class DocFormatter extends AbstractFormatter {
     public DocFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OfficeIntegrationAPI officeIntegration) {
         super(rootBand, reportTemplate, outputStream);
         this.officeIntegration = officeIntegration;
+        supportedOutputTypes.add(ReportOutputType.doc);
+        supportedOutputTypes.add(ReportOutputType.pdf);
     }
 
     public void renderDocument() {

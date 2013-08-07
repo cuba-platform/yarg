@@ -79,6 +79,8 @@ public class XLSFormatter extends AbstractFormatter {
 
     public XLSFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
+        supportedOutputTypes.add(ReportOutputType.xls);
+        supportedOutputTypes.add(ReportOutputType.pdf);
     }
 
     public void setXlsToPdfConverter(XlsToPdfConverterAPI xlsToPdfConverter) {

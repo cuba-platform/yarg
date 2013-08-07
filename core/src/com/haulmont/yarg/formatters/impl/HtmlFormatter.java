@@ -36,6 +36,10 @@ import java.util.Map;
 public class HtmlFormatter extends AbstractFormatter {
     public HtmlFormatter(BandData rootBand, ReportTemplate templateFile, OutputStream outputStream) {
         super(rootBand, templateFile, outputStream);
+        supportedOutputTypes.add(ReportOutputType.custom);
+        supportedOutputTypes.add(ReportOutputType.csv);
+        supportedOutputTypes.add(ReportOutputType.html);
+        supportedOutputTypes.add(ReportOutputType.pdf);
     }
 
     @Override

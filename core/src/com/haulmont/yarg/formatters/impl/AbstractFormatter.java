@@ -19,6 +19,7 @@ import com.haulmont.yarg.formatters.impl.inline.HtmlContentContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ImageContentInliner;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 import org.apache.commons.lang.StringUtils;
 
@@ -26,10 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +43,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     protected BandData rootBand;
     protected ReportTemplate reportTemplate;
     protected OutputStream outputStream;
+    protected Set<ReportOutputType> supportedOutputTypes = new HashSet<>();
 
     /**
      * Chain of responsibility for content inliners
@@ -66,6 +65,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
     @Override
     public byte[] createDocument() {
+        Preconditions.checkArgument(supportedOutputTypes.contains(reportTemplate.getOutputType()), String.format("%s formatter doesn't support %s output type", getClass(), reportTemplate.getOutputType()));
         outputStream = new ByteArrayOutputStream();
         renderDocument();
         return ((ByteArrayOutputStream) outputStream).toByteArray();

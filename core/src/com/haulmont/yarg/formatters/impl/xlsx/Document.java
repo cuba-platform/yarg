@@ -22,13 +22,13 @@ import org.xlsx4j.sml.*;
 import java.util.*;
 
 public class Document {
-    SpreadsheetMLPackage thePackage;
-    List<SheetWrapper> worksheets = new ArrayList<>();
+    protected SpreadsheetMLPackage thePackage;
+    protected List<SheetWrapper> worksheets = new ArrayList<>();
 
-    Map<Range, ChartPair> chartSpaces = new HashMap<>();
-    Workbook workbook;
-    SharedStrings sharedStrings;
-    private HashSet<Part> handled = new HashSet<Part>();
+    protected Map<Range, ChartPair> chartSpaces = new HashMap<>();
+    protected Workbook workbook;
+    protected SharedStrings sharedStrings;
+    protected  HashSet<Part> handled = new HashSet<Part>();
 
 
     public static Document create(SpreadsheetMLPackage thePackage) {

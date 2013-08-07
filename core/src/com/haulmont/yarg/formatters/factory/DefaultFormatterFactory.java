@@ -15,12 +15,57 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected OfficeIntegrationAPI officeIntegration;
     protected XlsToPdfConverterAPI xlsToPdfConverter;
 
+    protected Map<String, FormatterCreator> formattersMap = new HashMap<>();
+
     public DefaultFormatterFactory() {
+        formattersMap.put("xls", new FormatterCreator() {
+            @Override
+            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+                XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
+                xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
+                return xlsFormatter;
+            }
+        });
+
+        FormatterCreator docCreator = new FormatterCreator() {
+            @Override
+            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+                if (officeIntegration == null) {
+                    throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
+                }
+                return new DocFormatter(rootBand, reportTemplate, outputStream, officeIntegration);
+            }
+        };
+        formattersMap.put("odt", docCreator);
+        formattersMap.put("doc", docCreator);
+        FormatterCreator ftlCreator = new FormatterCreator() {
+            @Override
+            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+                return new HtmlFormatter(rootBand, reportTemplate, outputStream);
+            }
+        };
+        formattersMap.put("ftl", ftlCreator);
+        formattersMap.put("html", ftlCreator);
+        formattersMap.put("docx", new FormatterCreator() {
+            @Override
+            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+                return new DocxFormatter(rootBand, reportTemplate, outputStream);
+            }
+        });
+        formattersMap.put("xlsx", new FormatterCreator() {
+            @Override
+            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+                return new XlsxFormatter(rootBand, reportTemplate, outputStream);
+            }
+        });
     }
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
@@ -34,26 +79,15 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         ReportTemplate reportTemplate = factoryInput.reportTemplate;
         OutputStream outputStream = factoryInput.outputStream;
 
-        if ("xls".equalsIgnoreCase(templateExtension)) {
-            XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
-            xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
-            return xlsFormatter;
-        } else if ("doc".equalsIgnoreCase(templateExtension) || "odt".equalsIgnoreCase(templateExtension)) {
-            if (officeIntegration == null) {
-                throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
-            }
-            return new DocFormatter(rootBand, reportTemplate, outputStream, officeIntegration);
-        } else if ("docx".equalsIgnoreCase(templateExtension)) {
-            return new DocxFormatter(rootBand, reportTemplate, outputStream);
-        } else if ("ftl".equalsIgnoreCase(templateExtension)) {
-            return new HtmlFormatter(rootBand, reportTemplate, outputStream);
-        } else if ("html".equalsIgnoreCase(templateExtension)) {
-            return new HtmlFormatter(rootBand, reportTemplate, outputStream);
-        } else if ("xlsx".equalsIgnoreCase(templateExtension)){
-            XlsxFormatter xlsxFormatter = new XlsxFormatter(rootBand, reportTemplate, outputStream);
-            return xlsxFormatter;
+        FormatterCreator formatterCreator = formattersMap.get(templateExtension);
+        if (formatterCreator == null) {
+            throw new UnsupportedFormatException(String.format("Unsupported template extension [%s]", templateExtension));
         }
 
-        throw new UnsupportedFormatException(String.format("Unsupported template extension [%s]", templateExtension));
+        return formatterCreator.create(rootBand, reportTemplate, outputStream);
+    }
+
+    protected static interface FormatterCreator {
+        ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream);
     }
 }

@@ -44,6 +44,8 @@ public class DocxFormatter extends AbstractFormatter {
 
     public DocxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
+        supportedOutputTypes.add(ReportOutputType.docx);
+        supportedOutputTypes.add(ReportOutputType.pdf);
     }
 
     @Override

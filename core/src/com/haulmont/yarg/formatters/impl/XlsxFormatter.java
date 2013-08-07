@@ -10,15 +10,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.formatters.impl.xlsx.XlsxUtils;
-import com.haulmont.yarg.structure.BandData;
-import com.haulmont.yarg.structure.BandVisitor;
-import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.ReportTemplate;
+import com.haulmont.yarg.structure.*;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
 import org.docx4j.XmlUtils;
@@ -52,6 +50,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
     public XlsxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         super(rootBand, reportTemplate, outputStream);
+        supportedOutputTypes.add(ReportOutputType.xlsx);
     }
 
     @Override
