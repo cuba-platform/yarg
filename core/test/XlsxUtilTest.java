@@ -3,8 +3,10 @@ import com.haulmont.yarg.formatters.impl.xlsx.XlsxUtils;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
- *
  * @author degtyarjov
  * @version $Id$
  */
@@ -33,5 +35,13 @@ public class XlsxUtilTest {
         String rangeStr = "Лист1!$A$1:$C$1";
         Range range = Range.fromFormula(rangeStr);
         Assert.assertEquals(rangeStr, range.toString());
+    }
+
+    @Test
+    public void testName() throws Exception {
+        String str = "${col1}##width=cwidth";
+        Pattern pattern = Pattern.compile("##width=([A-z0-9]+)");
+        Matcher matcher = pattern.matcher(str);
+        System.out.println(matcher.find());
     }
 }

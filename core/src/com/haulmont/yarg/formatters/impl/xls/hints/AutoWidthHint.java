@@ -6,25 +6,19 @@
 
 package com.haulmont.yarg.formatters.impl.xls.hints;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-
 /**
  * @author artamonov
  * @version $Id: AutoWidthHint.java 9328 2012-10-18 15:28:32Z artamonov $
  */
-public class AutoWidthHint implements XlsHint {
-
-    private HSSFSheet resultSheet;
-
-    private int resultColumnIndex;
-
-    public AutoWidthHint(HSSFSheet resultSheet, int resultColumnIndex) {
-        this.resultSheet = resultSheet;
-        this.resultColumnIndex = resultColumnIndex;
+public class AutoWidthHint extends AbstractHint {
+    public AutoWidthHint() {
+        super("##autoWidth");
     }
 
     @Override
     public void apply() {
-        resultSheet.autoSizeColumn(resultColumnIndex);
+        for (DataObject dataObject : data) {
+            dataObject.resultCell.getSheet().autoSizeColumn(dataObject.resultCell.getColumnIndex());
+        }
     }
 }

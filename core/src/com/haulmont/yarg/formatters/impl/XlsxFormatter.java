@@ -77,7 +77,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void init() {
+    protected void init() {
         try {
             template = Document.create((SpreadsheetMLPackage) SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
 
@@ -93,7 +93,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void findVerticalDependencies() {
+    protected void findVerticalDependencies() {
         List<CTDefinedName> definedName = template.getWorkbook().getDefinedNames().getDefinedName();
         for (CTDefinedName name1 : definedName) {
             for (CTDefinedName name2 : definedName) {
@@ -113,7 +113,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void updateCharts() {
+    protected void updateCharts() {
         for (Map.Entry<Range, Document.ChartPair> entry : result.getChartSpaces().entrySet()) {
             for (Range templateRange : rangeDependencies.keySet()) {
                 if (templateRange.contains(entry.getKey())) {
@@ -168,7 +168,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void shiftChart(Document.ChartPair chart, Range templateRange, Range firstResultRange) {
+    protected void shiftChart(Document.ChartPair chart, Range templateRange, Range firstResultRange) {
         Offset offset = calculateOffset(templateRange, firstResultRange);
 
         CTTwoCellAnchor anchor = (CTTwoCellAnchor) chart.getDrawing().getJaxbElement().getEGAnchor().get(0);
@@ -178,7 +178,7 @@ public class XlsxFormatter extends AbstractFormatter {
         anchor.getTo().setCol(anchor.getTo().getCol() + offset.rightOffset);
     }
 
-    private void updateFormulas() {
+    protected void updateFormulas() {
         //todo support growing formulas inside 1 parent band
         for (Cell cellWithFormula : innerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
@@ -229,18 +229,18 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange) {
+    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange) {
         CTCellFormula formula = cellWithFormula.getF();
         formula.setValue(formula.getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
     }
 
-    private Offset calculateOffset(Range from, Range to) {
+    protected Offset calculateOffset(Range from, Range to) {
         int downOffset = to.firstRow - from.firstRow;
         int rightOffset = to.firstColumn - from.firstColumn;
         return new Offset(downOffset, rightOffset);
     }
 
-    private void updateMergeRegions() {
+    protected void updateMergeRegions() {
         for (Range templateRange : rangeDependencies.keySet()) {
             Worksheet templateSheet = template.getSheetByName(templateRange.sheet);
             Worksheet resultSheet = result.getSheetByName(templateRange.sheet);
@@ -271,7 +271,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void writeBand(BandData childBand) {
+    protected void writeBand(BandData childBand) {
         if (BandOrientation.HORIZONTAL == childBand.getOrientation()) {
             writeHBand(childBand);
         } else {
@@ -279,7 +279,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void writeHBand(BandData band) {
+    protected void writeHBand(BandData band) {
         Range templateRange = getBandRange(band);
         Worksheet resultSheet = result.getSheetByName(templateRange.sheet);
         List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
@@ -299,7 +299,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void writeVBand(BandData band) {
+    protected void writeVBand(BandData band) {
         Range templateRange = getBandRange(band);
         Worksheet resultSheet = result.getSheetByName(templateRange.sheet);
         List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
@@ -319,7 +319,7 @@ public class XlsxFormatter extends AbstractFormatter {
         updateRangeMappings(band, templateRange, resultCells);
     }
 
-    private void updateRangeMappings(BandData band, Range templateRange, List<Cell> resultCells) {
+    protected void updateRangeMappings(BandData band, Range templateRange, List<Cell> resultCells) {
         if (CollectionUtils.isNotEmpty(resultCells)) {
             Range resultRange = Range.fromCells(templateRange.sheet, getFirst(resultCells).getR(), resultCells.get(resultCells.size() - 1).getR());
             rangeDependencies.put(templateRange, resultRange);
@@ -328,7 +328,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private Row findNextRowForHBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
+    protected Row findNextRowForHBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
 
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
@@ -364,7 +364,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return firstRow;
     }
 
-    private Row findNextRowForVBand(BandData band, Range templateRange, List<Row> thisSheetRows) {
+    protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> thisSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
 
@@ -409,7 +409,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return firstRow;
     }
 
-    private Row ensureNecessaryRowsCreated(Range templateRange, Worksheet resultSheet, Row firstRow) {
+    protected Row ensureNecessaryRowsCreated(Range templateRange, Worksheet resultSheet, Row firstRow) {
         if (firstRow == null) {
             firstRow = createNewRow(resultSheet);
         }
@@ -422,7 +422,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return firstRow;
     }
 
-    private List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow) {
+    protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow) {
         List<Cell> resultCells = new ArrayList<>();
         for (int i = 0; i <= templateRange.lastRow - templateRange.firstRow; i++) {
             Range oneRowRange = new Range(templateRange.sheet, templateRange.firstColumn, templateRange.firstRow + i, templateRange.lastColumn, templateRange.firstRow + i);
@@ -434,7 +434,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return resultCells;
     }
 
-    private List<Range> findAlreadyRenderedRanges(BandData band) {
+    protected List<Range> findAlreadyRenderedRanges(BandData band) {
         List<Range> alreadyRenderedRanges = new ArrayList<>();
         List<BandData> sameLevelBands = band.getParentBand().getChildrenByName(band.getName());
         for (BandData sameLevelBand : sameLevelBands) {
@@ -447,12 +447,12 @@ public class XlsxFormatter extends AbstractFormatter {
         return alreadyRenderedRanges;
     }
 
-    private Range getBandRange(BandData childBand) {
+    protected Range getBandRange(BandData childBand) {
         CTDefinedName targetRange = template.getDefinedName(childBand.getName());
         return Range.fromFormula(targetRange.getValue());
     }
 
-    private Row createNewRow(Worksheet resultSheet) {
+    protected Row createNewRow(Worksheet resultSheet) {
         Row newRow = Context.getsmlObjectFactory().createRow();
         currentRow++;
         newRow.setR(currentRow);
@@ -462,7 +462,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return newRow;
     }
 
-    private List<Cell> copyCells(Range templateRange, BandData childBand, Row newRow, List<Cell> templateCells) {
+    protected List<Cell> copyCells(Range templateRange, BandData childBand, Row newRow, List<Cell> templateCells) {
         List<Cell> resultCells = new ArrayList<>();
         for (Cell templateCell : templateCells) {
             copyRowSettings((Row) templateCell.getParent(), newRow);
@@ -493,7 +493,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return resultCells;
     }
 
-    private void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {
+    protected void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {
         SheetData sheetData = (SheetData) newRow.getParent();
         Worksheet worksheet = (Worksheet) sheetData.getParent();
         Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), templateCell);
@@ -504,12 +504,12 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private void copyRowSettings(Row templateRow, Row newRow) {
+    protected void copyRowSettings(Row templateRow, Row newRow) {
         newRow.setHt(templateRow.getHt());
         newRow.setCustomHeight(true);
     }
 
-    private void updateCell(WorksheetPart worksheetPart, BandData childBand, Cell newCell) {
+    protected void updateCell(WorksheetPart worksheetPart, BandData childBand, Cell newCell) {
         String cellValue = template.getCellValue(newCell);
 
         if (cellValue == null) {
@@ -559,7 +559,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private <T> T getFirst(List<T> list) {
+    protected <T> T getFirst(List<T> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             return list.get(0);
         }
@@ -567,7 +567,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return null;
     }
 
-    private <T> T getLast(List<T> list) {
+    protected <T> T getLast(List<T> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             return list.get(list.size() - 1);
         }
@@ -575,7 +575,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return null;
     }
 
-    private static class Offset {
+    protected static class Offset {
         int downOffset;
         int rightOffset;
 
@@ -585,7 +585,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    private class LastRowBandVisitor implements BandVisitor {
+    protected class LastRowBandVisitor implements BandVisitor {
         private int lastRow = 0;
 
         @Override

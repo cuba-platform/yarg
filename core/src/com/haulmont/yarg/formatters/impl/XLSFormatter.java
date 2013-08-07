@@ -44,11 +44,6 @@ import static com.haulmont.yarg.formatters.impl.xls.HSSFRangeHelper.*;
 public class XLSFormatter extends AbstractFormatter {
     protected static final String DYNAMIC_HEIGHT_STYLE = "styleWithoutHeight";
 
-    protected static final String CELL_DYNAMIC_STYLE_SELECTOR = "##style=";
-    protected static final String COPY_COLUMN_WIDTH_SELECTOR = "##copyColumnWidth";
-    protected static final String AUTO_WIDTH_SELECTOR = "##autoWidth";
-    protected static final String CUSTOM_WIDTH_SELECTOR = "##width=";
-
     protected HSSFWorkbook templateWorkbook;
     protected HSSFWorkbook resultWorkbook;
 
@@ -73,7 +68,7 @@ public class XLSFormatter extends AbstractFormatter {
     protected Map<String, EscherAggregate> sheetToEscherAggregate = new HashMap<String, EscherAggregate>();
 
     protected Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<HSSFSheet, HSSFPatriarch>();
-    protected List<XlsHint> optionContainer = new ArrayList<XlsHint>();
+    protected List<XlsHint> hints = new ArrayList<XlsHint>();
 
     protected XlsToPdfConverterAPI xlsToPdfConverter;
 
@@ -81,6 +76,11 @@ public class XLSFormatter extends AbstractFormatter {
         super(rootBand, reportTemplate, outputStream);
         supportedOutputTypes.add(ReportOutputType.xls);
         supportedOutputTypes.add(ReportOutputType.pdf);
+
+        hints.add(new CustomCellStyleHint(fontCache, styleCache));
+        hints.add(new CopyColumnHint());
+        hints.add(new AutoWidthHint());
+        hints.add(new CustomWidthHint());
     }
 
     public void setXlsToPdfConverter(XlsToPdfConverterAPI xlsToPdfConverter) {
@@ -93,7 +93,7 @@ public class XLSFormatter extends AbstractFormatter {
 
         processDocument();
 
-        applyStyleOptions();
+        applyHints();
 
         outputDocument();
     }
@@ -128,8 +128,8 @@ public class XLSFormatter extends AbstractFormatter {
         copyPictures();
     }
 
-    protected void applyStyleOptions() {
-        for (XlsHint option : optionContainer) {
+    protected void applyHints() {
+        for (XlsHint option : hints) {
             option.apply();
         }
     }
@@ -158,7 +158,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private void copyPicturesToResultWorkbook() {
+    protected void copyPicturesToResultWorkbook() {
         List<HSSFPictureData> allPictures = templateWorkbook.getAllPictures();
         for (HSSFPictureData allPicture : allPictures) {
             int i = resultWorkbook.addPicture(allPicture.getData(), Workbook.PICTURE_TYPE_JPEG);
@@ -166,13 +166,13 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private void removeMergedRegions(HSSFSheet resultSheet) {
+    protected void removeMergedRegions(HSSFSheet resultSheet) {
         for (int i = 0, size = resultSheet.getNumMergedRegions(); i < size; i++) {
             resultSheet.removeMergedRegion(0);//each time we remove region - they "move to left" so region 1 become region 0
         }
     }
 
-    private void copyCharts(HSSFSheet resultSheet) {
+    protected void copyCharts(HSSFSheet resultSheet) {
         HSSFChart[] sheetCharts = HSSFChart.getSheetCharts(resultSheet);
         if (sheetCharts == null || sheetCharts.length == 0) {//workaround for charts. If there is charts on sheet - we can not use getDrawPatriarch as it removes all charts (because does not support them)
             HSSFPatriarch drawingPatriarch = resultSheet.createDrawingPatriarch();
@@ -184,7 +184,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private void updateFormulas() {
+    protected void updateFormulas() {
         for (Map.Entry<Area, List<Area>> entry : areasDependency.entrySet()) {
             Area original = entry.getKey();
 
@@ -194,7 +194,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private void copyPictures() {
+    protected void copyPictures() {
         for (int sheetNumber = 0; sheetNumber < templateWorkbook.getNumberOfSheets(); sheetNumber++) {
             HSSFSheet templateSheet = templateWorkbook.getSheetAt(sheetNumber);
             HSSFSheet resultSheet = resultWorkbook.getSheetAt(sheetNumber);
@@ -203,7 +203,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private void writeBand(BandData band) {
+    protected void writeBand(BandData band) {
         String rangeName = band.getName();
         HSSFSheet templateSheet = getTemplateSheetForRangeName(templateWorkbook, rangeName);
 
@@ -230,7 +230,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param templateSheet - template sheet
      * @param resultSheet   - result sheet
      */
-    private void writeHorizontalBand(BandData band, HSSFSheet templateSheet, HSSFSheet resultSheet) {
+    protected void writeHorizontalBand(BandData band, HSSFSheet templateSheet, HSSFSheet resultSheet) {
         String rangeName = band.getName();
         AreaReference templateRange = getAreaForRange(templateWorkbook, rangeName);
         if (templateRange == null) {
@@ -268,6 +268,7 @@ public class XLSFormatter extends AbstractFormatter {
                     resultRow = resultSheet.createRow(rownum + rowsAddedByHorizontalBand);
                     rowsAddedByHorizontalBand += 1;
 
+                    //todo move to options
                     if (templateCell.getCellStyle().getParentStyle() != null
                             && templateCell.getCellStyle().getParentStyle().getUserStyleName() != null
                             && templateCell.getCellStyle().getParentStyle().getUserStyleName().equals(DYNAMIC_HEIGHT_STYLE)
@@ -321,7 +322,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param templateSheet - template sheet
      * @param resultSheet   - result sheet
      */
-    private void writeVerticalBand(BandData band, HSSFSheet templateSheet, HSSFSheet resultSheet) {
+    protected void writeVerticalBand(BandData band, HSSFSheet templateSheet, HSSFSheet resultSheet) {
         String rangeName = band.getName();
         CellReference[] crefs = getRangeContent(templateWorkbook, rangeName);
 
@@ -395,7 +396,7 @@ public class XLSFormatter extends AbstractFormatter {
      *
      * @param currentSheet Sheet which contains merge regions
      */
-    private void initMergeRegions(HSSFSheet currentSheet) {
+    protected void initMergeRegions(HSSFSheet currentSheet) {
         int rangeNumber = templateWorkbook.getNumberOfNames();
         for (int i = 0; i < rangeNumber; i++) {
             HSSFName aNamedRange = templateWorkbook.getNameAt(i);
@@ -452,7 +453,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param firstTargetRangeRow    - first column of target range
      * @param firstTargetRangeColumn - first column of target range
      */
-    private void copyMergeRegions(HSSFSheet resultSheet, String rangeName,
+    protected void copyMergeRegions(HSSFSheet resultSheet, String rangeName,
                                   int firstTargetRangeRow, int firstTargetRangeColumn) {
         int rangeNameIdx = templateWorkbook.getNameIndex(rangeName);
         if (rangeNameIdx == -1) return;
@@ -501,7 +502,7 @@ public class XLSFormatter extends AbstractFormatter {
             }
     }
 
-    private boolean intersects(CellRangeAddress x, CellRangeAddress y) {
+    protected boolean intersects(CellRangeAddress x, CellRangeAddress y) {
         return (x.getFirstColumn() <= y.getLastColumn() &&
                 x.getLastColumn() >= y.getFirstColumn() &&
                 x.getLastRow() >= y.getFirstRow() &&
@@ -537,8 +538,7 @@ public class XLSFormatter extends AbstractFormatter {
             HSSFRichTextString richStringCellValue = templateCell.getRichStringCellValue();
             templateCellValue = richStringCellValue != null ? richStringCellValue.getString() : "";
 
-            Map<String, Object> bandData = band.getData();
-            templateCellValue = extractStyles(templateCell, resultCell, templateCellValue, bandData);
+            templateCellValue = extractStyles(templateCell, resultCell, templateCellValue, band);
         }
 
         if (cellType == HSSFCell.CELL_TYPE_STRING && isOneValueCell(templateCell, templateCellValue)) {
@@ -559,7 +559,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param templateCellValue - template cell value
      * @param resultCell        - result cell
      */
-    private void updateValueCell(BandData rootBand, BandData band, String templateCellValue, HSSFCell resultCell, HSSFPatriarch patriarch) {
+    protected void updateValueCell(BandData rootBand, BandData band, String templateCellValue, HSSFCell resultCell, HSSFPatriarch patriarch) {
         String parameterName = templateCellValue;
         parameterName = unwrapParameterName(parameterName);
 
@@ -598,7 +598,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private void setValueToCell(HSSFCell resultCell, String cellValue, int cellType) {
+    protected void setValueToCell(HSSFCell resultCell, String cellValue, int cellType) {
         if (StringUtils.isNotEmpty(cellValue)) {
             switch (cellType) {
                 case HSSFCell.CELL_TYPE_FORMULA:
@@ -617,7 +617,7 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private String inlineBandDataToCellString(HSSFCell cell, String templateCellValue, BandData band) {
+    protected String inlineBandDataToCellString(HSSFCell cell, String templateCellValue, BandData band) {
         String resultStr = "";
         if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
             if (templateCellValue != null) resultStr = templateCellValue;
@@ -636,14 +636,14 @@ public class XLSFormatter extends AbstractFormatter {
      * @param band  - band
      * @param crefs - range
      */
-    private void addRangeBounds(BandData band, CellReference[] crefs) {
+    protected void addRangeBounds(BandData band, CellReference[] crefs) {
         if (templateBounds.containsKey(band.getName()))
             return;
         Bounds bounds = new Bounds(crefs[0].getRow(), crefs[0].getCol(), crefs[crefs.length - 1].getRow(), crefs[crefs.length - 1].getCol());
         templateBounds.put(band.getName(), bounds);
     }
 
-    private void updateFormulas(Area templateArea, Area dependentResultArea) {
+    protected void updateFormulas(Area templateArea, Area dependentResultArea) {
         HSSFSheet templateSheet = getTemplateSheetForRangeName(templateWorkbook, templateArea.getName());
         HSSFSheet resultSheet = templateToResultSheetsMapping.get(templateSheet);
 
@@ -668,96 +668,21 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    protected String extractStyles(HSSFCell templateCell, HSSFCell resultCell, String templateCellValue, Map<String, Object> bandData) {
-        HSSFSheet resultSheet = resultCell.getSheet();
-
-        templateCellValue = applyCustomStyleOption(resultCell, templateCellValue, bandData);
-
-        templateCellValue = applyCopyColumnWidthOption(templateCell, resultCell, templateCellValue);
-
-        templateCellValue = applyAutoWidthOption(resultCell, templateCellValue, resultSheet);
-
-        templateCellValue = applyCustomWidthOption(resultCell, templateCellValue, bandData, resultSheet);
+    protected String extractStyles(HSSFCell templateCell, HSSFCell resultCell, String templateCellValue, BandData bandData) {
+        for (XlsHint hint : hints) {
+            XlsHint.CheckResult check = hint.check(templateCellValue);
+            if (check.result) {
+                templateCellValue = check.cellValue;
+                hint.add(templateCell, resultCell, bandData);
+            }
+        }
 
         templateCellValue = StringUtils.stripEnd(templateCellValue, null);
 
         return templateCellValue;
     }
 
-    private String applyCustomWidthOption(HSSFCell resultCell, String templateCellValue, Map<String, Object> bandData, HSSFSheet resultSheet) {
-        int widthPosition = StringUtils.indexOf(templateCellValue, CUSTOM_WIDTH_SELECTOR);
-        if (widthPosition >= 0) {
-            String stringTail = StringUtils.substring(templateCellValue, widthPosition + CUSTOM_WIDTH_SELECTOR.length());
-            int styleEndIndex = StringUtils.indexOf(stringTail, " ");
-            if (styleEndIndex < 0)
-                styleEndIndex = templateCellValue.length() - 1;
-
-            String widthLengthSelector = StringUtils.substring(templateCellValue, widthPosition,
-                    styleEndIndex + CUSTOM_WIDTH_SELECTOR.length() + widthPosition);
-
-            templateCellValue = StringUtils.replace(templateCellValue, widthLengthSelector, "");
-
-            widthLengthSelector = StringUtils.substring(widthLengthSelector, CUSTOM_WIDTH_SELECTOR.length());
-
-            if (widthLengthSelector != null && bandData.containsKey(widthLengthSelector) && bandData.get(widthLengthSelector) != null) {
-                Object width = bandData.get(widthLengthSelector);
-
-                if (width != null && width instanceof Integer) {
-                    optionContainer.add(new CustomWidthHint(resultSheet, resultCell.getColumnIndex(), (Integer) width));
-                }
-            }
-        }
-        return templateCellValue;
-    }
-
-    private String applyAutoWidthOption(HSSFCell resultCell, String templateCellValue, HSSFSheet resultSheet) {
-        if (StringUtils.contains(templateCellValue, AUTO_WIDTH_SELECTOR)) {
-            templateCellValue = StringUtils.replace(templateCellValue, AUTO_WIDTH_SELECTOR, "");
-            optionContainer.add(new AutoWidthHint(resultSheet, resultCell.getColumnIndex()));
-        }
-        return templateCellValue;
-    }
-
-    private String applyCopyColumnWidthOption(HSSFCell templateCell, HSSFCell resultCell, String templateCellValue) {
-        HSSFSheet resultSheet = resultCell.getSheet();
-        HSSFSheet templateSheet = templateCell.getSheet();
-
-        if (StringUtils.contains(templateCellValue, COPY_COLUMN_WIDTH_SELECTOR)) {
-            templateCellValue = StringUtils.replace(templateCellValue, COPY_COLUMN_WIDTH_SELECTOR, "");
-            optionContainer.add(new CopyColumnHint(resultSheet,
-                    resultCell.getColumnIndex(), templateSheet.getColumnWidth(templateCell.getColumnIndex())));
-        }
-        return templateCellValue;
-    }
-
-    private String applyCustomStyleOption(HSSFCell resultCell, String templateCellValue, Map<String, Object> bandData) {
-        int stylePosition = StringUtils.indexOf(templateCellValue, CELL_DYNAMIC_STYLE_SELECTOR);
-        if (stylePosition >= 0) {
-            String stringTail = StringUtils.substring(templateCellValue, stylePosition + CELL_DYNAMIC_STYLE_SELECTOR.length());
-            int styleEndIndex = StringUtils.indexOf(stringTail, " ");
-            if (styleEndIndex < 0)
-                styleEndIndex = templateCellValue.length() - 1;
-
-            String styleSelector = StringUtils.substring(templateCellValue, stylePosition,
-                    styleEndIndex + CELL_DYNAMIC_STYLE_SELECTOR.length() + stylePosition);
-
-            templateCellValue = StringUtils.replace(templateCellValue, styleSelector, "");
-
-            styleSelector = StringUtils.substring(styleSelector, CELL_DYNAMIC_STYLE_SELECTOR.length());
-
-            if (styleSelector != null && bandData.get(styleSelector) != null) {
-                HSSFCellStyle cellStyle = styleCache.getStyleByName((String) bandData.get(styleSelector));
-
-                if (cellStyle != null) {
-                    optionContainer.add(new CustomCellStyleHint(resultCell, cellStyle,
-                            templateWorkbook, resultWorkbook, fontCache, styleCache));
-                }
-            }
-        }
-        return templateCellValue;
-    }
-
-    private HSSFCellStyle copyCellStyle(HSSFCellStyle templateStyle) {
+    protected HSSFCellStyle copyCellStyle(HSSFCellStyle templateStyle) {
         HSSFCellStyle style = styleCache.getCellStyleByTemplate(templateStyle);
 
         if (style == null) {
@@ -785,7 +710,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param sheet - HSSFSheet
      * @return - EscherAggregate from sheet
      */
-    private EscherAggregate getEscherAggregate(HSSFSheet sheet) {
+    protected EscherAggregate getEscherAggregate(HSSFSheet sheet) {
         EscherAggregate agg = sheetToEscherAggregate.get(sheet.getSheetName());
         if (agg == null) {
             agg = sheet.getDrawingEscherAggregate();
@@ -800,7 +725,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param templateSheet - template sheet
      * @param resultSheet   - result sheet
      */
-    private void copyPicturesFromTemplateToResult(HSSFSheet templateSheet, HSSFSheet resultSheet) {
+    protected void copyPicturesFromTemplateToResult(HSSFSheet templateSheet, HSSFSheet resultSheet) {
         List<HSSFClientAnchor> list = getAllAnchors(getEscherAggregate(templateSheet));
 
         int i = 0;
@@ -821,17 +746,17 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    private boolean rowExists(HSSFSheet sheet, int rowNumber) {
+    protected boolean rowExists(HSSFSheet sheet, int rowNumber) {
         return sheet.getRow(rowNumber) != null;
     }
 
-    private Cell getCellFromTemplate(Cell cell) {
+    protected Cell getCellFromTemplate(Cell cell) {
         Cell newCell = new Cell(cell);
         updateCell(newCell);
         return newCell;
     }
 
-    private void updateCell(Cell cell) {
+    protected void updateCell(Cell cell) {
         Area templateArea = areaDependencyManager.getTemplateAreaByCoordinate(cell.getCol(), cell.getRow());
         List<Area> resultAreas = areasDependency.get(templateArea);
 
@@ -851,7 +776,7 @@ public class XLSFormatter extends AbstractFormatter {
     /**
      * Cell range at sheet
      */
-    private static class SheetRange {
+    protected static class SheetRange {
         private CellRangeAddress cellRangeAddress;
         private String sheetName;
 
@@ -872,7 +797,7 @@ public class XLSFormatter extends AbstractFormatter {
     /**
      * Bounds of region [(x,y) : (x1, y1)]
      */
-    private static class Bounds {
+    protected static class Bounds {
         public final int row0;
         public final int column0;
         public final int row1;

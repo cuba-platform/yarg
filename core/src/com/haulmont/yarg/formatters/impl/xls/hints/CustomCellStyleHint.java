@@ -8,10 +8,13 @@ package com.haulmont.yarg.formatters.impl.xls.hints;
 
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
+import com.haulmont.yarg.structure.BandData;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
+
+import java.util.regex.Matcher;
 
 /**
  * Apply custom style to target cell
@@ -19,135 +22,142 @@ import org.apache.poi.ss.util.CellRangeAddress;
  * @author artamonov
  * @version $Id: CustomCellStyleHint.java 11304 2013-04-24 08:52:39Z artamonov $
  */
-public class CustomCellStyleHint implements XlsHint {
-
-    private HSSFCell resultCell;
-
-    private HSSFCellStyle cellStyle;
-
-    private HSSFWorkbook templateWorkbook;
-
-    private HSSFWorkbook workbook;
-
+public class CustomCellStyleHint extends AbstractHint {
     private XlsFontCache fontCache;
 
     private XlsStyleCache styleCache;
 
-    public CustomCellStyleHint(HSSFCell resultCell, HSSFCellStyle cellStyle,
-                               HSSFWorkbook templateWorkbook, HSSFWorkbook workbook,
-                               XlsFontCache fontCache, XlsStyleCache styleCache) {
-        this.resultCell = resultCell;
-        this.cellStyle = cellStyle;
-        this.templateWorkbook = templateWorkbook;
-        this.workbook = workbook;
+    public CustomCellStyleHint(XlsFontCache fontCache, XlsStyleCache styleCache) {
+        super("##style=([A-z0-9]+)");
         this.fontCache = fontCache;
         this.styleCache = styleCache;
     }
 
     @Override
     public void apply() {
-        HSSFCellStyle resultStyle = styleCache.getNamedCachedStyle(cellStyle);
+        for (DataObject dataObject : data) {
+            HSSFCell templateCell = dataObject.templateCell;
+            HSSFCell resultCell = dataObject.resultCell;
+            BandData bandData = dataObject.bandData;
 
-        if (resultStyle == null) {
-            HSSFCellStyle newStyle = workbook.createCellStyle();
-            // color
-            newStyle.setFillBackgroundColor(cellStyle.getFillBackgroundColor());
-            newStyle.setFillForegroundColor(cellStyle.getFillForegroundColor());
-            newStyle.setFillPattern(cellStyle.getFillPattern());
+            HSSFWorkbook resultWorkbook = resultCell.getSheet().getWorkbook();
+            HSSFWorkbook templateWorkbook = templateCell.getSheet().getWorkbook();
 
-            // borders
-            newStyle.setBorderLeft(cellStyle.getBorderLeft());
-            newStyle.setBorderRight(cellStyle.getBorderRight());
-            newStyle.setBorderTop(cellStyle.getBorderTop());
-            newStyle.setBorderBottom(cellStyle.getBorderBottom());
+            String templateCellValue = templateCell.getStringCellValue();
 
-            // border colors
-            newStyle.setLeftBorderColor(cellStyle.getLeftBorderColor());
-            newStyle.setRightBorderColor(cellStyle.getRightBorderColor());
-            newStyle.setBottomBorderColor(cellStyle.getBottomBorderColor());
-            newStyle.setTopBorderColor(cellStyle.getTopBorderColor());
+            Matcher matcher = pattern.matcher(templateCellValue);
+            if (matcher.find()) {
+                String paramName = matcher.group(1);
+                String styleName = (String) bandData.getParameterValue(paramName);
+                if (styleName == null) return;
 
-            // alignment
-            newStyle.setAlignment(cellStyle.getAlignment());
-            newStyle.setVerticalAlignment(cellStyle.getVerticalAlignment());
-            // misc
-            DataFormat dataFormat = workbook.getCreationHelper().createDataFormat();
-            newStyle.setDataFormat(dataFormat.getFormat(cellStyle.getDataFormatString()));
-            newStyle.setHidden(cellStyle.getHidden());
-            newStyle.setLocked(cellStyle.getLocked());
-            newStyle.setIndention(cellStyle.getIndention());
-            newStyle.setRotation(cellStyle.getRotation());
-            newStyle.setWrapText(cellStyle.getWrapText());
-            // font
-            HSSFFont cellFont = cellStyle.getFont(templateWorkbook);
-            HSSFFont newFont = fontCache.getFontByTemplate(cellFont);
+                HSSFCellStyle cellStyle = styleCache.getStyleByName(styleName);
+                if (cellStyle == null) return;
 
-            if (newFont == null) {
-                newFont = workbook.createFont();
+                HSSFCellStyle resultStyle = styleCache.getNamedCachedStyle(cellStyle);
 
-                newFont.setFontName(cellFont.getFontName());
-                newFont.setItalic(cellFont.getItalic());
-                newFont.setStrikeout(cellFont.getStrikeout());
-                newFont.setTypeOffset(cellFont.getTypeOffset());
-                newFont.setBoldweight(cellFont.getBoldweight());
-                newFont.setCharSet(cellFont.getCharSet());
-                newFont.setColor(cellFont.getColor());
-                newFont.setUnderline(cellFont.getUnderline());
-                newFont.setFontHeight(cellFont.getFontHeight());
-                newFont.setFontHeightInPoints(cellFont.getFontHeightInPoints());
-                fontCache.addCachedFont(cellFont, newFont);
-            }
-            newStyle.setFont(newFont);
+                if (resultStyle == null) {
+                    HSSFCellStyle newStyle = resultWorkbook.createCellStyle();
+                    // color
+                    newStyle.setFillBackgroundColor(cellStyle.getFillBackgroundColor());
+                    newStyle.setFillForegroundColor(cellStyle.getFillForegroundColor());
+                    newStyle.setFillPattern(cellStyle.getFillPattern());
 
-            resultStyle = newStyle;
-            styleCache.addCachedNamedStyle(cellStyle, resultStyle);
-        }
+                    // borders
+                    newStyle.setBorderLeft(cellStyle.getBorderLeft());
+                    newStyle.setBorderRight(cellStyle.getBorderRight());
+                    newStyle.setBorderTop(cellStyle.getBorderTop());
+                    newStyle.setBorderBottom(cellStyle.getBorderBottom());
 
-        fixNeighbourCellBorders();
+                    // border colors
+                    newStyle.setLeftBorderColor(cellStyle.getLeftBorderColor());
+                    newStyle.setRightBorderColor(cellStyle.getRightBorderColor());
+                    newStyle.setBottomBorderColor(cellStyle.getBottomBorderColor());
+                    newStyle.setTopBorderColor(cellStyle.getTopBorderColor());
 
-        resultCell.setCellStyle(resultStyle);
+                    // alignment
+                    newStyle.setAlignment(cellStyle.getAlignment());
+                    newStyle.setVerticalAlignment(cellStyle.getVerticalAlignment());
+                    // misc
+                    DataFormat dataFormat = resultWorkbook.getCreationHelper().createDataFormat();
+                    newStyle.setDataFormat(dataFormat.getFormat(cellStyle.getDataFormatString()));
+                    newStyle.setHidden(cellStyle.getHidden());
+                    newStyle.setLocked(cellStyle.getLocked());
+                    newStyle.setIndention(cellStyle.getIndention());
+                    newStyle.setRotation(cellStyle.getRotation());
+                    newStyle.setWrapText(cellStyle.getWrapText());
+                    // font
+                    HSSFFont cellFont = cellStyle.getFont(templateWorkbook);
+                    HSSFFont newFont = fontCache.getFontByTemplate(cellFont);
 
-        Sheet sheet = resultCell.getSheet();
-        for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
-            CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
-            if (mergedRegion.isInRange(resultCell.getRowIndex(), resultCell.getColumnIndex())) {
+                    if (newFont == null) {
+                        newFont = resultWorkbook.createFont();
 
-                int firstRow = mergedRegion.getFirstRow();
-                int lastRow = mergedRegion.getLastRow();
-                int firstCol = mergedRegion.getFirstColumn();
-                int lastCol = mergedRegion.getLastColumn();
+                        newFont.setFontName(cellFont.getFontName());
+                        newFont.setItalic(cellFont.getItalic());
+                        newFont.setStrikeout(cellFont.getStrikeout());
+                        newFont.setTypeOffset(cellFont.getTypeOffset());
+                        newFont.setBoldweight(cellFont.getBoldweight());
+                        newFont.setCharSet(cellFont.getCharSet());
+                        newFont.setColor(cellFont.getColor());
+                        newFont.setUnderline(cellFont.getUnderline());
+                        newFont.setFontHeight(cellFont.getFontHeight());
+                        newFont.setFontHeightInPoints(cellFont.getFontHeightInPoints());
+                        fontCache.addCachedFont(cellFont, newFont);
+                    }
+                    newStyle.setFont(newFont);
 
-                for (int row = firstRow; row <= lastRow; row++)
-                    for (int col = firstCol; col <= lastCol; col++)
-                        sheet.getRow(row).getCell(col).setCellStyle(resultStyle);
+                    resultStyle = newStyle;
+                    styleCache.addCachedNamedStyle(cellStyle, resultStyle);
+                }
 
-                // cell includes only in one merged region
-                break;
+                fixNeighbourCellBorders(cellStyle, resultCell);
+
+                resultCell.setCellStyle(resultStyle);
+
+                Sheet sheet = resultCell.getSheet();
+                for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
+                    CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
+                    if (mergedRegion.isInRange(resultCell.getRowIndex(), resultCell.getColumnIndex())) {
+
+                        int firstRow = mergedRegion.getFirstRow();
+                        int lastRow = mergedRegion.getLastRow();
+                        int firstCol = mergedRegion.getFirstColumn();
+                        int lastCol = mergedRegion.getLastColumn();
+
+                        for (int row = firstRow; row <= lastRow; row++)
+                            for (int col = firstCol; col <= lastCol; col++)
+                                sheet.getRow(row).getCell(col).setCellStyle(resultStyle);
+
+                        // cell includes only in one merged region
+                        break;
+                    }
+                }
             }
         }
     }
 
-    private void fixNeighbourCellBorders() {
+    private void fixNeighbourCellBorders(HSSFCellStyle cellStyle, HSSFCell resultCell) {
         HSSFSheet sheet = resultCell.getRow().getSheet();
         // disable neighboring cells border
         int columnIndex = resultCell.getColumnIndex();
         int rowIndex = resultCell.getRowIndex();
         // fix left border
-        fixLeftBorder(sheet, columnIndex);
+        fixLeftBorder(cellStyle, sheet, columnIndex, resultCell);
 
         // fix right border
-        fixRightBorder(sheet, columnIndex);
+        fixRightBorder(cellStyle, sheet, columnIndex, resultCell);
 
         // fix up border
-        fixUpBorder(sheet, columnIndex, rowIndex);
+        fixUpBorder(cellStyle, sheet, columnIndex, rowIndex, resultCell);
 
         // fix down border
-        fixDownBorder(sheet, columnIndex, rowIndex);
+        fixDownBorder(cellStyle, sheet, columnIndex, rowIndex, resultCell);
     }
 
-    private void fixLeftBorder(HSSFSheet sheet, int columnIndex) {
+    private void fixLeftBorder(HSSFCellStyle cellStyle, HSSFSheet sheet, int columnIndex, HSSFCell resultCell) {
         if (columnIndex > 1) {
-            fixLeftCell(sheet, resultCell.getRowIndex(), columnIndex - 1);
+            fixLeftCell(sheet, resultCell.getRowIndex(), columnIndex - 1, cellStyle);
             // fix merged left border
             for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
                 CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
@@ -156,7 +166,7 @@ public class CustomCellStyleHint implements XlsHint {
                     int lastRow = mergedRegion.getLastRow();
 
                     for (int leftIndex = firstRow; leftIndex <= lastRow; leftIndex++) {
-                        fixLeftCell(sheet, leftIndex, columnIndex - 1);
+                        fixLeftCell(sheet, leftIndex, columnIndex - 1, cellStyle);
                     }
                     break;
                 }
@@ -164,13 +174,13 @@ public class CustomCellStyleHint implements XlsHint {
         }
     }
 
-    private void fixLeftCell(HSSFSheet sheet, int rowIndex, int columnIndex) {
+    private void fixLeftCell(HSSFSheet sheet, int rowIndex, int columnIndex, HSSFCellStyle cellStyle) {
         HSSFCell leftCell = sheet.getRow(rowIndex).getCell(columnIndex);
         if (leftCell != null) {
             HSSFCellStyle leftCellStyle = leftCell.getCellStyle();
             if (leftCellStyle.getBorderRight() != cellStyle.getBorderLeft() ||
                     leftCellStyle.getRightBorderColor() != cellStyle.getLeftBorderColor()) {
-                HSSFCellStyle newLeftStyle = workbook.createCellStyle();
+                HSSFCellStyle newLeftStyle = sheet.getWorkbook().createCellStyle();
                 newLeftStyle.cloneStyleRelationsFrom(leftCellStyle);
                 newLeftStyle.setBorderRight(cellStyle.getBorderLeft());
                 newLeftStyle.setRightBorderColor(cellStyle.getLeftBorderColor());
@@ -182,8 +192,8 @@ public class CustomCellStyleHint implements XlsHint {
         }
     }
 
-    private void fixRightBorder(HSSFSheet sheet, int columnIndex) {
-        fixRightCell(sheet, resultCell.getRowIndex(), columnIndex + 1);
+    private void fixRightBorder(HSSFCellStyle cellStyle, HSSFSheet sheet, int columnIndex, HSSFCell resultCell) {
+        fixRightCell(sheet, resultCell.getRowIndex(), columnIndex + 1, cellStyle);
         // fix merged right border
         for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
             CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
@@ -193,21 +203,21 @@ public class CustomCellStyleHint implements XlsHint {
                 int regionWidth = mergedRegion.getLastColumn() - mergedRegion.getFirstColumn() + 1;
 
                 for (int rightIndex = firstRow; rightIndex <= lastRow; rightIndex++) {
-                    fixRightCell(sheet, rightIndex, columnIndex + regionWidth);
+                    fixRightCell(sheet, rightIndex, columnIndex + regionWidth, cellStyle);
                 }
                 break;
             }
         }
     }
 
-    private void fixRightCell(HSSFSheet sheet, int rowIndex, int columnIndex) {
+    private void fixRightCell(HSSFSheet sheet, int rowIndex, int columnIndex, HSSFCellStyle cellStyle) {
         HSSFCell rightCell = sheet.getRow(rowIndex).getCell(columnIndex);
         if (rightCell != null) {
             HSSFCellStyle rightCellStyle = rightCell.getCellStyle();
 
             if (rightCellStyle.getBorderLeft() != cellStyle.getBorderRight() ||
                     rightCellStyle.getLeftBorderColor() != cellStyle.getRightBorderColor()) {
-                HSSFCellStyle newRightStyle = workbook.createCellStyle();
+                HSSFCellStyle newRightStyle = sheet.getWorkbook().createCellStyle();
                 newRightStyle.cloneStyleRelationsFrom(rightCellStyle);
                 newRightStyle.setBorderLeft(cellStyle.getBorderRight());
                 newRightStyle.setLeftBorderColor(cellStyle.getRightBorderColor());
@@ -219,10 +229,10 @@ public class CustomCellStyleHint implements XlsHint {
         }
     }
 
-    private void fixUpBorder(HSSFSheet sheet, int columnIndex, int rowIndex) {
+    private void fixUpBorder(HSSFCellStyle cellStyle, HSSFSheet sheet, int columnIndex, int rowIndex, HSSFCell resultCell) {
         if (rowIndex > 0) {
             // fix simple up border
-            fixUpCell(sheet, rowIndex - 1, columnIndex);
+            fixUpCell(sheet, rowIndex - 1, columnIndex, cellStyle);
             // fix merged up border
             for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
                 CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
@@ -231,7 +241,7 @@ public class CustomCellStyleHint implements XlsHint {
                     int lastColumn = mergedRegion.getLastColumn();
 
                     for (int upIndex = firstColumn; upIndex <= lastColumn; upIndex++) {
-                        fixUpCell(sheet, rowIndex - 1, upIndex);
+                        fixUpCell(sheet, rowIndex - 1, upIndex, cellStyle);
                     }
                     break;
                 }
@@ -239,14 +249,14 @@ public class CustomCellStyleHint implements XlsHint {
         }
     }
 
-    private void fixUpCell(HSSFSheet sheet, int rowIndex, int columnIndex) {
+    private void fixUpCell(HSSFSheet sheet, int rowIndex, int columnIndex, HSSFCellStyle cellStyle) {
         HSSFCell upCell = sheet.getRow(rowIndex).getCell(columnIndex);
         if (upCell != null) {
             HSSFCellStyle upCellStyle = upCell.getCellStyle();
 
             if (upCellStyle.getBorderBottom() != cellStyle.getBorderTop() ||
                     upCellStyle.getBottomBorderColor() != cellStyle.getTopBorderColor()) {
-                HSSFCellStyle newUpStyle = workbook.createCellStyle();
+                HSSFCellStyle newUpStyle = sheet.getWorkbook().createCellStyle();
                 newUpStyle.cloneStyleRelationsFrom(upCellStyle);
                 newUpStyle.setBorderBottom(cellStyle.getBorderTop());
                 newUpStyle.setBottomBorderColor(cellStyle.getTopBorderColor());
@@ -258,9 +268,9 @@ public class CustomCellStyleHint implements XlsHint {
         }
     }
 
-    private void fixDownBorder(HSSFSheet sheet, int columnIndex, int rowIndex) {
+    private void fixDownBorder(HSSFCellStyle cellStyle, HSSFSheet sheet, int columnIndex, int rowIndex, HSSFCell resultCell) {
         // fix simple down border
-        fixDownCell(sheet, rowIndex + 1, columnIndex);
+        fixDownCell(sheet, rowIndex + 1, columnIndex, cellStyle);
         // fix merged down border
         for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
             CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
@@ -270,14 +280,14 @@ public class CustomCellStyleHint implements XlsHint {
                 int regionHeight = mergedRegion.getLastRow() - mergedRegion.getFirstRow() + 1;
 
                 for (int downIndex = firstColumn; downIndex <= lastColumn; downIndex++) {
-                    fixDownCell(sheet, rowIndex + regionHeight, downIndex);
+                    fixDownCell(sheet, rowIndex + regionHeight, downIndex, cellStyle);
                 }
                 break;
             }
         }
     }
 
-    private void fixDownCell(HSSFSheet sheet, int rowIndex, int columnIndex) {
+    private void fixDownCell(HSSFSheet sheet, int rowIndex, int columnIndex, HSSFCellStyle cellStyle) {
         HSSFRow nextRow = sheet.getRow(rowIndex);
         if (nextRow != null) {
             HSSFCell downCell = nextRow.getCell(columnIndex);
@@ -286,7 +296,7 @@ public class CustomCellStyleHint implements XlsHint {
 
                 if (downCellStyle.getBorderTop() != cellStyle.getBorderBottom() ||
                         downCellStyle.getTopBorderColor() != cellStyle.getBottomBorderColor()) {
-                    HSSFCellStyle newDownStyle = workbook.createCellStyle();
+                    HSSFCellStyle newDownStyle = sheet.getWorkbook().createCellStyle();
                     newDownStyle.cloneStyleRelationsFrom(downCellStyle);
                     newDownStyle.setBorderTop(cellStyle.getBorderBottom());
                     newDownStyle.setTopBorderColor(cellStyle.getBottomBorderColor());
