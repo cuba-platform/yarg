@@ -4,21 +4,21 @@
             <xs:sequence>
                 <xs:element name="templates" minOccurs='1' maxOccurs='1'>
                     <xs:complexType>
-                        <xs:sequence minOccurs="0">
+                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
                             <xs:element name="template" type="template"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="parameters" minOccurs='1' maxOccurs='1'>
+                <xs:element name="parameters" minOccurs='0' maxOccurs='1'>
                     <xs:complexType>
-                        <xs:sequence minOccurs="0">
+                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
                             <xs:element name="parameter" type="parameter"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="formats" minOccurs='1' maxOccurs='1'>
+                <xs:element name="formats" minOccurs='0' maxOccurs='1'>
                     <xs:complexType>
-                        <xs:sequence minOccurs="0">
+                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
                             <xs:element name="format" type="format"/>
                         </xs:sequence>
                     </xs:complexType>
@@ -39,15 +39,15 @@
 
     <xs:complexType name="band">
         <xs:sequence>
-            <xs:element name="bands">
+            <xs:element name="bands" minOccurs="0" maxOccurs='1'>
                 <xs:complexType>
-                    <xs:sequence minOccurs="0">
+                    <xs:sequence minOccurs="0" maxOccurs="unbounded">
                         <xs:element name="band" type="band"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
 
-            <xs:element name="queries">
+            <xs:element name="queries" minOccurs="0" maxOccurs='1'>
                 <xs:complexType>
                     <xs:sequence minOccurs="0">
                         <xs:element name="query" type="reportQuery"/>

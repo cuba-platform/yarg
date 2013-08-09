@@ -141,7 +141,7 @@ public class Document {
                         CTMarker from = ctTwoCellAnchor.getFrom();
                         CTMarker to = ctTwoCellAnchor.getTo();
                         String sheetName = worksheets.get(worksheets.size() - 1).name;
-                        range = new Range(sheetName, from.getCol(), from.getRow(), to.getCol(), to.getRow());
+                        range = new Range(sheetName, from.getCol() + 1, from.getRow() + 1, to.getCol() + 1, to.getRow() + 1);
                     }
 
                     chartSpaces.put(range, new ChartPair((CTChartSpace) o, drawing));

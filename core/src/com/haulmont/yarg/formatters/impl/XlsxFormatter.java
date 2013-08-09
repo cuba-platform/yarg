@@ -448,8 +448,12 @@ public class XlsxFormatter extends AbstractFormatter {
         return alreadyRenderedRanges;
     }
 
-    protected Range getBandRange(BandData childBand) {
-        CTDefinedName targetRange = template.getDefinedName(childBand.getName());
+    protected Range getBandRange(BandData band) {
+        CTDefinedName targetRange = template.getDefinedName(band.getName());
+        if (targetRange == null) {
+            throw new ReportingException(String.format("Could not find named range for band [%s]", band.getName()));
+        }
+
         return Range.fromFormula(targetRange.getValue());
     }
 

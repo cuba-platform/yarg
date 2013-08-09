@@ -48,6 +48,7 @@ assemble {
     new File("result").mkdir();
     new File("result/integration").mkdir();
     new File("result/smoke").mkdir();
+    new File("result/sample").mkdir();
 }
 
 dependencies {

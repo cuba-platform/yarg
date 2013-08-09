@@ -111,30 +111,36 @@ public class DefaultXmlReader implements XmlReader {
     }
 
     protected List<ReportParameter> parseInputParameters(Element rootElement) throws FileNotFoundException, ClassNotFoundException {
-        Element inputParametersElement = rootElement.element("parameters");
-        List<Element> parameters = inputParametersElement.elements("parameter");
         List<ReportParameter> reportParameters = new ArrayList<ReportParameter>();
-        for (Element parameter : parameters) {
-            String name = parameter.attribute("name").getText();
-            String alias = parameter.attribute("alias").getText();
-            Boolean required = Boolean.valueOf(parameter.attribute("required").getText());
-            Class type = Class.forName(parameter.attribute("class").getText());
 
-            ReportParameterImpl reportParameter = new ReportParameterImpl(name, alias, required, type);
-            reportParameters.add(reportParameter);
+        Element inputParametersElement = rootElement.element("parameters");
+        if (inputParametersElement != null) {
+            List<Element> parameters = inputParametersElement.elements("parameter");
+            for (Element parameter : parameters) {
+                String name = parameter.attribute("name").getText();
+                String alias = parameter.attribute("alias").getText();
+                Boolean required = Boolean.valueOf(parameter.attribute("required").getText());
+                Class type = Class.forName(parameter.attribute("class").getText());
+
+                ReportParameterImpl reportParameter = new ReportParameterImpl(name, alias, required, type);
+                reportParameters.add(reportParameter);
+            }
         }
 
         return reportParameters;
     }
 
     protected List<ReportFieldFormat> parseValueFormats(Element rootElement) throws FileNotFoundException, ClassNotFoundException {
-        Element inputParametersElement = rootElement.element("formats");
-        List<Element> parameters = inputParametersElement.elements("format");
         List<ReportFieldFormat> reportParameters = new ArrayList<ReportFieldFormat>();
-        for (Element parameter : parameters) {
-            String name = parameter.attribute("name").getText();
-            String format = parameter.attribute("format").getText();
-            reportParameters.add(new ReportFieldFormatImpl(name, format));
+        Element formatsElement = rootElement.element("formats");
+
+        if (formatsElement != null) {
+            List<Element> parameters = formatsElement.elements("format");
+            for (Element parameter : parameters) {
+                String name = parameter.attribute("name").getText();
+                String format = parameter.attribute("format").getText();
+                reportParameters.add(new ReportFieldFormatImpl(name, format));
+            }
         }
 
         return reportParameters;
@@ -142,28 +148,33 @@ public class DefaultXmlReader implements XmlReader {
 
     protected void parseChildBandDefinitions(Element bandDefinitionElement, BandBuilder parentBandDefinitionBuilder) throws FileNotFoundException, ClassNotFoundException {
         Element childrenBandsElement = bandDefinitionElement.element("bands");
-        List<Element> childrenBands = childrenBandsElement.elements("band");
-        for (Element childBandElement : childrenBands) {
-            String childBandName = childBandElement.attribute("name").getText();
-            BandOrientation orientation = BandOrientation.fromId(childBandElement.attribute("orientation").getText());
-            BandBuilder childBandDefinitionBuilder =
-                    new BandBuilder()
-                            .name(childBandName)
-                            .orientation(orientation);
+        if (childrenBandsElement != null) {
+            List<Element> childrenBands = childrenBandsElement.elements("band");
+            for (Element childBandElement : childrenBands) {
+                String childBandName = childBandElement.attribute("name").getText();
+                BandOrientation orientation = BandOrientation.fromId(childBandElement.attribute("orientation").getText());
+                BandBuilder childBandDefinitionBuilder =
+                        new BandBuilder()
+                                .name(childBandName)
+                                .orientation(orientation);
 
-            Element reportQueriesElement = childBandElement.element("queries");
-            List<Element> reportQueryElements = reportQueriesElement.elements("query");
-            for (Element queryElement : reportQueryElements) {
-                String script = queryElement.element("script").getText();
-                String type = queryElement.attribute("type").getText();
-                String queryName = queryElement.attribute("name").getText();
+                Element reportQueriesElement = childBandElement.element("queries");
 
-                childBandDefinitionBuilder.query(queryName, script, type);
+                if (reportQueriesElement != null) {
+                    List<Element> reportQueryElements = reportQueriesElement.elements("query");
+                    for (Element queryElement : reportQueryElements) {
+                        String script = queryElement.element("script").getText();
+                        String type = queryElement.attribute("type").getText();
+                        String queryName = queryElement.attribute("name").getText();
+
+                        childBandDefinitionBuilder.query(queryName, script, type);
+                    }
+                }
+
+                parseChildBandDefinitions(childBandElement, childBandDefinitionBuilder);
+                ReportBand childBandDefinition = childBandDefinitionBuilder.build();
+                parentBandDefinitionBuilder.child(childBandDefinition);
             }
-
-            parseChildBandDefinitions(childBandElement, childBandDefinitionBuilder);
-            ReportBand childBandDefinition = childBandDefinitionBuilder.build();
-            parentBandDefinitionBuilder.child(childBandDefinition);
         }
     }
 }
