@@ -138,7 +138,6 @@ public class XlsxFormatter extends AbstractFormatter {
                                     Range temlpateCaptionsRange = Range.fromFormula(captions.getStrRef().getF());
                                     Range templateDataRange = Range.fromFormula(data.getNumRef().getF());
 
-                                    //todo separate handling for data and captions
                                     for (Range range : rangeDependencies.keySet()) {
                                         if (range.contains(temlpateCaptionsRange)) {
                                             List<Range> seriesResultRanges = rangeDependencies.get(range);
@@ -148,13 +147,28 @@ public class XlsxFormatter extends AbstractFormatter {
 
                                             Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
                                             temlpateCaptionsRange = temlpateCaptionsRange.shift(offset.downOffset, offset.rightOffset);
-                                            templateDataRange = templateDataRange.shift(offset.downOffset, offset.rightOffset);
 
                                             Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
                                             temlpateCaptionsRange = temlpateCaptionsRange.grow(grow.downOffset, grow.rightOffset);
-                                            templateDataRange = templateDataRange.grow(grow.downOffset, grow.rightOffset);
 
                                             captions.getStrRef().setF(temlpateCaptionsRange.toFormula());
+                                            break;
+                                        }
+                                    }
+
+                                    for (Range range : rangeDependencies.keySet()) {
+                                        if (range.contains(templateDataRange)) {
+                                            List<Range> seriesResultRanges = rangeDependencies.get(range);
+
+                                            Range seriesFirstRange = getFirst(seriesResultRanges);
+                                            Range seriesLastRange = getLast(seriesResultRanges);
+
+                                            Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
+                                            templateDataRange = templateDataRange.shift(offset.downOffset, offset.rightOffset);
+
+                                            Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
+                                            templateDataRange = templateDataRange.grow(grow.downOffset, grow.rightOffset);
+
                                             data.getNumRef().setF(templateDataRange.toFormula());
                                             break;
                                         }
@@ -180,7 +194,6 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void updateFormulas() {
-        //todo support growing formulas inside 1 parent band
         for (Cell cellWithFormula : innerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
             SheetData sheetData = (SheetData) row.getParent();
@@ -211,19 +224,42 @@ public class XlsxFormatter extends AbstractFormatter {
             Worksheet worksheet = (Worksheet) sheetData.getParent();
             Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
             Range originalFormulaRange = formulaRange;
+            CellReference formulaCellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
+
+            BandData parentBand = null;
+            for (Range resultRange : rangeDependencies.values()) {
+                if (resultRange.contains(formulaCellReference)) {
+                    BandData formulaCellBand = bandsToResultRanges.inverse().get(resultRange);
+                    parentBand = formulaCellBand.getParentBand();
+                }
+            }
+
             for (Range templateRange : rangeDependencies.keySet()) {
                 if (templateRange.contains(formulaRange)) {
-                    List<Range> resultRanges = rangeDependencies.get(templateRange);
+                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.get(templateRange));
+                    for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
+                        Range resultRange = iterator.next();
+                        BandData bandData = bandsToResultRanges.inverse().get(resultRange);
+                        if (!bandData.getParentBand().equals(parentBand)) {
+                            iterator.remove();
+                        }
+                    }
 
-                    Range firstResultRange = getFirst(resultRanges);
-                    Range lastResultRange = getLast(resultRanges);
+                    if (resultRanges.size() > 0) {
+                        Range firstResultRange = getFirst(resultRanges);
+                        Range lastResultRange = getLast(resultRanges);
 
-                    Offset offset = calculateOffset(templateRange, firstResultRange);
-                    formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
+                        Offset offset = calculateOffset(templateRange, firstResultRange);
+                        formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
 
-                    Offset grow = calculateOffset(firstResultRange, lastResultRange);
-                    formulaRange = formulaRange.grow(grow.downOffset, grow.rightOffset);
-                    updateFormula(cellWithFormula, originalFormulaRange, formulaRange);
+                        Offset grow = calculateOffset(firstResultRange, lastResultRange);
+                        formulaRange = formulaRange.grow(grow.downOffset, grow.rightOffset);
+                        updateFormula(cellWithFormula, originalFormulaRange, formulaRange);
+                    } else {
+                        cellWithFormula.setF(null);
+                        cellWithFormula.setV("ERROR: Formula references to empty range");
+                        cellWithFormula.setT(STCellType.STR);
+                    }
                     break;
                 }
             }
