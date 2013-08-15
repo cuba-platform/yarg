@@ -84,7 +84,10 @@ dependencies {
     compile(group: "batik", name: "batik-css", version: "1.5")
     compile(group: "xalan", name: "xalan", version: "2.7.1")
     compile(group: "xalan", name: "serializer", version: "2.7.1")
-    compile(group: "com.lowagie", name: "itext", version: "2.1.0")
+    compile(group: "com.lowagie", name: "itext", version: "2.1.0") {
+        exclude(group: 'bouncycastle', module: 'bcmail-jdk14')
+        exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
+    }
     compile(group: 'com.haulmont.thirdparty', name: 'poi', version: '3.9.20130515')
     compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.8')
     compile(group: 'commons-codec', name: 'commons-codec', version: '1.6')
