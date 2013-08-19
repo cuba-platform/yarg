@@ -103,7 +103,7 @@ public class XlsxIntegrationTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/integration/result.xlsx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
-                new ReportTemplateImpl(null, "./test/integration/test.xlsx", "./test/integration/test.xlsx", ReportOutputType.xlsx), outputStream));
+                new ReportTemplateImpl("", "./test/integration/test.xlsx", "./test/integration/test.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

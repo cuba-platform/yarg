@@ -5,6 +5,7 @@
  */
 package com.haulmont.yarg.structure.impl;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.yarg.formatters.CustomReport;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
@@ -27,20 +28,28 @@ public class ReportTemplateImpl implements ReportTemplate {
     ReportTemplateImpl() {
     }
 
-    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType) throws IOException {
-        this.code = code;
-        this.documentName = documentName;
-        this.documentPath = documentPath;
-        this.documentContent = FileUtils.readFileToByteArray(new File(documentPath));
-        this.reportOutputType = reportOutputType;
-    }
-
     public ReportTemplateImpl(String code, String documentName, String documentPath, InputStream documentContent, ReportOutputType reportOutputType) throws IOException {
         this.code = code;
         this.documentName = documentName;
         this.documentPath = documentPath;
         this.documentContent = IOUtils.toByteArray(documentContent);
         this.reportOutputType = reportOutputType;
+    }
+
+    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType) throws IOException {
+        this(code, documentName, documentPath, FileUtils.openInputStream(new File(documentPath)), reportOutputType);
+
+        validate();
+    }
+
+    void validate() {
+        if (!isCustom()) {
+            Preconditions.checkNotNull(this.code, "\"code\" parameter can not be null");
+            Preconditions.checkNotNull(this.documentName, "\"documentName\" parameter can not be null");
+            Preconditions.checkNotNull(this.documentPath, "\"documentPath\" parameter can not be null");
+            Preconditions.checkNotNull(this.reportOutputType, "\"reportOutputType\" parameter can not be null");
+            Preconditions.checkNotNull(this.documentContent, "\"documentContent\" can not be null");
+        }
     }
 
     @Override

@@ -38,7 +38,7 @@ public class XlsIntegrationTest {
         FileOutputStream outputStream = new FileOutputStream("./result/integration/result-with-formulas.xls");
 
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
-                new ReportTemplateImpl(null, "smoketest/test.xls", "./test/integration/test-with-formulas.xls", ReportOutputType.xls), outputStream));
+                new ReportTemplateImpl("", "smoketest/test.xls", "./test/integration/test-with-formulas.xls", ReportOutputType.xls), outputStream));
 
         formatter.renderDocument();
 
@@ -54,7 +54,7 @@ public class XlsIntegrationTest {
         FileOutputStream outputStream = new FileOutputStream("./result/integration/result-with-aggregation.xls");
 
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
-                new ReportTemplateImpl(null, "smoketest/test.xls", "./test/integration/test-with-aggregation.xls", ReportOutputType.xls), outputStream));
+                new ReportTemplateImpl("", "smoketest/test.xls", "./test/integration/test-with-aggregation.xls", ReportOutputType.xls), outputStream));
 
         formatter.renderDocument();
 

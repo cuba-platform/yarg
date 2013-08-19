@@ -10,6 +10,7 @@
  */
 package com.haulmont.yarg.formatters.impl.doc;
 
+import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.AbstractFormatter;
 import com.sun.star.container.NoSuchElementException;
@@ -69,7 +70,7 @@ public class TableManager {
                 }
             }
         } catch (Exception e) {
-            throw new ReportingException(e);
+            throw new ReportFormattingException(e);
         }
         return false;
     }

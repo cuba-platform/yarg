@@ -5,6 +5,7 @@
  */
 package com.haulmont.yarg.structure.impl;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.yarg.structure.ReportParameter;
 
 public class ReportParameterImpl implements ReportParameter {
@@ -15,6 +16,9 @@ public class ReportParameterImpl implements ReportParameter {
     protected Class paramClass;
 
     public ReportParameterImpl(String name, String alias, Boolean required, Class paramClass) {
+        Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
+        Preconditions.checkNotNull(alias, "\"alias\" parameter can not be null");
+
         this.name = name;
         this.alias = alias;
         this.required = required;

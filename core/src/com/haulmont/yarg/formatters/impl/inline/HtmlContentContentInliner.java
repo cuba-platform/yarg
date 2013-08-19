@@ -10,6 +10,7 @@
  */
 package com.haulmont.yarg.formatters.impl.inline;
 
+import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.sun.star.beans.PropertyValue;
@@ -81,7 +82,7 @@ public class HtmlContentContentInliner implements ContentInliner {
             if (!inserted)
                 destination.getText().insertString(textRange, "", true);
         } catch (Exception e) {
-            throw new ReportingException("An error occurred while inserting html to doc file", e);
+            throw new ReportFormattingException("An error occurred while inserting html to doc file", e);
         }
     }
 
@@ -98,7 +99,7 @@ public class HtmlContentContentInliner implements ContentInliner {
             text.setValue("");
             wordPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
         } catch (Exception e) {
-            throw new ReportingException("An error occurred while inserting html to docx file", e);
+            throw new ReportFormattingException("An error occurred while inserting html to docx file", e);
         }
     }
 

@@ -11,6 +11,7 @@
 package com.haulmont.yarg.formatters.impl;
 
 import com.google.common.base.Preconditions;
+import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
@@ -165,11 +166,11 @@ public abstract class AbstractFormatter implements ReportFormatter {
         return new BandPathAndParameterName(bandPathPart, paramNamePart);
     }
 
-    protected ReportingException wrapWithReportingException(String message, Exception e) {
-        return new ReportingException(message + " Template name [" + reportTemplate.getDocumentName() + "]", e);
+    protected ReportFormattingException wrapWithReportingException(String message, Exception e) {
+        return new ReportFormattingException(message + ". Template name [" + reportTemplate.getDocumentName() + "]", e);
     }
 
-    protected ReportingException wrapWithReportingException(String message) {
-        return new ReportingException(message + " Template name [" + reportTemplate.getDocumentName() + "]");
+    protected ReportFormattingException wrapWithReportingException(String message) {
+        return new ReportFormattingException(message + ". Template name [" + reportTemplate.getDocumentName() + "]");
     }
 }

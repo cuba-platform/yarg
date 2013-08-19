@@ -27,7 +27,7 @@ public class SqlLoaderTest {
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new ReportQueryImpl("", "select login, password from user where login in (${login})", "sql"), rootBand, params);
+                    new ReportQueryImpl("", "select login, password from user where login in (${login})", "sql", null, null), rootBand, params);
             printResult(result);
             Assert.assertEquals(2, result.size());
         } catch (Exception e) {
@@ -52,7 +52,7 @@ public class SqlLoaderTest {
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new ReportQueryImpl("", "select login, password from user where login in (${login})", "sql"), rootBand, params);
+                    new ReportQueryImpl("", "select login, password from user where login in (${login})", "sql", null, null), rootBand, params);
             printResult(result);
             Assert.assertEquals(2, result.size());
         } catch (Exception e) {

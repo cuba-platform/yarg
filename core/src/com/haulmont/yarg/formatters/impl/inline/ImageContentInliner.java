@@ -10,6 +10,7 @@
  */
 package com.haulmont.yarg.formatters.impl.inline;
 
+import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.exception.ReportingException;
 import org.apache.commons.io.IOUtils;
 
@@ -35,7 +36,7 @@ public class ImageContentInliner extends AbstractInliner {
         try {
             return IOUtils.toByteArray(new URL(paramValue.toString()).openStream());
         } catch (IOException e) {
-            throw new ReportingException("Unable to get image from " + paramValue, e);
+            throw new ReportFormattingException("Unable to get image from " + paramValue, e);
         }
     }
 }

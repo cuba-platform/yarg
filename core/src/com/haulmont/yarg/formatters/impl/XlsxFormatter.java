@@ -72,7 +72,7 @@ public class XlsxFormatter extends AbstractFormatter {
             SaveToZipFile saver = new SaveToZipFile(result.getPackage());
             saver.save(outputStream);
         } catch (Docx4JException e) {
-            throw new ReportingException("An error occurred during save result document", e);
+            throw wrapWithReportingException("An error occurred during save result document", e);
         }
     }
 
@@ -88,7 +88,7 @@ public class XlsxFormatter extends AbstractFormatter {
             result.getWorkbook().getCalcPr().setCalcMode(STCalcMode.AUTO);
             result.getWorkbook().getCalcPr().setFullCalcOnLoad(true);
         } catch (Exception e) {
-            throw new ReportingException(String.format("An error occurred while loading template [%s]", reportTemplate.getDocumentName()), e);
+            throw wrapWithReportingException(String.format("An error occurred while loading template [%s]", reportTemplate.getDocumentName()), e);
         }
     }
 
@@ -309,10 +309,16 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void writeBand(BandData childBand) {
-        if (BandOrientation.HORIZONTAL == childBand.getOrientation()) {
-            writeHBand(childBand);
-        } else {
-            writeVBand(childBand);
+        try {
+            if (BandOrientation.HORIZONTAL == childBand.getOrientation()) {
+                writeHBand(childBand);
+            } else {
+                writeVBand(childBand);
+            }
+        } catch (ReportingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw wrapWithReportingException(String.format("An error occurred while rendering band [%s]", childBand.getName()), e);
         }
     }
 
@@ -487,7 +493,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Range getBandRange(BandData band) {
         CTDefinedName targetRange = template.getDefinedName(band.getName());
         if (targetRange == null) {
-            throw new ReportingException(String.format("Could not find named range for band [%s]", band.getName()));
+            throw wrapWithReportingException(String.format("Could not find named range for band [%s]", band.getName()));
         }
 
         return Range.fromFormula(targetRange.getValue());

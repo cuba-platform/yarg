@@ -14,7 +14,12 @@ import java.util.Map;
 public interface ReportQuery {
     String getName();
 
+    /**
+     * Sql, groovy or other script which describes logic of data loading
+     */
     String getScript();
+
+    String getLinkParameterName();
 
     /**
      * @return loader code.

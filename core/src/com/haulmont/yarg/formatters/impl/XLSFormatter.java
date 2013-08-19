@@ -1,5 +1,6 @@
 package com.haulmont.yarg.formatters.impl;
 
+import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.Area;
@@ -205,20 +206,26 @@ public class XLSFormatter extends AbstractFormatter {
 
     protected void writeBand(BandData band) {
         String rangeName = band.getName();
-        HSSFSheet templateSheet = getTemplateSheetForRangeName(templateWorkbook, rangeName);
+        try {
+            HSSFSheet templateSheet = getTemplateSheetForRangeName(templateWorkbook, rangeName);
 
-        if (templateSheet != currentTemplateSheet) { //todo: reimplement. store rownum for each sheet.
-            currentTemplateSheet = templateSheet;
-            rownum = 0;
-        }
+            if (templateSheet != currentTemplateSheet) { //todo: reimplement. store rownum for each sheet.
+                currentTemplateSheet = templateSheet;
+                rownum = 0;
+            }
 
-        HSSFSheet resultSheet = templateToResultSheetsMapping.get(templateSheet);
+            HSSFSheet resultSheet = templateToResultSheetsMapping.get(templateSheet);
 
-        if (BandOrientation.HORIZONTAL == band.getOrientation()) {
-            colnum = 0;
-            writeHorizontalBand(band, templateSheet, resultSheet);
-        } else {
-            writeVerticalBand(band, templateSheet, resultSheet);
+            if (BandOrientation.HORIZONTAL == band.getOrientation()) {
+                colnum = 0;
+                writeHorizontalBand(band, templateSheet, resultSheet);
+            } else {
+                writeVerticalBand(band, templateSheet, resultSheet);
+            }
+        } catch (ReportingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw wrapWithReportingException(String.format("An error occurred while rendering band [%s]", rangeName), e);
         }
     }
 
@@ -454,7 +461,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param firstTargetRangeColumn - first column of target range
      */
     protected void copyMergeRegions(HSSFSheet resultSheet, String rangeName,
-                                  int firstTargetRangeRow, int firstTargetRangeColumn) {
+                                    int firstTargetRangeRow, int firstTargetRangeColumn) {
         int rangeNameIdx = templateWorkbook.getNameIndex(rangeName);
         if (rangeNameIdx == -1) return;
 

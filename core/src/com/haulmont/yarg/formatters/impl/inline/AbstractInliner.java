@@ -5,6 +5,7 @@
  */
 package com.haulmont.yarg.formatters.impl.inline;
 
+import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
@@ -90,7 +91,7 @@ public abstract class AbstractInliner implements ContentInliner {
                 putImage(worksheetPart, pkg, xlsxImage, image, anchor);
             }
         } catch (Exception e) {
-            throw new ReportingException("An error occurred while inserting bitmap to xlsx file", e);
+            throw new ReportFormattingException("An error occurred while inserting bitmap to xlsx file", e);
         }
     }
 
@@ -182,7 +183,7 @@ public abstract class AbstractInliner implements ContentInliner {
                 text.setValue("");
             }
         } catch (Exception e) {
-            throw new ReportingException("An error occurred while inserting bitmap to docx file", e);
+            throw new ReportFormattingException("An error occurred while inserting bitmap to docx file", e);
         }
     }
 
@@ -212,7 +213,7 @@ public abstract class AbstractInliner implements ContentInliner {
                 picture.resize((double) image.height / actualHeight);
             }
         } catch (IllegalArgumentException e) {
-            throw new ReportingException("An error occurred while inserting bitmap to xls file", e);
+            throw new ReportFormattingException("An error occurred while inserting bitmap to xls file", e);
         }
     }
 
@@ -228,7 +229,7 @@ public abstract class AbstractInliner implements ContentInliner {
                 }
             }
         } catch (Exception e) {
-            throw new ReportingException("An error occurred while inserting bitmap to doc file", e);
+            throw new ReportFormattingException("An error occurred while inserting bitmap to doc file", e);
         }
     }
 

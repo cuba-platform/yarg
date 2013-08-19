@@ -7,7 +7,7 @@ import com.haulmont.yarg.structure.ReportQuery;
 import java.util.ArrayList;
 
 public class BandBuilder {
-    ReportBandImpl bandDefinition = new ReportBandImpl(null, null, new ArrayList<ReportBand>(), new ArrayList<ReportQuery>(), BandOrientation.HORIZONTAL);
+    ReportBandImpl bandDefinition = new ReportBandImpl();
 
     public BandBuilder child(ReportBand bandDefinition) {
         Preconditions.checkNotNull(bandDefinition, "\"bandDefinition\" parameter can not be null");
@@ -18,10 +18,12 @@ public class BandBuilder {
     }
 
     public BandBuilder query(String name, String script, String loaderType) {
-        Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
-        Preconditions.checkNotNull(script, "\"script\" parameter can not be null");
-        Preconditions.checkNotNull(loaderType, "\"loaderType\" parameter can not be null");
-        bandDefinition.reportQueries.add(new ReportQueryImpl(name, script, loaderType));
+        bandDefinition.reportQueries.add(new ReportQueryImpl(name, script, loaderType, null, null));
+        return this;
+    }
+
+    public BandBuilder query(String name, String script, String loaderType, String linkParameterName) {
+        bandDefinition.reportQueries.add(new ReportQueryImpl(name, script, loaderType, linkParameterName, null));
         return this;
     }
 
@@ -40,6 +42,7 @@ public class BandBuilder {
     }
 
     public ReportBand build() {
+        bandDefinition.validate();
         return bandDefinition;
     }
 }
