@@ -62,7 +62,7 @@ dependencies {
     compile(group: 'log4j', name: 'log4j', version: '1.2.16')
     compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5')
     compile(group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5')
-    compile(group: 'org.codehaus.groovy', name: 'groovy', version: '1.7.10')
+    compile(group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6')
     compile(group: 'antlr', name: 'antlr', version: '2.7.7')
     compile(group: 'asm', name: 'asm', version: '3.3.1')
     compile(group: 'com.google.guava', name: 'guava', version: '13.0.1')
