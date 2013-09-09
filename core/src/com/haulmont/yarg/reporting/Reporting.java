@@ -6,23 +6,23 @@
 package com.haulmont.yarg.reporting;
 
 import com.google.common.base.Preconditions;
-import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
-import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
-import com.haulmont.yarg.structure.*;
 import com.haulmont.yarg.structure.BandData;
-import org.apache.commons.collections.CollectionUtils;
+import com.haulmont.yarg.structure.Report;
+import com.haulmont.yarg.structure.ReportTemplate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +90,7 @@ public class Reporting implements ReportingAPI {
         String outputNamePattern = reportTemplate.getOutputNamePattern();
         String outputName = reportTemplate.getDocumentName();
         Pattern pattern = Pattern.compile("\\$\\{([A-z0-9_]+)\\.([A-z0-9_]+)\\}");
-        if (outputNamePattern != null) {
+        if (StringUtils.isNotBlank(outputNamePattern)) {
             Matcher matcher = pattern.matcher(outputNamePattern);
             if (matcher.find()) {
                 String bandName = matcher.group(1);
