@@ -89,7 +89,7 @@ dependencies {
         exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
     }
     compile(group: 'com.haulmont.thirdparty', name: 'poi', version: '3.9.20130515')
-    compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.8')
+    compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9')
     compile(group: 'commons-codec', name: 'commons-codec', version: '1.6')
     compile(group: 'com.haulmont.thirdparty', name: 'core-renderer', version: 'R8')
     compile(group: "com.haulmont.thirdparty", name: "docx4j", version: "2.8.1.20130201")
