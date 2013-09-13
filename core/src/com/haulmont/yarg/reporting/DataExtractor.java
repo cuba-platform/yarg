@@ -30,10 +30,13 @@ class DataExtractor {
             rootBand.getData().putAll(rootBandData.get(0));
         }
 
-        for (ReportBand definition : report.getRootBand().getChildren()) {
-            List<BandData> bands = createBands(definition, rootBand, params);
-            rootBand.addChildren(bands);
-            rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
+        List<ReportBand> firstLevelBands = report.getRootBand().getChildren();
+        if (firstLevelBands != null) {
+            for (ReportBand definition : firstLevelBands) {
+                List<BandData> bands = createBands(definition, rootBand, params);
+                rootBand.addChildren(bands);
+                rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
+            }
         }
     }
 
@@ -48,9 +51,11 @@ class DataExtractor {
             BandData band = new BandData(definition.getName(), parentBand, definition.getBandOrientation());
             band.setData(data);
             Collection<ReportBand> childrenBandDefinitions = definition.getChildren();
-            for (ReportBand childDefinition : childrenBandDefinitions) {
-                List<BandData> childBands = createBands(childDefinition, band, params);
-                band.addChildren(childBands);
+            if (childrenBandDefinitions != null) {
+                for (ReportBand childDefinition : childrenBandDefinitions) {
+                    List<BandData> childBands = createBands(childDefinition, band, params);
+                    band.addChildren(childBands);
+                }
             }
             bandsList.add(band);
         }

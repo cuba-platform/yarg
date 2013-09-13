@@ -591,7 +591,7 @@ public class XLSFormatter extends AbstractFormatter {
         } else {
             String bandName = band.getName();
             String fullParamName = bandName + "." + parameterName;
-            if (valuesFormats.containsKey(fullParamName)) {
+            if (valuesFormats != null && valuesFormats.containsKey(fullParamName)) {
                 String formatString = valuesFormats.get(fullParamName).getFormat();
                 for (ContentInliner contentInliner : contentInliners) {
                     Matcher matcher = contentInliner.getTagPattern().matcher(formatString);

@@ -48,12 +48,14 @@ public class DefaultXmlWriter implements XmlWriter {
 
     protected void writeInputParameters(Report report, Element root) {
         Element reportTemplatesElement = root.addElement("parameters");
-        for (ReportParameter reportParameter : report.getReportParameters()) {
-            Element reportTemplateElement = reportTemplatesElement.addElement("parameter");
-            reportTemplateElement.addAttribute("name", reportParameter.getName());
-            reportTemplateElement.addAttribute("alias", reportParameter.getAlias());
-            reportTemplateElement.addAttribute("required", String.valueOf(reportParameter.getRequired()));
-            reportTemplateElement.addAttribute("class", reportParameter.getParameterClass().getCanonicalName());
+        if (report.getReportParameters() != null) {
+            for (ReportParameter reportParameter : report.getReportParameters()) {
+                Element reportTemplateElement = reportTemplatesElement.addElement("parameter");
+                reportTemplateElement.addAttribute("name", reportParameter.getName());
+                reportTemplateElement.addAttribute("alias", reportParameter.getAlias());
+                reportTemplateElement.addAttribute("required", String.valueOf(reportParameter.getRequired()));
+                reportTemplateElement.addAttribute("class", reportParameter.getParameterClass().getCanonicalName());
+            }
         }
     }
 
@@ -85,16 +87,20 @@ public class DefaultXmlWriter implements XmlWriter {
         Element childrenBandsElement = element.addElement("bands");
 
         Element reportQueriesElement = element.addElement("queries");
-        for (ReportQuery reportQuery : bandDefinition.getReportQueries()) {
-            Element reportQueryElement = reportQueriesElement.addElement("query");
-            reportQueryElement.addAttribute("name", reportQuery.getName());
-            reportQueryElement.addAttribute("type", reportQuery.getLoaderType());
-            reportQueryElement.addElement("script").setText(reportQuery.getScript());
+        if (bandDefinition.getReportQueries() != null) {
+            for (ReportQuery reportQuery : bandDefinition.getReportQueries()) {
+                Element reportQueryElement = reportQueriesElement.addElement("query");
+                reportQueryElement.addAttribute("name", reportQuery.getName());
+                reportQueryElement.addAttribute("type", reportQuery.getLoaderType());
+                reportQueryElement.addElement("script").setText(reportQuery.getScript());
+            }
         }
 
-        for (ReportBand childBandDefinition : bandDefinition.getChildren()) {
-            Element childBandElement = childrenBandsElement.addElement("band");
-            writeBandDefinition(childBandElement, childBandDefinition);
+        if (bandDefinition.getChildren() != null) {
+            for (ReportBand childBandDefinition : bandDefinition.getChildren()) {
+                Element childBandElement = childrenBandsElement.addElement("band");
+                writeBandDefinition(childBandElement, childBandDefinition);
+            }
         }
     }
 }
