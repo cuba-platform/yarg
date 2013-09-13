@@ -1,5 +1,6 @@
 package com.haulmont.yarg.loaders.impl;
 
+import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.structure.BandData;
 
 import java.util.ArrayList;
@@ -29,6 +30,11 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             Map<String, Object> outputParameters = new HashMap<String, Object>();
             if (resultRecordObject instanceof Object[]) {
                 Object[] resultRecord = (Object[]) resultRecordObject;
+
+                if (resultRecord.length != parametersNames.size()) {
+                    throw new DataLoadingException(String.format("Result set size [%d] does not match output fields count [%s]. Detected output fields %s", resultRecord.length, parametersNames.size(), parametersNames));
+                }
+
                 for (Integer i = 0; i < resultRecord.length; i++) {
                     outputParameters.put(parametersNames.get(i), resultRecord[i]);
                 }

@@ -31,7 +31,7 @@ public class DataLoadersTest {
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new ReportQueryImpl("", "select login, password from user where create_ts > ${startDate} and login like ${start} limit 10", "sql", null, null), rootBand, params);
+                    new ReportQueryImpl("", "select login as \"login\", password as \"password\" from user where create_ts > ${startDate} and login like ${start} limit 10", "sql", null, null), rootBand, params);
             printResult(result);
         } catch (Exception e) {
             e.printStackTrace();
