@@ -35,7 +35,7 @@ public class ReportingTest {
 
         ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).templateCode("XLS"), new FileOutputStream("./result/smoke/result.xls"));
 
-        Assert.assertEquals("myFileName.txt", reportOutputDocument.getDocumentName());
+        Assert.assertEquals("myFileName.xls", reportOutputDocument.getDocumentName());
 
         testDatabase.stop();
     }

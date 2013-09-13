@@ -3,7 +3,7 @@
  * @author degtyarjov
  * @version $Id$
  */
-package console;
+package com.haulmont.yarg.console;
 
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;

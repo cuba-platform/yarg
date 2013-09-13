@@ -13,6 +13,7 @@ import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.Report;
+import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -115,9 +116,14 @@ public class Reporting implements ReportingAPI {
                     throw new ReportingException(String.format("No data in band [%s] found.This band is used for output file name generation.", bandWithFileName));
                 }
             } else {
-                return outputNamePattern;
+                outputName = outputNamePattern;
             }
         }
+
+        if (ReportOutputType.custom != reportTemplate.getOutputType()) {
+            outputName = String.format("%s.%s", StringUtils.substringBeforeLast(outputName, "."), reportTemplate.getOutputType().getId());
+        }
+
         return outputName;
     }
 }
