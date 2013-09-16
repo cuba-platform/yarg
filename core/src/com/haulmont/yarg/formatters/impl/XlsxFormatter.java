@@ -22,8 +22,11 @@ import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.*;
 import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
@@ -194,6 +197,9 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void updateFormulas() {
+        int formulaCount = 1;
+        CTCalcChain calculationChain = getCalculationChain();
+
         for (Cell cellWithFormula : innerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
             SheetData sheetData = (SheetData) row.getParent();
@@ -210,7 +216,7 @@ public class XlsxFormatter extends AbstractFormatter {
                             Offset offset = calculateOffset(templateRange, resultRange);
 
                             formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
-                            updateFormula(cellWithFormula, originalFormulaRange, formulaRange);
+                            updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
                             break;
                         }
                     }
@@ -254,7 +260,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
                         Offset grow = calculateOffset(firstResultRange, lastResultRange);
                         formulaRange = formulaRange.grow(grow.downOffset, grow.rightOffset);
-                        updateFormula(cellWithFormula, originalFormulaRange, formulaRange);
+                        updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
                     } else {
                         cellWithFormula.setF(null);
                         cellWithFormula.setV("ERROR: Formula references to empty range");
@@ -266,9 +272,30 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange) {
+    protected CTCalcChain getCalculationChain() {
+        CTCalcChain calculationChain = null;
+        try {
+            CalcChain part = (CalcChain) result.getPackage().getParts().get(new PartName("/xl/calcChain.xml"));
+            if (part != null) {
+                calculationChain = part.getJaxbElement();
+                calculationChain.getC().clear();
+            }
+        } catch (InvalidFormatException e) {
+            //do nothing
+        }
+        return calculationChain;
+    }
+
+    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange, CTCalcChain calculationChain, int formulaCount) {
         CTCellFormula formula = cellWithFormula.getF();
         formula.setValue(formula.getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
+
+        if (calculationChain != null) {
+            CTCalcCell calcCell = new CTCalcCell();
+            calcCell.setR(cellWithFormula.getR());
+            calcCell.setI(formulaCount);
+            calculationChain.getC().add(calcCell);
+        }
     }
 
     protected Offset calculateOffset(Range from, Range to) {
