@@ -32,12 +32,21 @@ public class Reporting implements ReportingAPI {
 
     protected ReportLoaderFactory loaderFactory;
 
+    protected DataExtractor dataExtractor;
+
     public void setFormatterFactory(ReportFormatterFactory formatterFactory) {
         this.formatterFactory = formatterFactory;
     }
 
     public void setLoaderFactory(ReportLoaderFactory loaderFactory) {
         this.loaderFactory = loaderFactory;
+        if (loaderFactory != null && dataExtractor == null) {
+            dataExtractor = new DataExtractorImpl(loaderFactory);
+        }
+    }
+
+    public void setDataExtractor(DataExtractorImpl dataExtractor) {
+        this.dataExtractor = dataExtractor;
     }
 
     @Override
@@ -66,7 +75,7 @@ public class Reporting implements ReportingAPI {
             rootBand.setReportFieldFormats(report.getReportFieldFormats());
             rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
-            new DataExtractor(loaderFactory).extractData(report, params, rootBand);
+            dataExtractor.extractData(report, params, rootBand);
 
             if (reportTemplate.isCustom()) {
                 try {

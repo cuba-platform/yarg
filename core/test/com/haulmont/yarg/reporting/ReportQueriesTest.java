@@ -2,7 +2,6 @@ package com.haulmont.yarg.reporting;
 
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
-import com.haulmont.yarg.reporting.DataExtractor;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.Report;
 import com.haulmont.yarg.structure.impl.BandBuilder;
@@ -32,7 +31,7 @@ public class ReportQueriesTest {
         rootBand.setReportFieldFormats(report.getReportFieldFormats());
         rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
-        new DataExtractor(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))).extractData(report, new HashMap<String, Object>(), rootBand);
+        new DataExtractorImpl(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))).extractData(report, new HashMap<String, Object>(), rootBand);
 
         List<BandData> bands = rootBand.getChildrenByName("Band1");
         for (BandData band : bands) {
