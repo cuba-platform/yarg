@@ -3,6 +3,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.structure.impl.ReportQueryImpl;
 import junit.framework.Assert;
+import utils.TestDatabase;
 import org.junit.Test;
 
 import java.util.*;

@@ -12,15 +12,8 @@ import java.util.regex.Pattern;
  * @version $Id: AbstractDbDataLoader.java 9328 2012-10-18 15:28:32Z artamonov $
  */
 public abstract class AbstractDbDataLoader extends AbstractDataLoader {
-    protected void addParentBandDataToParameters(BandData parentBand, Map<String, Object> currentParams) {
-        if (parentBand != null) {
-            String parentBandName = parentBand.getName();
 
-            for (Map.Entry<String, Object> entry : parentBand.getData().entrySet()) {
-                currentParams.put(parentBandName + "." + entry.getKey(), entry.getValue());
-            }
-        }
-    }
+    public static final Pattern COMMON_PARAM_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
 
     protected List<Map<String, Object>> fillOutputData(List resList, List<String> parametersNames) {
         List<Map<String, Object>> outputData = new ArrayList<Map<String, Object>>();
@@ -58,30 +51,24 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         }
 
         List<QueryParameter> queryParameters = new ArrayList<QueryParameter>();
-        List<Object> values = new ArrayList<Object>();
+        HashSet<String> paramNames = findParameterNames(query);
 
-        int paramCount = 1;
-        for (Map.Entry<String, Object> entry : currentParams.entrySet()) {
-            // Remembers ${alias} positions
-            String paramName = entry.getKey();
-            Object paramValue = entry.getValue();
-
+        for (String paramName : paramNames) {
+            Object paramValue = currentParams.get(paramName);
             String alias = "${" + paramName + "}";
             String paramNameRegexp = "\\$\\{" + paramName + "\\}";
             String deleteRegexp = "(?i)\\s*(and|or)?\\s+[\\w|\\d|\\.|\\_]+\\s+(=|>=|<=|like|>|<)\\s*" + paramNameRegexp;
 
-            //if value == null - removing condition from query
-            if (paramValue == null) {
-                // remove unused null parameter
+            if (paramValue == null) {//if value == null - remove condition from query
                 query = query.replaceAll(deleteRegexp, "");
-            } else if (query.contains(alias)) {
+            } else if (query.contains(alias)) {//otherwise - create parameter and save each entry's position
                 Pattern pattern = Pattern.compile(paramNameRegexp);
-                Matcher matcher = pattern.matcher(query);
+                Matcher replaceMatcher = pattern.matcher(query);
 
                 int subPosition = 0;
-                while (matcher.find(subPosition)) {
-                    queryParameters.add(new QueryParameter(paramNameRegexp, paramCount++, convertParameter(paramValue)));
-                    subPosition = matcher.end();
+                while (replaceMatcher.find(subPosition)) {
+                    queryParameters.add(new QueryParameter(paramNameRegexp, subPosition, convertParameter(paramValue)));
+                    subPosition = replaceMatcher.end();
                 }
             }
         }
@@ -94,6 +81,12 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             }
         });
 
+        //normalize params position to 1..n
+        for (int i = 1; i <= queryParameters.size(); i++) {
+            QueryParameter queryParameter = queryParameters.get(i-1);
+            queryParameter.setPosition(i);
+        }
+
         for (QueryParameter parameter : queryParameters) {
             query = insertParameterToQuery(query, parameter);
         }
@@ -104,6 +97,26 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         }
 
         return new QueryPack(query, queryParameters.toArray(new QueryParameter[queryParameters.size()]));
+    }
+
+    protected void addParentBandDataToParameters(BandData parentBand, Map<String, Object> currentParams) {
+        if (parentBand != null) {
+            String parentBandName = parentBand.getName();
+
+            for (Map.Entry<String, Object> entry : parentBand.getData().entrySet()) {
+                currentParams.put(parentBandName + "." + entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    protected HashSet<String> findParameterNames(String query) {
+        HashSet<String> paramsStr = new LinkedHashSet<>();
+        Matcher paramMatcher = COMMON_PARAM_PATTERN.matcher(query);
+        while (paramMatcher.find()) {
+            String paramName = paramMatcher.group(1);
+            paramsStr.add(paramName);
+        }
+        return paramsStr;
     }
 
     protected String insertParameterToQuery(String query, QueryParameter parameter) {
@@ -150,6 +163,10 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             this.position = position;
             this.value = value;
             this.paramRegexp = paramRegexp;
+        }
+
+        public void setPosition(Integer position) {
+            this.position = position;
         }
 
         public Integer getPosition() {

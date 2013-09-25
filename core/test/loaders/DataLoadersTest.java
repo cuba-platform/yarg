@@ -1,3 +1,5 @@
+package loaders;
+
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
@@ -6,6 +8,7 @@ import com.haulmont.yarg.structure.impl.ReportQueryImpl;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import junit.framework.Assert;
 import org.junit.Test;
+import utils.TestDatabase;
 
 import java.sql.Timestamp;
 import java.util.*;

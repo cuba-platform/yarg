@@ -1,3 +1,5 @@
+package utils;
+
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import org.hsqldb.Server;
 

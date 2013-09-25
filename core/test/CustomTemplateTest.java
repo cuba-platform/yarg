@@ -14,6 +14,7 @@ import com.haulmont.yarg.structure.impl.ReportBuilder;
 import com.haulmont.yarg.structure.impl.ReportTemplateBuilder;
 import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;
 import junit.framework.Assert;
+import utils.TestDatabase;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
