@@ -560,25 +560,25 @@ public class XLSFormatter extends AbstractFormatter {
     }
 
     /**
-     * Copies template cell to result cell and fills it with band data
+     * Copies template cell to result cell and fills it with bandData data
      *
-     * @param band              - band
+     * @param bandData              - bandData
      * @param templateCellValue - template cell value
      * @param resultCell        - result cell
      */
-    protected void updateValueCell(BandData rootBand, BandData band, String templateCellValue, HSSFCell resultCell, HSSFPatriarch patriarch) {
+    protected void updateValueCell(BandData rootBand, BandData bandData, String templateCellValue, HSSFCell resultCell, HSSFPatriarch patriarch) {
         String parameterName = templateCellValue;
         parameterName = unwrapParameterName(parameterName);
 
         if (StringUtils.isEmpty(parameterName)) return;
 
-        if (!band.getData().containsKey(parameterName)) {
+        if (!bandData.getData().containsKey(parameterName)) {
             resultCell.setCellValue((String) null);
             return;
         }
 
-        Object parameterValue = band.getData().get(parameterName);
-        Map<String, ReportFieldFormat> valuesFormats = rootBand.getReportFieldConverters();
+        Object parameterValue = bandData.getData().get(parameterName);
+        Map<String, ReportFieldFormat> valuesFormats = rootBand.getReportFieldFormats();
 
         if (parameterValue == null) {
             resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
@@ -589,8 +589,9 @@ public class XLSFormatter extends AbstractFormatter {
         } else if (parameterValue instanceof Date) {
             resultCell.setCellValue((Date) parameterValue);
         } else {
-            String bandName = band.getName();
+            String bandName = bandData.getName();
             String fullParamName = bandName + "." + parameterName;
+
             if (valuesFormats != null && valuesFormats.containsKey(fullParamName)) {
                 String formatString = valuesFormats.get(fullParamName).getFormat();
                 for (ContentInliner contentInliner : contentInliners) {
@@ -601,7 +602,9 @@ public class XLSFormatter extends AbstractFormatter {
                     }
                 }
             }
-            resultCell.setCellValue(new HSSFRichTextString(parameterValue.toString()));
+
+            String paramFullName = bandData.getName() + "." + parameterName;
+            resultCell.setCellValue(new HSSFRichTextString(formatValue(parameterValue, paramFullName)));
         }
     }
 

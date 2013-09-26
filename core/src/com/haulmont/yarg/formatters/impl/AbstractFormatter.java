@@ -12,14 +12,13 @@ package com.haulmont.yarg.formatters.impl;
 
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.ReportFormattingException;
-import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.HtmlContentContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ImageContentInliner;
-import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 import org.apache.commons.lang.StringUtils;
@@ -45,6 +44,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     protected ReportTemplate reportTemplate;
     protected OutputStream outputStream;
     protected Set<ReportOutputType> supportedOutputTypes = new HashSet<>();
+    protected DefaultFormatProvider defaultFormatProvider;
 
     /**
      * Chain of responsibility for content inliners
@@ -80,16 +80,20 @@ public abstract class AbstractFormatter implements ReportFormatter {
         this.contentInliners = contentInliners;
     }
 
+    public void setDefaultFormatProvider(DefaultFormatProvider defaultFormatProvider) {
+        this.defaultFormatProvider = defaultFormatProvider;
+    }
+
     protected String unwrapParameterName(String nameWithAlias) {
         return nameWithAlias.replaceAll("[\\$|\\{|\\}]", "");
     }
 
-    protected String formatValue(Object value, String valueName) {
+    protected String formatValue(Object value, String fullParameterName) {
         String valueString = "";
-        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldConverters();
+        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
         if (value != null) {
-            if (formats != null && formats.containsKey(valueName)) {
-                String formatString = formats.get(valueName).getFormat();
+            if (formats != null && formats.containsKey(fullParameterName)) {
+                String formatString = formats.get(fullParameterName).getFormat();
                 if (value instanceof Number) {
                     DecimalFormat decimalFormat = new DecimalFormat(formatString);
                     valueString = decimalFormat.format(value);
@@ -107,19 +111,24 @@ public abstract class AbstractFormatter implements ReportFormatter {
         return valueString;
     }
 
-    private String defaultFormat(Object value) {
-        return value != null ? value.toString() : null;
+    protected String defaultFormat(Object value) {
+        if (defaultFormatProvider != null) {
+            return defaultFormatProvider.format(value);
+        } else {
+            return value != null ? value.toString() : null;
+        }
     }
 
-    protected String insertBandDataToString(BandData band, String resultStr) {
+    protected String insertBandDataToString(BandData bandData, String resultStr) {
         List<String> parametersToInsert = new ArrayList<String>();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(resultStr);
         while (matcher.find()) {
             parametersToInsert.add(unwrapParameterName(matcher.group()));
         }
         for (String parameterName : parametersToInsert) {
-            Object value = band.getData().get(parameterName);
-            String valueStr = formatValue(value, parameterName);
+            Object value = bandData.getData().get(parameterName);
+            String paramFullName = bandData.getName() + "." + parameterName;
+            String valueStr = formatValue(value, paramFullName);
             resultStr = inlineParameterValue(resultStr, parameterName, valueStr);
         }
         return resultStr;

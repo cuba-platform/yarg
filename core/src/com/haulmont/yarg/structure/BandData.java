@@ -22,7 +22,7 @@ public class BandData {
     protected final BandOrientation orientation;
     protected Set<String> firstLevelBandDefinitionNames = null;
     protected int level;
-    protected Map<String, ReportFieldFormat> reportFieldConverters = new HashMap<>();
+    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<>();
 
 
     public BandData(String name) {
@@ -195,12 +195,12 @@ public class BandData {
 
     public void setReportFieldFormats(List<ReportFieldFormat> reportFieldFormats) {
         for (ReportFieldFormat reportFieldFormat : reportFieldFormats) {
-            this.reportFieldConverters.put(reportFieldFormat.getName(), reportFieldFormat);
+            this.reportFieldFormats.put(reportFieldFormat.getName(), reportFieldFormat);
         }
     }
 
-    public Map<String, ReportFieldFormat> getReportFieldConverters() {
-        return reportFieldConverters;
+    public Map<String, ReportFieldFormat> getReportFieldFormats() {
+        return reportFieldFormats;
     }
 
     @Override

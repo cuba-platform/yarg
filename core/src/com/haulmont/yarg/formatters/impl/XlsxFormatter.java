@@ -586,7 +586,7 @@ public class XlsxFormatter extends AbstractFormatter {
         newRow.setCustomHeight(true);
     }
 
-    protected void updateCell(WorksheetPart worksheetPart, BandData childBand, Cell newCell) {
+    protected void updateCell(WorksheetPart worksheetPart, BandData bandData, Cell newCell) {
         String cellValue = template.getCellValue(newCell);
 
         if (cellValue == null) {
@@ -596,24 +596,26 @@ public class XlsxFormatter extends AbstractFormatter {
 
         if (UNIVERSAL_ALIAS_PATTERN.matcher(cellValue).matches()) {
             String paramName = unwrapParameterName(cellValue);
-            String paramFullName = childBand.getName() + "." + paramName;
-            Object value = childBand.getData().get(paramName);
+            String paramFullName = bandData.getName() + "." + paramName;
+            Object value = bandData.getData().get(paramName);
 
-            boolean handled = false;
-            Map<String, ReportFieldFormat> converters = rootBand.getReportFieldConverters();
-            if (value != null && converters != null && converters.containsKey(paramFullName)) {
-                String format = converters.get(paramFullName).getFormat();
+            boolean handledByTags = false;
+            Map<String, ReportFieldFormat> fieldFormats = rootBand.getReportFieldFormats();
+            if (value != null && fieldFormats != null && fieldFormats.containsKey(paramFullName)) {
+                String format = fieldFormats.get(paramFullName).getFormat();
                 // Handle doctags
                 for (ContentInliner contentInliner : contentInliners) {
                     Matcher matcher = contentInliner.getTagPattern().matcher(format);
                     if (matcher.find()) {
                         contentInliner.inlineToXlsx(result.getPackage(), worksheetPart, newCell, value, matcher);
-                        handled = true;
+                        handledByTags = true;
                     }
                 }
+            } else {
+                value = formatValue(value, paramFullName);
             }
 
-            if (!handled) {
+            if (!handledByTags) {
                 if (value != null) {
                     if (value instanceof Number) {
                         newCell.setT(STCellType.N);
@@ -627,7 +629,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 }
             }
         } else {
-            String value = insertBandDataToString(childBand, cellValue);
+            String value = insertBandDataToString(bandData, cellValue);
             newCell.setV(value);
 
             if (newCell.getT() == STCellType.S) {

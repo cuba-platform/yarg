@@ -6,7 +6,7 @@
 package com.haulmont.yarg.formatters.factory;
 
 import com.haulmont.yarg.exception.UnsupportedFormatException;
-import com.haulmont.yarg.formatters.*;
+import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverter;
@@ -17,11 +17,11 @@ import com.haulmont.yarg.structure.ReportTemplate;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected OfficeIntegrationAPI officeIntegration;
     protected XlsToPdfConverterAPI xlsToPdfConverter;
+    protected DefaultFormatProvider defaultFormatProvider;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<>();
 
@@ -31,6 +31,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
                 XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
                 xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
+                xlsFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return xlsFormatter;
             }
         });
@@ -41,7 +42,9 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
                 if (officeIntegration == null) {
                     throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
                 }
-                return new DocFormatter(rootBand, reportTemplate, outputStream, officeIntegration);
+                DocFormatter docFormatter = new DocFormatter(rootBand, reportTemplate, outputStream, officeIntegration);
+                docFormatter.setDefaultFormatProvider(defaultFormatProvider);
+                return docFormatter;
             }
         };
         formattersMap.put("odt", docCreator);
@@ -49,7 +52,9 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         FormatterCreator ftlCreator = new FormatterCreator() {
             @Override
             public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                return new HtmlFormatter(rootBand, reportTemplate, outputStream);
+                HtmlFormatter htmlFormatter = new HtmlFormatter(rootBand, reportTemplate, outputStream);
+                htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
+                return htmlFormatter;
             }
         };
         formattersMap.put("ftl", ftlCreator);
@@ -57,13 +62,17 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         formattersMap.put("docx", new FormatterCreator() {
             @Override
             public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                return new DocxFormatter(rootBand, reportTemplate, outputStream);
+                DocxFormatter docxFormatter = new DocxFormatter(rootBand, reportTemplate, outputStream);
+                docxFormatter.setDefaultFormatProvider(defaultFormatProvider);
+                return docxFormatter;
             }
         });
         formattersMap.put("xlsx", new FormatterCreator() {
             @Override
             public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                return new XlsxFormatter(rootBand, reportTemplate, outputStream);
+                XlsxFormatter xlsxFormatter = new XlsxFormatter(rootBand, reportTemplate, outputStream);
+                xlsxFormatter.setDefaultFormatProvider(defaultFormatProvider);
+                return xlsxFormatter;
             }
         });
     }
@@ -71,6 +80,10 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
         this.officeIntegration = officeIntegrationAPI;
         this.xlsToPdfConverter = new XlsToPdfConverter(officeIntegrationAPI);
+    }
+
+    public void setDefaultFormatProvider(DefaultFormatProvider defaultFormatProvider) {
+        this.defaultFormatProvider = defaultFormatProvider;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {

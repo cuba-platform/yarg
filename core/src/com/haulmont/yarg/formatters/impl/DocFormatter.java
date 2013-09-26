@@ -252,16 +252,16 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     private void insertValue(XText text, XTextRange textRange, BandData band, String paramName) {
-        String fullParamName = band.getFullName() + "." + paramName;
+        String paramFullName = band.getFullName() + "." + paramName;
         Object paramValue = band.getParameterValue(paramName);
 
-        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldConverters();
+        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
         try {
             boolean handled = false;
 
             if (paramValue != null) {
-                if ((formats != null) && (formats.containsKey(fullParamName))) {
-                    String format = formats.get(fullParamName).getFormat();
+                if ((formats != null) && (formats.containsKey(paramFullName))) {
+                    String format = formats.get(paramFullName).getFormat();
                     // Handle doctags
                     for (ContentInliner contentInliner : contentInliners) {
                         Matcher matcher = contentInliner.getTagPattern().matcher(format);
@@ -272,7 +272,7 @@ public class DocFormatter extends AbstractFormatter {
                     }
                 }
                 if (!handled) {
-                    String valueString = formatValue(paramValue, fullParamName);
+                    String valueString = formatValue(paramValue, paramFullName);
                     text.insertString(textRange, valueString, true);
                 }
             } else {
