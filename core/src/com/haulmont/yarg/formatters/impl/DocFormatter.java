@@ -252,7 +252,7 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     private void insertValue(XText text, XTextRange textRange, BandData band, String paramName) {
-        String paramFullName = band.getFullName() + "." + paramName;
+        String paramFullName = band.getName() + "." + paramName;
         Object paramValue = band.getParameterValue(paramName);
 
         Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
