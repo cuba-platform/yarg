@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class LinuxProcessManager extends JavaProcessManager implements ProcessManager {
-    private static final Pattern PS_OUTPUT_LINE = Pattern.compile("^\\s*(\\d+)\\s+(.*)$");
+public class LinuxProcessManager extends JavaProcessManager implements ProcessManager {
+    protected static final Pattern PS_OUTPUT_LINE = Pattern.compile("^\\s*(\\d+)\\s+(.*)$");
 
     protected String[] psCommand() {
         return new String[]{"/bin/ps", "-e", "-o", "pid,args"};
@@ -60,7 +60,7 @@ class LinuxProcessManager extends JavaProcessManager implements ProcessManager {
         }
     }
 
-    private List<String> execute(String... args) throws IOException {
+    protected List<String> execute(String... args) throws IOException {
         Process process = new ProcessBuilder(args).start();
         @SuppressWarnings("unchecked")
         List<String> lines = IOUtils.readLines(process.getInputStream());

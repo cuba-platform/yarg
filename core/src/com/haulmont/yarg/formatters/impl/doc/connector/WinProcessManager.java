@@ -24,23 +24,23 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
  * @author subbotin
  * @version $Id$
  */
-class WinProcessManager implements ProcessManager {
+public class WinProcessManager implements ProcessManager {
     protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
 
-    private static final String KILL_COMMAND = "taskkill /f /PID %s";
-    private static final String FIND_PID_COMMAND = "cmd /c netstat -a -n -o -p TCP|findstr \"%s\"";
-    private static final Pattern NETSTAT_PATTERN =
+    protected static final String KILL_COMMAND = "taskkill /f /PID %s";
+    protected static final String FIND_PID_COMMAND = "cmd /c netstat -a -n -o -p TCP|findstr \"%s\"";
+    protected static final Pattern NETSTAT_PATTERN =
             Pattern.compile("^.*?(\\d+\\.\\d+\\.\\d+\\.\\d+)[\\.\\:](\\d+)\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)[\\.\\:](\\d+)\\s+\\w+\\s+(\\d+)");
-    private static final String LOCAL_HOST = "127.0.0.1";
+    protected static final String LOCAL_HOST = "127.0.0.1";
 
 
 
     protected static class NetStatInfo {
-        private String localAddress;
-        private int localPort;
-        private long pid;
+        protected String localAddress;
+        protected int localPort;
+        protected long pid;
 
-        private NetStatInfo(String output) {
+        protected NetStatInfo(String output) {
             Matcher matcher = NETSTAT_PATTERN.matcher(output);
             if (matcher.matches()) {
                 localAddress = matcher.group(1);

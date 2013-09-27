@@ -12,7 +12,7 @@ import com.sun.star.uno.XComponentContext;
 /**
  * A Bootstrap Connector which uses a socket to connect to an OOo server.
  */
-class BootstrapSocketConnector extends BootstrapConnector {
+public class BootstrapSocketConnector extends BootstrapConnector {
 
     /**
      * Constructs a bootstrap socket connector which connects to the specified

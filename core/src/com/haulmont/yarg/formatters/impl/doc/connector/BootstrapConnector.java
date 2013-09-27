@@ -37,7 +37,7 @@ import com.sun.star.uno.XComponentContext;
  * "OpenOffice.org Community Forum" at http://user.services.openoffice.org/
  * complaining about "no office executable found!".
  */
-class BootstrapConnector {
+public class BootstrapConnector {
 
     /** The OOo server. */
     private OOServer oooServer;
@@ -166,7 +166,7 @@ class BootstrapConnector {
      * 
      * @return      The default local component context
      */
-    private XComponentContext getLocalContext() throws BootstrapException, Exception {
+    protected XComponentContext getLocalContext() throws BootstrapException, Exception {
 
         XComponentContext xLocalContext = Bootstrap.createInitialComponentContext(null);
         if (xLocalContext == null) {
@@ -180,7 +180,7 @@ class BootstrapConnector {
      * 
      * @return      The remote component context
      */
-    private XComponentContext getRemoteContext(XUnoUrlResolver xUrlResolver) throws BootstrapException, ConnectionSetupException, IllegalArgumentException, NoConnectException {
+    protected XComponentContext getRemoteContext(XUnoUrlResolver xUrlResolver) throws BootstrapException, ConnectionSetupException, IllegalArgumentException, NoConnectException {
 
         Object context = xUrlResolver.resolve(oooConnectionString);
         XComponentContext xContext = (XComponentContext) UnoRuntime.queryInterface(XComponentContext.class, context);

@@ -28,7 +28,7 @@ import java.util.List;
  * "Bootstrap.java" is there available at
  * http://udk.openoffice.org/source/browse/udk/javaunohelper/com/sun/star/comp/helper/Bootstrap.java?view=markup
  */
-class OOServer {
+public class OOServer {
     protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
     /**
      * The OOo server process.

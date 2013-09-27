@@ -16,7 +16,7 @@ import java.util.List;
  * @author subbotin
  * @version $Id$
  */
-class JavaProcessManager implements ProcessManager {
+public class JavaProcessManager implements ProcessManager {
     protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
 
     @Override

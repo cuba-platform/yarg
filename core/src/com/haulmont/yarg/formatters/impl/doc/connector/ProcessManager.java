@@ -12,7 +12,7 @@ import java.util.List;
  * @author subbotin
  * @version $Id$
  */
-interface ProcessManager {
+public interface ProcessManager {
 
     public static final long PID_UNKNOWN = -1;
 

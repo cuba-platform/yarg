@@ -15,7 +15,7 @@ import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.uno.Exception;
 import com.sun.star.uno.XComponentContext;
 
-class OfficeConnection {
+public class OfficeConnection {
     protected XComponentContext xComponentContext;
     protected String openOfficePath;
     protected OOServer oooServer;
@@ -44,11 +44,11 @@ class OfficeConnection {
         return officeResourceProvider;
     }
 
-    void close() {
+    public void close() {
         bsc.disconnect();
     }
 
-    void releaseResources() {
+    public void releaseResources() {
         oooServer.kill();
         connector.putPortBack(port);
     }
