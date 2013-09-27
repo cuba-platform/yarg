@@ -17,7 +17,7 @@ sourceSets {
     }
 }
 
-def artifactVersion = '1.0.2'
+def artifactVersion = '1.0.3'
 def isSnapshot = artifactVersion.endsWith('-SNAPSHOT')
 
 group = 'com.haulmont.yarg'
