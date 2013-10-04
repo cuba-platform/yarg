@@ -97,6 +97,7 @@ public class DocFormatter extends AbstractFormatter {
                     fillTables(ooResourceProvider.getXDispatchHelper());
                     // Handling text
                     replaceAllAliasesInDocument();
+                    replaceAllAliasesInDocument();//we do it second time to handle several open office bugs (page breaks in html, etc). Do not remove.
                     // Saving document to output stream and closing
                     saveAndClose(xComponent, outputType, outputStream);
                 } catch (Exception e) {
