@@ -16,7 +16,6 @@
 package com.haulmont.yarg.formatters.impl.doc;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
-import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.AbstractFormatter;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XNameAccess;
@@ -30,6 +29,7 @@ import com.sun.star.lang.XComponent;
 import com.sun.star.table.XCell;
 import com.sun.star.table.XCellRange;
 import com.sun.star.table.XTableRows;
+import com.sun.star.text.XText;
 import com.sun.star.text.XTextTable;
 import com.sun.star.text.XTextTableCursor;
 import com.sun.star.uno.Any;
@@ -38,10 +38,11 @@ import com.sun.star.uno.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
 import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.copy;
 import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.paste;
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
 
 public class TableManager {
     protected XTextTable xTextTable;
@@ -78,6 +79,22 @@ public class TableManager {
             throw new ReportFormattingException(e);
         }
         return false;
+    }
+
+    public XText findFirstEntryInRow(Pattern pattern, int rowNumber) {
+        try {
+            for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
+                XText xText = asXText(getXCell(i, rowNumber));
+                String templateText = xText.getString();
+
+                if (pattern.matcher(templateText).find()) {
+                    return xText;
+                }
+            }
+        } catch (Exception e) {
+            throw new ReportFormattingException(e);
+        }
+        return null;
     }
 
     public XCell getXCell(int col, int row) throws IndexOutOfBoundsException {

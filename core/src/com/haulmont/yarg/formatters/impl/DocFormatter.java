@@ -16,22 +16,26 @@
 package com.haulmont.yarg.formatters.impl;
 
 import com.haulmont.yarg.exception.OpenOfficeException;
-import com.haulmont.yarg.formatters.impl.doc.OfficeOutputStream;
-import com.haulmont.yarg.formatters.impl.doc.TableManager;
-import com.haulmont.yarg.formatters.impl.doc.connector.*;
-import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.BandData;
-import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
+import com.haulmont.yarg.formatters.impl.doc.OfficeOutputStream;
+import com.haulmont.yarg.formatters.impl.doc.TableManager;
+import com.haulmont.yarg.formatters.impl.doc.connector.NoFreePortsException;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeTask;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
+import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.ReportFieldFormat;
+import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XIndexAccess;
 import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.io.IOException;
 import com.sun.star.io.XInputStream;
-import com.sun.star.lang.*;
+import com.sun.star.lang.WrappedTargetException;
+import com.sun.star.lang.XComponent;
 import com.sun.star.table.XCell;
 import com.sun.star.text.*;
 import com.sun.star.util.XReplaceable;
@@ -49,8 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.*;
 import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
+import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.*;
 
 /**
  * Document formatter for '.doc' file types
@@ -127,15 +131,30 @@ public class DocFormatter extends AbstractFormatter {
         closeXComponent(xComponent);
     }
 
-    //todo allow to define table name as docx formatter does (##band=Band1 in first cell)
     private void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
         List<String> tablesNames = TableManager.getTablesNames(xComponent);
-        tablesNames.retainAll(rootBand.getFirstLevelBandDefinitionNames());
 
         for (String tableName : tablesNames) {
-            BandData band = rootBand.findBandRecursively(tableName);
             TableManager tableManager = new TableManager(xComponent, tableName);
             XTextTable xTextTable = tableManager.getXTextTable();
+            BandData band = rootBand.findBandRecursively(tableName);
+            if (band == null) {
+                XText xText = tableManager.findFirstEntryInRow(BAND_NAME_DECLARATION_PATTERN, 0);
+                if (xText != null) {
+                    Matcher matcher = BAND_NAME_DECLARATION_PATTERN.matcher(xText.getString());
+                    if (matcher.find()) {
+                        String bandName = matcher.group(1);
+                        band = rootBand.findBandRecursively(bandName);
+                        XTextCursor xTextCursor = xText.createTextCursor();
+
+                        xTextCursor.gotoStart(false);
+                        xTextCursor.goRight((short) matcher.end(), false);
+                        xTextCursor.goLeft((short) matcher.group().length(), true);
+
+                        xText.insertString(xTextCursor, "", true);
+                    }
+                }
+            }
 
             if (band != null) {
                 // todo remove this hack!
@@ -144,7 +163,7 @@ public class DocFormatter extends AbstractFormatter {
                 if (columnCount < 2) {
                     xTextTable.getColumns().insertByIndex(columnCount, 1);
                 }
-                fillTable(tableName, band.getParentBand(), tableManager, xDispatchHelper);
+                fillTable(band.getName(), band.getParentBand(), tableManager, xDispatchHelper);
                 // end of workaround ->
                 if (columnCount < 2) {
                     xTextTable.getColumns().removeByIndex(columnCount, 1);
@@ -192,14 +211,14 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     private void fillCell(BandData band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
-        String cellText = formatCellText(asXText(xCell).getString());
+        XText xText = asXText(xCell);
+        String cellText = xText.getString();
         List<String> parametersToInsert = new ArrayList<String>();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(cellText);
         while (matcher.find()) {
             parametersToInsert.add(unwrapParameterName(matcher.group()));
         }
         for (String parameterName : parametersToInsert) {
-            XText xText = asXText(xCell);
             XTextCursor xTextCursor = xText.createTextCursor();
 
             String paramStr = "${" + parameterName + "}";

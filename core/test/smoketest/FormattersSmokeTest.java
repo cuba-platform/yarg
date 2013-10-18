@@ -195,7 +195,7 @@ public class FormattersSmokeTest {
     }
 
     @Test
-    public void testDoc() throws Exception {
+    public void testOdt() throws Exception {
         BandData root = createRootBand();
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.doc");
@@ -203,6 +203,20 @@ public class FormattersSmokeTest {
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.odt", "./test/smoketest/test.odt", ReportOutputType.doc), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testDoc() throws Exception {
+        BandData root = createRootBand();
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.doc");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+                new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

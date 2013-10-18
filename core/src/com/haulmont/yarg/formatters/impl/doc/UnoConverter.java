@@ -40,6 +40,7 @@ import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.util.XCloseable;
 import com.sun.star.util.XReplaceable;
+import com.sun.star.util.XSearchable;
 import com.sun.star.view.XSelectionSupplier;
 
 public final class UnoConverter {
@@ -174,6 +175,10 @@ public final class UnoConverter {
 
     public static XReplaceable asXReplaceable(Object o) {
         return (XReplaceable) UnoRuntime.queryInterface(XReplaceable.class, o);
+    }
+
+    public static XSearchable asXSearchable(Object o) {
+        return (XSearchable) UnoRuntime.queryInterface(XSearchable.class, o);
     }
 
     public static XGraphicProvider asXGraphicProvider(Object o) {

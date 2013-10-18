@@ -39,10 +39,11 @@ import java.util.regex.Pattern;
 public abstract class AbstractFormatter implements ReportFormatter {
     public static final String UNIVERSAL_ALIAS_REGEXP = "\\$\\{[A-z0-9_\\.#]+?\\}";
     public static final String ALIAS_WITH_BAND_NAME_REGEXP = "\\$\\{([A-z0-9_\\.]+?#?[A-z0-9_\\.]+?)\\}";
+    public static final String BAND_NAME_DECLARATION_REGEXP = "##band=([A-z_0-9]+) *";
 
     public static final Pattern UNIVERSAL_ALIAS_PATTERN = Pattern.compile(UNIVERSAL_ALIAS_REGEXP, Pattern.CASE_INSENSITIVE);
     public static final Pattern ALIAS_WITH_BAND_NAME_PATTERN = Pattern.compile(ALIAS_WITH_BAND_NAME_REGEXP);
-    public static final Pattern BAND_NAME_DECLARATION_PATTERN = Pattern.compile("##band=([A-z_0-9]+)");
+    public static final Pattern BAND_NAME_DECLARATION_PATTERN = Pattern.compile(BAND_NAME_DECLARATION_REGEXP);
 
 
     protected BandData rootBand;
