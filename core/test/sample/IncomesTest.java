@@ -29,7 +29,6 @@ public class IncomesTest {
     @Test
     public void testIncomesReport() throws Exception {
         Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./test/sample/incomes.xml")));
-        System.out.println();
 
         Reporting reporting = new Reporting();
         reporting.setFormatterFactory(new DefaultFormatterFactory());
