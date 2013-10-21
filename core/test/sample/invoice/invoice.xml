@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<report name="report">
+    <templates>
+        <template code="DEFAULT" documentName="invoice.docx" documentPath="./test/sample/invoice/invoice.docx" outputType="docx" outputNamePattern="invoice.docx"/>
+    </templates>
+    <formats>
+        <format name="Main.date" format="dd/MM/yyyy"/>
+    </formats>
+    <rootBand name="Root" orientation="H">
+        <bands>
+            <band name="Main" orientation="H">
+                <queries>
+                    <query name="Main" type="groovy">
+                        <script>
+                            return [
+                              [
+                               'invoiceNumber':99987,
+                               'client' : 'Google Inc.',
+                               'date' : new Date(),
+                               'addLine1': '1600 Amphitheatre Pkwy',
+                               'addLine2': 'Mountain View, USA',
+                               'addLine3':'CA 94043'
+                            ]]
+                        </script>
+                    </query>
+                </queries>
+            </band>
+            <band name="Items" orientation="H">
+                <queries>
+                    <query name="Main" type="groovy">
+                        <script>
+                            return [
+                                ['name':'Solar plasma', 'price' : 15000],
+                                ['name':'Flying tables', 'price' : 13000],
+                                ['name':'Black T-shirts', 'price' : 12000]
+                            ]
+                        </script>
+                    </query>
+                </queries>
+            </band>
+        </bands>
+        <queries/>
+    </rootBand>
+</report>

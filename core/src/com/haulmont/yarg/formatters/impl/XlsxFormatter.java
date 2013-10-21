@@ -627,9 +627,11 @@ public class XlsxFormatter extends AbstractFormatter {
                         handledByTags = true;
                     }
                 }
-            } else {
-                value = formatValue(value, paramFullName);
             }
+//            we probably don't need it for in xlsx files
+//            else {
+//                value = formatValue(value, paramFullName);
+//            }
 
             if (!handledByTags) {
                 if (value != null) {
