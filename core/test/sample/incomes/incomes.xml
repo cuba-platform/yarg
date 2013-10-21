@@ -2,7 +2,7 @@
 
 <report name="report">
     <templates>
-        <template code="DEFAULT" documentName="incomes.xlsx" documentPath="./test/sample/incomes/incomes.xlsx" outputType="xls" outputNamePattern="incomes.xlsx"/>
+        <template code="DEFAULT" documentName="incomes.xlsx" documentPath="./test/sample/incomes/incomes.xlsx" outputType="xlsx" outputNamePattern="incomes.xlsx"/>
     </templates>
     <rootBand name="Root" orientation="H">
         <bands>
