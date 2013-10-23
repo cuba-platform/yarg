@@ -16,11 +16,11 @@
 package com.haulmont.yarg.formatters.impl;
 
 
-import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.BandData;
-import com.haulmont.yarg.structure.ReportOutputType;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.structure.ReportTemplate;
+import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.ReportFieldFormat;
+import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.docx4j.TraversalUtil;
@@ -47,8 +47,8 @@ import java.util.regex.Matcher;
 public class DocxFormatter extends AbstractFormatter {
     private WordprocessingMLPackage wordprocessingMLPackage;
 
-    public DocxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-        super(rootBand, reportTemplate, outputStream);
+    public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
+        super(formatterFactoryInput);
         supportedOutputTypes.add(ReportOutputType.docx);
         supportedOutputTypes.add(ReportOutputType.pdf);
     }

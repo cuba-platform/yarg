@@ -44,8 +44,8 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     public DefaultFormatterFactory() {
         formattersMap.put("xls", new FormatterCreator() {
             @Override
-            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                XLSFormatter xlsFormatter = new XLSFormatter(rootBand, reportTemplate, outputStream);
+            public ReportFormatter create(FormatterFactoryInput factoryInput) {
+                XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
                 xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
                 xlsFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return xlsFormatter;
@@ -54,11 +54,11 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
         FormatterCreator docCreator = new FormatterCreator() {
             @Override
-            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
+            public ReportFormatter create(FormatterFactoryInput factoryInput) {
                 if (officeIntegration == null) {
                     throw new UnsupportedFormatException("Could not use doc templates because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
                 }
-                DocFormatter docFormatter = new DocFormatter(rootBand, reportTemplate, outputStream, officeIntegration);
+                DocFormatter docFormatter = new DocFormatter(factoryInput, officeIntegration);
                 docFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return docFormatter;
             }
@@ -67,8 +67,8 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         formattersMap.put("doc", docCreator);
         FormatterCreator ftlCreator = new FormatterCreator() {
             @Override
-            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                HtmlFormatter htmlFormatter = new HtmlFormatter(rootBand, reportTemplate, outputStream);
+            public ReportFormatter create(FormatterFactoryInput factoryInput) {
+                HtmlFormatter htmlFormatter = new HtmlFormatter(factoryInput);
                 htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return htmlFormatter;
             }
@@ -77,16 +77,16 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         formattersMap.put("html", ftlCreator);
         formattersMap.put("docx", new FormatterCreator() {
             @Override
-            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                DocxFormatter docxFormatter = new DocxFormatter(rootBand, reportTemplate, outputStream);
+            public ReportFormatter create(FormatterFactoryInput factoryInput) {
+                DocxFormatter docxFormatter = new DocxFormatter(factoryInput);
                 docxFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return docxFormatter;
             }
         });
         formattersMap.put("xlsx", new FormatterCreator() {
             @Override
-            public ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-                XlsxFormatter xlsxFormatter = new XlsxFormatter(rootBand, reportTemplate, outputStream);
+            public ReportFormatter create(FormatterFactoryInput factoryInput) {
+                XlsxFormatter xlsxFormatter = new XlsxFormatter(factoryInput);
                 xlsxFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return xlsxFormatter;
             }
@@ -113,10 +113,10 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             throw new UnsupportedFormatException(String.format("Unsupported template extension [%s]", templateExtension));
         }
 
-        return formatterCreator.create(rootBand, reportTemplate, outputStream);
+        return formatterCreator.create(factoryInput);
     }
 
     protected static interface FormatterCreator {
-        ReportFormatter create(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream);
+        ReportFormatter create(FormatterFactoryInput formatterFactoryInput);
     }
 }

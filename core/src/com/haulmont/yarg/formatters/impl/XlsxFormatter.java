@@ -26,12 +26,16 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.formatters.impl.xlsx.XlsxUtils;
-import com.haulmont.yarg.structure.*;
+import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.BandVisitor;
+import com.haulmont.yarg.structure.ReportFieldFormat;
+import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
 import org.docx4j.XmlUtils;
@@ -47,7 +51,6 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
 
-import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -66,8 +69,8 @@ public class XlsxFormatter extends AbstractFormatter {
     private Map<Worksheet, Long> lastRowForSheet = new HashMap<>();
     private int previousRangesRightOffset;
 
-    public XlsxFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-        super(rootBand, reportTemplate, outputStream);
+    public XlsxFormatter(FormatterFactoryInput formatterFactoryInput) {
+        super(formatterFactoryInput);
         supportedOutputTypes.add(ReportOutputType.xlsx);
     }
 

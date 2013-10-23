@@ -28,10 +28,10 @@ import java.io.OutputStream;
 
 public class FormatterFactoryInput {
 
-    protected String templateExtension;
-    protected BandData rootBand;
-    protected ReportTemplate reportTemplate;
-    protected OutputStream outputStream;
+    protected final String templateExtension;
+    protected final BandData rootBand;
+    protected final ReportTemplate reportTemplate;
+    protected final OutputStream outputStream;
 
     public FormatterFactoryInput(String templateExtension, BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
         if (templateExtension == null) {
@@ -46,5 +46,21 @@ public class FormatterFactoryInput {
         this.rootBand = rootBand;
         this.reportTemplate = reportTemplate;
         this.outputStream = outputStream;
+    }
+
+    public String getTemplateExtension() {
+        return templateExtension;
+    }
+
+    public BandData getRootBand() {
+        return rootBand;
+    }
+
+    public ReportTemplate getReportTemplate() {
+        return reportTemplate;
+    }
+
+    public OutputStream getOutputStream() {
+        return outputStream;
     }
 }

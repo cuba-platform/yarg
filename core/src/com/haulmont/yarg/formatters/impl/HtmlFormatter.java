@@ -15,11 +15,11 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
-import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.ReportTemplate;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -39,8 +39,8 @@ import java.util.Map;
  * Document formatter for '.html' and '.ftl' file types
  */
 public class HtmlFormatter extends AbstractFormatter {
-    public HtmlFormatter(BandData rootBand, ReportTemplate templateFile, OutputStream outputStream) {
-        super(rootBand, templateFile, outputStream);
+    public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
+        super(formatterFactoryInput);
         supportedOutputTypes.add(ReportOutputType.custom);
         supportedOutputTypes.add(ReportOutputType.csv);
         supportedOutputTypes.add(ReportOutputType.html);

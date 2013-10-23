@@ -18,6 +18,7 @@ package com.haulmont.yarg.formatters.impl;
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.formatters.ReportFormatter;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.HtmlContentContentInliner;
@@ -57,13 +58,13 @@ public abstract class AbstractFormatter implements ReportFormatter {
      */
     protected List<ContentInliner> contentInliners = new ArrayList<ContentInliner>();
 
-    protected AbstractFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-        Preconditions.checkNotNull("\"rootBand\" parameter can not be null", reportTemplate);
-        Preconditions.checkNotNull("\"reportTemplate\" parameter can not be null", reportTemplate);
+    protected AbstractFormatter(FormatterFactoryInput formatterFactoryInput) {
+        Preconditions.checkNotNull("\"rootBand\" parameter can not be null", formatterFactoryInput.getRootBand());
+        Preconditions.checkNotNull("\"reportTemplate\" parameter can not be null", formatterFactoryInput.getReportTemplate());
 
-        this.rootBand = rootBand;
-        this.reportTemplate = reportTemplate;
-        this.outputStream = outputStream;
+        this.rootBand = formatterFactoryInput.getRootBand();
+        this.reportTemplate = formatterFactoryInput.getReportTemplate();
+        this.outputStream = formatterFactoryInput.getOutputStream();
 
         this.contentInliners.add(new BitmapContentInliner());
         this.contentInliners.add(new HtmlContentContentInliner());

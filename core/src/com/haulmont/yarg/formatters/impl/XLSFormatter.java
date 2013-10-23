@@ -18,6 +18,7 @@ package com.haulmont.yarg.formatters.impl;
 
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.Area;
 import com.haulmont.yarg.formatters.impl.xls.AreaDependencyManager;
@@ -26,19 +27,18 @@ import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverterAPI;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.yarg.formatters.impl.xls.hints.*;
+import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.ReportTemplate;
-import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
 import org.apache.poi.hssf.record.EscherAggregate;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.formula.ptg.AreaPtg;
 import org.apache.poi.ss.formula.ptg.Ptg;
 import org.apache.poi.ss.formula.ptg.RefPtg;
-import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -46,7 +46,6 @@ import org.apache.poi.ss.util.CellReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -89,8 +88,8 @@ public class XLSFormatter extends AbstractFormatter {
 
     protected XlsToPdfConverterAPI xlsToPdfConverter;
 
-    public XLSFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream) {
-        super(rootBand, reportTemplate, outputStream);
+    public XLSFormatter(FormatterFactoryInput formatterFactoryInput) {
+        super(formatterFactoryInput);
         supportedOutputTypes.add(ReportOutputType.xls);
         supportedOutputTypes.add(ReportOutputType.pdf);
 

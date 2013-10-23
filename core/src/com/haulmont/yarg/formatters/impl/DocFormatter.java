@@ -15,8 +15,10 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.haulmont.yarg.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.yarg.formatters.impl.doc.TableManager;
@@ -28,7 +30,6 @@ import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.ReportTemplate;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XIndexAccess;
 import com.sun.star.frame.XDispatchHelper;
@@ -73,8 +74,10 @@ public class DocFormatter extends AbstractFormatter {
 
     protected OfficeIntegrationAPI officeIntegration;
 
-    public DocFormatter(BandData rootBand, ReportTemplate reportTemplate, OutputStream outputStream, OfficeIntegrationAPI officeIntegration) {
-        super(rootBand, reportTemplate, outputStream);
+    public DocFormatter(FormatterFactoryInput formatterFactoryInput, OfficeIntegrationAPI officeIntegration) {
+        super(formatterFactoryInput);
+        Preconditions.checkNotNull("\"officeIntegration\" parameter can not be null", officeIntegration);
+
         this.officeIntegration = officeIntegration;
         supportedOutputTypes.add(ReportOutputType.doc);
         supportedOutputTypes.add(ReportOutputType.pdf);
