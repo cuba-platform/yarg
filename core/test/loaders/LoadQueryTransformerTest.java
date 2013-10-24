@@ -63,7 +63,7 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
 
     @Test
     public void testParamReordering() throws Exception {
-        String query = "select id as id from user where id  =  ${param2} or id = ${param1} and id > ${param2}";
+        String query = "select id as id from user where id  =  ${param1} or id = ${param2} and id > ${param1}";
         HashMap<String, Object> params = new HashMap<>();
         AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
@@ -77,7 +77,51 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
         Assert.assertEquals(3, StringUtils.countMatches(queryPack.getQuery(), "?"));
         writeParams(queryPack);
 
-        Assert.assertEquals("param2", queryPack.getParams()[0].getValue());
+        Assert.assertEquals("param1", queryPack.getParams()[0].getValue());
+        Assert.assertEquals("param2", queryPack.getParams()[1].getValue());
+        Assert.assertEquals("param1", queryPack.getParams()[2].getValue());
+    }
+
+    @Test
+    public void testParamReordering2() throws Exception {
+        String query = "select \n" +
+                "u.id as initiatorId,\n" +
+                "u.name as initiator,\n" +
+                "count(*) as tasks,\n" +
+                "count(case when c.state = ',InWork,' or c.state = ',Assigned,' then 1 end) as tasksInWork,\n" +
+                "count(case when c.state = ',InControl,' or c.state = ',Completed,' then 1 end) as tasksOnControl,\n" +
+                "count(case when ((c.state = ',InControl,' or c.state = ',InWork,' or c.state = ',Assigned,' or c.state = ',Completed,') \n" +
+                "    and t.finish_date_plan <= ${date}) then 1 end) as overdue\n" +
+                "\n" +
+                "from (select distinct r.card_id from wf_card_role r where r.delete_ts is null \n" +
+                "and (r.code='10-Initiator' or r.code='20-Executor' or r.code='30-Controller' or r.code='90-Observer')\n" +
+                "and r.user_id = ${runs}) as r\n" +
+                "join tm_task t on t.card_id = r.card_id \n" +
+                "join wf_card c on t.card_id = c.id\n" +
+                "join  (select card_id, user_id from wf_card_role where delete_ts is null and code='20-Executor') as execut on execut.card_id = t.card_id\n" +
+                "join df_employee e on execut.user_id = e.user_id\n" +
+                "join sec_user u on t.initiator_id = u.id\n" +
+                "\n" +
+                "where c.delete_ts is null\n" +
+                "and (c.state = ',InControl,' or c.state = ',InWork,' or c.state = ',Completed,' or c.state = ',Assigned,')\n" +
+                "and t.create_date <= ${date}\n" +
+                "and e.user_id = ${executorId}\n" +
+                "group by u.id, u.name\n" +
+                "order by u.name";
+        HashMap<String, Object> params = new HashMap<>();
+        AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertFalse(queryPack.getQuery().contains("${"));
+        writeParams(queryPack);
+
+        params.put("date", "param1");
+        params.put("executorId", "param2");
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals(3, StringUtils.countMatches(queryPack.getQuery(), "?"));
+        writeParams(queryPack);
+
+        Assert.assertEquals("param1", queryPack.getParams()[0].getValue());
         Assert.assertEquals("param1", queryPack.getParams()[1].getValue());
         Assert.assertEquals("param2", queryPack.getParams()[2].getValue());
     }

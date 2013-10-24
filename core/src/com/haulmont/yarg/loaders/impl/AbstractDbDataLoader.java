@@ -68,6 +68,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
         List<QueryParameter> queryParameters = new ArrayList<QueryParameter>();
         HashSet<String> paramNames = findParameterNames(query);
+        HashSet<String> paramsToRemoveFromQuery = new HashSet<>();
 
         for (String paramName : paramNames) {
             Object paramValue = currentParams.get(paramName);
@@ -76,7 +77,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             String deleteRegexp = "(?i)\\s*(and|or)?\\s+[\\w|\\d|\\.|\\_]+\\s+(=|>=|<=|like|>|<)\\s*" + paramNameRegexp;
 
             if (paramValue == null) {//if value == null - remove condition from query
-                query = query.replaceAll(deleteRegexp, "");
+                paramsToRemoveFromQuery.add(deleteRegexp);
             } else if (query.contains(alias)) {//otherwise - create parameter and save each entry's position
                 Pattern pattern = Pattern.compile(paramNameRegexp);
                 Matcher replaceMatcher = pattern.matcher(query);
@@ -85,8 +86,13 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
                 while (replaceMatcher.find(subPosition)) {
                     subPosition = replaceMatcher.start();
                     queryParameters.add(new QueryParameter(paramNameRegexp, subPosition, convertParameter(paramValue)));
+                    subPosition = replaceMatcher.end();
                 }
             }
+        }
+
+        for (String paramAlias : paramsToRemoveFromQuery) {
+            query = query.replaceAll(paramAlias, "");
         }
 
         // Sort params by position
@@ -99,7 +105,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
         //normalize params position to 1..n
         for (int i = 1; i <= queryParameters.size(); i++) {
-            QueryParameter queryParameter = queryParameters.get(i-1);
+            QueryParameter queryParameter = queryParameters.get(i - 1);
             queryParameter.setPosition(i);
         }
 
