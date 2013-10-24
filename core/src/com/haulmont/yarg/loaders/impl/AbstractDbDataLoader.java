@@ -83,6 +83,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
                 int subPosition = 0;
                 while (replaceMatcher.find(subPosition)) {
+                    subPosition = replaceMatcher.start();
                     queryParameters.add(new QueryParameter(paramNameRegexp, subPosition, convertParameter(paramValue)));
                     subPosition = replaceMatcher.end();
                 }
