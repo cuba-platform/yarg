@@ -22,7 +22,6 @@
 package com.haulmont.yarg.formatters.impl.inline;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
-import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
@@ -63,7 +62,6 @@ import org.docx4j.wml.Text;
 import org.xlsx4j.sml.Cell;
 
 import java.awt.*;
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,13 +88,13 @@ public abstract class AbstractInliner implements ContentInliner {
                 CTTwoCellAnchor anchor = new CTTwoCellAnchor();
                 CTMarker from = new CTMarker();
                 CellReference cellReference = new CellReference("", newCell.getR());
-                from.setCol(cellReference.column - 1);
-                from.setRow(cellReference.row - 1);
+                from.setCol(cellReference.getColumn() - 1);
+                from.setRow(cellReference.getRow() - 1);
                 from.setColOff(0L);
                 from.setRowOff(0L);
                 CTMarker to = new CTMarker();
-                to.setCol(cellReference.column);
-                to.setRow(cellReference.row);
+                to.setCol(cellReference.getColumn());
+                to.setRow(cellReference.getRow());
                 to.setColOff(0L);
                 to.setRowOff(0L);
 

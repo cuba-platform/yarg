@@ -14,7 +14,6 @@ import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
 import junit.framework.Assert;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
@@ -25,7 +24,6 @@ import org.xlsx4j.sml.Row;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 public class XlsxIntegrationTest {
@@ -133,9 +131,9 @@ public class XlsxIntegrationTest {
                     Cell resultCell = resultCells.get(i1);
                     Cell etalonCell = etalonCells.get(i1);
                     if (resultCell.getF() != null) {
-                        Assert.assertEquals(resultCell.getF().getValue(), etalonCell.getF().getValue());
+                        Assert.assertEquals(etalonCell.getF().getValue(), resultCell.getF().getValue());
                     } else {
-                        Assert.assertEquals(resultCell.getV(), etalonCell.getV());
+                        Assert.assertEquals(etalonCell.getV(), resultCell.getV());
                     }
                 }
             }

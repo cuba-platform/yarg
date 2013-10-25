@@ -21,14 +21,16 @@
  */
 package com.haulmont.yarg.formatters.impl.xlsx;
 
+import org.xlsx4j.sml.Cell;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CellReference {
     public static final Pattern CELL_COORDINATES_PATTERN = Pattern.compile("([A-z]+)([0-9]+)");
-    public final int column;
-    public final int row;
-    public final String sheet;
+    private int column;
+    private int row;
+    private String sheet;
 
     public CellReference(String sheet, int column, int row) {
         this.column = column;
@@ -45,5 +47,37 @@ public class CellReference {
         } else {
             throw new RuntimeException("Wrong cell " + cellRef);
         }
+    }
+
+    public CellReference(String sheet, Cell cell) {
+        this(sheet, cell.getR());
+    }
+
+    public CellReference shift(int downShift, int rightShift) {
+        row += downShift;
+        column += rightShift;
+        return this;
+    }
+
+    public CellReference move(int row, int col) {
+        this.row = row;
+        this.column = col;
+        return this;
+    }
+
+    public String toReference() {
+        return XlsxUtils.getColumnReferenceFromNumber(getColumn()) + getRow();
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public String getSheet() {
+        return sheet;
     }
 }

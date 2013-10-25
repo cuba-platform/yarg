@@ -26,11 +26,11 @@ public class Range {
     public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*)");
     public static Pattern RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
 
-    public final String sheet;
-    public final int firstColumn;
-    public final int firstRow;
-    public final int lastColumn;
-    public final int lastRow;
+    private String sheet;
+    private int firstColumn;
+    private int firstRow;
+    private int lastColumn;
+    private int lastRow;
 
     public Range(String sheet, int firstColumn, int firstRow, int lastColumn, int lastRow) {
         this.sheet = sheet;
@@ -45,10 +45,10 @@ public class Range {
 
         CellReference firstCell = new CellReference(sheetName, firstCellRef);
         CellReference lastCell = new CellReference(sheetName, lastCellRef);
-        startColumn = firstCell.column;
-        startRow = firstCell.row;
-        lastColumn = lastCell.column;
-        lastRow = lastCell.row;
+        startColumn = firstCell.getColumn();
+        startRow = firstCell.getRow();
+        lastColumn = lastCell.getColumn();
+        lastRow = lastCell.getRow();
 
         Range result = new Range(sheetName, startColumn, startRow, lastColumn, lastRow);
         return result;
@@ -109,40 +109,51 @@ public class Range {
 
 
     public boolean contains(CellReference cellReference) {
-        return cellReference.sheet.equals(sheet) && firstColumn <= cellReference.column && firstRow <= cellReference.row
-                && lastColumn >= cellReference.column && lastRow >= cellReference.row;
+        return cellReference.getSheet().equals(getSheet()) && getFirstColumn() <= cellReference.getColumn() && getFirstRow() <= cellReference.getRow()
+                && getLastColumn() >= cellReference.getColumn() && getLastRow() >= cellReference.getRow();
     }
 
     public boolean contains(Range range) {
-        return range.sheet.equals(sheet) && firstColumn <= range.firstColumn && firstRow <= range.firstRow
-                && lastColumn >= range.lastColumn && lastRow >= range.lastRow;
+        return range.getSheet().equals(getSheet()) && getFirstColumn() <= range.getFirstColumn() && getFirstRow() <= range.getFirstRow()
+                && getLastColumn() >= range.getLastColumn() && getLastRow() >= range.getLastRow();
     }
 
 
     public Range shift(int downShift, int rightShift) {
-        return new Range(sheet, firstColumn + rightShift, firstRow + downShift, lastColumn + rightShift, lastRow + downShift);
-    }
+        firstColumn += rightShift;
+        firstRow += downShift;
+        lastColumn += rightShift;
+        lastRow += downShift;
 
-    public Range shiftRight(int shift) {
-        return new Range(sheet, firstColumn + shift, firstRow, lastColumn + shift, lastRow);
+        return this;
     }
 
     public Range shiftDown(int shift) {
-        return new Range(sheet, firstColumn, firstRow + shift, lastColumn, lastRow + shift);
+        return shift(shift, 0);
     }
 
-    public Range growDown(int grow) {
-        return new Range(sheet, firstColumn, firstRow, lastColumn, lastRow + grow);
-    }
-
-    public Range growRight(int grow) {
-        return new Range(sheet, firstColumn, firstRow, lastColumn + grow, lastRow);
+    public Range shiftRight(int shift) {
+        return shift(0, shift);
     }
 
     public Range grow(int downGrow, int rightGrow) {
-        return new Range(sheet, firstColumn, firstRow, lastColumn + rightGrow, lastRow + downGrow);
+        lastColumn += rightGrow;
+        lastRow += downGrow;
+
+        return this;
     }
 
+    public Range growDown(int grow) {
+        return grow(grow, 0);
+    }
+
+    public Range growRight(int grow) {
+        return grow(0, grow);
+    }
+
+    public Range copy() {
+        return new Range(sheet, firstColumn, firstRow, lastColumn, lastRow);
+    }
 
     @Override
     public String toString() {
@@ -150,11 +161,11 @@ public class Range {
     }
 
     public String toFormula() {
-        return String.format("%s!$%s$%d:$%s$%d", sheet, XlsxUtils.getColumnReferenceFromNumber(firstColumn), firstRow, XlsxUtils.getColumnReferenceFromNumber(lastColumn), lastRow);
+        return String.format("%s!$%s$%d:$%s$%d", getSheet(), XlsxUtils.getColumnReferenceFromNumber(getFirstColumn()), getFirstRow(), XlsxUtils.getColumnReferenceFromNumber(getLastColumn()), getLastRow());
     }
 
     public String toRange() {
-        return String.format("%s%d:%s%d", XlsxUtils.getColumnReferenceFromNumber(firstColumn), firstRow, XlsxUtils.getColumnReferenceFromNumber(lastColumn), lastRow);
+        return String.format("%s%d:%s%d", XlsxUtils.getColumnReferenceFromNumber(getFirstColumn()), getFirstRow(), XlsxUtils.getColumnReferenceFromNumber(getLastColumn()), getLastRow());
     }
 
     @Override
@@ -164,22 +175,42 @@ public class Range {
 
         Range range = (Range) o;
 
-        if (lastColumn != range.lastColumn) return false;
-        if (lastRow != range.lastRow) return false;
-        if (firstColumn != range.firstColumn) return false;
-        if (firstRow != range.firstRow) return false;
-        if (sheet != null ? !sheet.equals(range.sheet) : range.sheet != null) return false;
+        if (getLastColumn() != range.getLastColumn()) return false;
+        if (getLastRow() != range.getLastRow()) return false;
+        if (getFirstColumn() != range.getFirstColumn()) return false;
+        if (getFirstRow() != range.getFirstRow()) return false;
+        if (getSheet() != null ? !getSheet().equals(range.getSheet()) : range.getSheet() != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = sheet != null ? sheet.hashCode() : 0;
-        result = 31 * result + firstColumn;
-        result = 31 * result + firstRow;
-        result = 31 * result + lastColumn;
-        result = 31 * result + lastRow;
+        int result = getSheet() != null ? getSheet().hashCode() : 0;
+        result = 31 * result + getFirstColumn();
+        result = 31 * result + getFirstRow();
+        result = 31 * result + getLastColumn();
+        result = 31 * result + getLastRow();
         return result;
+    }
+
+    public String getSheet() {
+        return sheet;
+    }
+
+    public int getFirstColumn() {
+        return firstColumn;
+    }
+
+    public int getFirstRow() {
+        return firstRow;
+    }
+
+    public int getLastColumn() {
+        return lastColumn;
+    }
+
+    public int getLastRow() {
+        return lastRow;
     }
 }

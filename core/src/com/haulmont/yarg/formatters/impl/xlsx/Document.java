@@ -115,24 +115,38 @@ public class Document {
     }
 
     public List<Cell> getCellsByRange(Range range) {
-        Worksheet sheet = getSheetByName(range.sheet);
+        Worksheet sheet = getSheetByName(range.getSheet());
         SheetData data = sheet.getSheetData();
 
         List<Cell> result = new ArrayList<>();
         for (int i = 1; i <= data.getRow().size(); i++) {
             Row row = data.getRow().get(i - 1);
-            if (range.firstRow <= row.getR() && row.getR() <= range.lastRow) {
+            if (range.getFirstRow() <= row.getR() && row.getR() <= range.getLastRow()) {
                 List<Cell> c = row.getC();
 
                 for (Cell cell : c) {
-                    CellReference cellReference = new CellReference(range.sheet, cell.getR());
-                    if (range.firstColumn <= cellReference.column && cellReference.column <= range.lastColumn) {
+                    CellReference cellReference = new CellReference(range.getSheet(), cell.getR());
+                    if (range.getFirstColumn() <= cellReference.getColumn() && cellReference.getColumn() <= range.getLastColumn()) {
                         result.add(cell);
                     }
                 }
             }
         }
         return result;
+    }
+
+    public Col getColumnForCell(String sheetName, CellReference cellReference) {
+        Worksheet sheet = getSheetByName(sheetName);
+        List<Cols> colsList = sheet.getCols();
+        for (Cols cols : colsList) {
+            for (Col col : cols.getCol()) {
+                if (col.getMin() <= cellReference.getColumn() && cellReference.getColumn() <= col.getMax()) {
+                    return col;
+                }
+            }
+        }
+
+        return null;
     }
 
     private void traverse(Part parent, RelationshipsPart rp) {
