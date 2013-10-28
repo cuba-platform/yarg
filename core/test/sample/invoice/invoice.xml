@@ -6,6 +6,7 @@
     </templates>
     <formats>
         <format name="Main.date" format="dd/MM/yyyy"/>
+        <format name="Main.signature" format="${html}"/>
     </formats>
     <rootBand name="Root" orientation="H">
         <bands>
@@ -20,7 +21,8 @@
                                'date' : new Date(),
                                'addLine1': '1600 Amphitheatre Pkwy',
                                'addLine2': 'Mountain View, USA',
-                               'addLine3':'CA 94043'
+                               'addLine3':'CA 94043',
+                               'signature':<![CDATA['<html><body><b><font color="red">Mr. Yarg</font></b></body></html>']]>
                             ]]
                         </script>
                     </query>

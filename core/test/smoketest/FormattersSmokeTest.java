@@ -235,6 +235,50 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testDocxWithColontitulesAndHtmlPageBreak() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<>();
+        rootData.put("param1", "AAAAAA");
+        root.setData(rootData);
+        BandData letterTable = new BandData("letterTable", root, BandOrientation.HORIZONTAL);
+        BandData creatorInfo = new BandData("creatorInfo", root, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> letterTableData = new HashMap<>();
+        String html = "<html><body>";
+        html += "<table border=\"2px\">";
+        for (int i = 0; i < 5; i++) {
+            html += "<tr><td>1234567</td></tr>";
+        }
+        html += "</table>";
+        html += "<br style=\"page-break-after: always\">";
+        html += "<p>Second table</p>";
+        html += "<table border=\"2px\">";
+        for (int i = 0; i < 5; i++) {
+            html += "<tr><td>1234567</td></tr>";
+        }
+        html += "</table>";
+
+
+        html += "</body></html>";
+        letterTableData.put("html", html);
+        letterTable.setData(letterTableData);
+        HashMap<String, Object> creatorInfoData = new HashMap<>();
+        creatorInfoData.put("name", "12345");
+        creatorInfoData.put("phone", "54321");
+        creatorInfo.setData(creatorInfoData);
+        root.addChild(letterTable);
+        root.addChild(creatorInfo);
+        root.getReportFieldFormats().put("letterTable.html", new ReportFieldFormatImpl("letterTable.html", "${html}"));
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/colontitules.docx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./test/smoketest/colontitules.docx", "./test/smoketest/colontitules.docx", ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDocWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<>();

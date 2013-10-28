@@ -11,6 +11,7 @@ import com.haulmont.yarg.structure.ReportBand;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.BandBuilder;
 import com.haulmont.yarg.structure.impl.ReportBuilder;
+import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateBuilder;
 import com.haulmont.yarg.structure.xml.impl.DefaultXmlReader;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
@@ -56,7 +57,8 @@ public class InvoiceTest {
                 "                               'date' : new Date(),\n" +
                 "                               'addLine1': '1600 Amphitheatre Pkwy',\n" +
                 "                               'addLine2': 'Mountain View, USA',\n" +
-                "                               'addLine3':'CA 94043'\n" +
+                "                               'addLine3':'CA 94043',\n" +
+                "                               'signature':'<html><body><b><font color=\"red\">Mr. Yarg</font></b></body></html>'\n" +
                 "                            ]]", "groovy").build();
 
 
@@ -69,6 +71,7 @@ public class InvoiceTest {
 
         reportBuilder.band(main);
         reportBuilder.band(items);
+        reportBuilder.format(new ReportFieldFormatImpl("Main.signature", "${html}"));
 
         Report report = reportBuilder.build();
 
