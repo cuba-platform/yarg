@@ -58,10 +58,50 @@ public class FormattersSmokeTest {
     @Test
     public void testDocx() throws Exception {
         BandData root = createRootBand();
+        BandData footer = root.getChildByName("Footer");
+        BandData footerChild = new BandData("FooterChild", footer);
+        footerChild.addData("nestedData", "NESTED_DATA");
+        footer.addChild(footerChild);
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.docx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.docx", "./test/smoketest/test.docx", ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testOdt() throws Exception {
+        BandData root = createRootBand();
+        BandData footer = root.getChildByName("Footer");
+        BandData footerChild = new BandData("FooterChild", footer);
+        footerChild.addData("nestedData", "NESTED_DATA");
+        footer.addChild(footerChild);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.doc");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
+                new ReportTemplateImpl("", "./test/smoketest/test.odt", "./test/smoketest/test.odt", ReportOutputType.doc), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testDoc() throws Exception {
+        BandData root = createRootBand();
+        BandData footer = root.getChildByName("Footer");
+        BandData footerChild = new BandData("FooterChild", footer);
+        footerChild.addData("nestedData", "NESTED_DATA");
+        footer.addChild(footerChild);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.doc");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+                new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -189,34 +229,6 @@ public class FormattersSmokeTest {
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
                 new ReportTemplateImpl("", "test.ftl", "./test/smoketest/test.ftl", ReportOutputType.html), outputStream));
-        formatter.renderDocument();
-
-        IOUtils.closeQuietly(outputStream);
-    }
-
-    @Test
-    public void testOdt() throws Exception {
-        BandData root = createRootBand();
-
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.doc");
-        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
-        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
-                new ReportTemplateImpl("", "./test/smoketest/test.odt", "./test/smoketest/test.odt", ReportOutputType.doc), outputStream));
-        formatter.renderDocument();
-
-        IOUtils.closeQuietly(outputStream);
-    }
-
-    @Test
-    public void testDoc() throws Exception {
-        BandData root = createRootBand();
-
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.doc");
-        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
-        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
-                new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

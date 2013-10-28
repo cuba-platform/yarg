@@ -38,8 +38,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractFormatter implements ReportFormatter {
-    public static final String UNIVERSAL_ALIAS_REGEXP = "\\$\\{[A-z0-9_\\.#]+?\\}";
-    public static final String ALIAS_WITH_BAND_NAME_REGEXP = "\\$\\{([A-z0-9_\\.]+?#?[A-z0-9_\\.]+?)\\}";
+    public static final String UNIVERSAL_ALIAS_REGEXP = "\\$\\{[A-z0-9_\\.#]+?\\}";//# is not really needed now but I keep i here for future purposes
+    public static final String ALIAS_WITH_BAND_NAME_REGEXP = "\\$\\{([A-z0-9_\\.]+?#?[A-z0-9_\\.]+?)\\}";//# is not really needed now but I keep i here for future purposes
     public static final String BAND_NAME_DECLARATION_REGEXP = "##band=([A-z_0-9]+) *";
 
     public static final Pattern UNIVERSAL_ALIAS_PATTERN = Pattern.compile(UNIVERSAL_ALIAS_REGEXP, Pattern.CASE_INSENSITIVE);
@@ -152,7 +152,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
         BandData currentBand = rootBand;
         for (String pathPart : pathParts) {
             if (currentBand == null) return null;
-            currentBand = currentBand.getChildByName(pathPart);
+            currentBand = currentBand.findBandRecursively(pathPart);
         }
 
         return currentBand;
@@ -171,13 +171,8 @@ public abstract class AbstractFormatter implements ReportFormatter {
     protected BandPathAndParameterName separateBandNameAndParameterName(String alias) {
         String bandPathPart;
         String paramNamePart;
-        if (alias.indexOf("#") > 0) {
-            bandPathPart = StringUtils.substringBeforeLast(alias, "#");
-            paramNamePart = StringUtils.substringAfterLast(alias, "#");
-        } else {
-            bandPathPart = StringUtils.substringBefore(alias, ".");
-            paramNamePart = StringUtils.substringAfter(alias, ".");
-        }
+        bandPathPart = StringUtils.substringBeforeLast(alias, ".");
+        paramNamePart = StringUtils.substringAfterLast(alias, ".");
 
         return new BandPathAndParameterName(bandPathPart, paramNamePart);
     }
