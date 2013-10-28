@@ -23,10 +23,20 @@ def isSnapshot = artifactVersion.endsWith('-SNAPSHOT')
 group = 'com.haulmont.yarg'
 version = artifactVersion
 
-def repositoryUrl = 'http://repository.haulmont.com:8587/nexus/content'
-def workRepositoryUrl = "$repositoryUrl/groups/work"
+
 def repositoryUser = System.getenv('HAULMONT_REPOSITORY_USER')
-def repositoryPassword = System.getenv('HAULMONT_REPOSITORY_PASSWORD')
+def repositoryPassword, repositoryUrl, workRepositoryUrl;
+
+if (repositoryUser) {//for internal users
+    repositoryPassword = System.getenv('HAULMONT_REPOSITORY_PASSWORD')
+    repositoryUrl = 'http://repository.haulmont.com:8587/nexus/content'
+    workRepositoryUrl = "$repositoryUrl/groups/work"
+} else {//for external users
+    repositoryUser = 'cuba'
+    repositoryPassword = 'cuba123'
+    repositoryUrl = 'https://repo.cuba-platform.com/content'
+    workRepositoryUrl = "$repositoryUrl/groups/work"
+}
 
 repositories {
     mavenCentral()
