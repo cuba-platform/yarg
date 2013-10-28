@@ -5,7 +5,7 @@ Provided by Haulmont Tech.
 
 This is a simple library for fast report creation
 
-Please see [wiki] (/Haulmont/yarg/wiki). 
+Please see [wiki] (https://github.com/Haulmont/yarg/wiki). 
 
 Or look through following samples: 
 
