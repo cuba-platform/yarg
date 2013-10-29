@@ -70,7 +70,14 @@ public class TableManager {
         int lastRow = xTextTable.getRows().getCount() - 1;
         try {
             for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
-                String templateText = asXText(getXCell(i, lastRow)).getString();
+                XCell xCell = null;
+                try {
+                    xCell = getXCell(i, lastRow);
+                } catch (IndexOutOfBoundsException e) {
+                    //stop loop - this row has less columns than first one
+                    break;
+                }
+                String templateText = asXText(xCell).getString();
                 if (AbstractFormatter.UNIVERSAL_ALIAS_PATTERN.matcher(templateText).find()) {
                     return true;
                 }
