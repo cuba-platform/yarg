@@ -5,9 +5,9 @@ This library is provided by Haulmont Tech.
 
 It simplifies report generation.
 
-[Wiki] (https://github.com/Haulmont/yarg/wiki). 
+[Wiki] (https://github.com/Haulmont/yarg/wiki)
 
-Samples: 
+Samples
 
 [Incomes](/core/test/sample/incomes/IncomesTest.java)
 
