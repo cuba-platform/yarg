@@ -1,13 +1,13 @@
-yarg
+YARG
 ====
 
-Provided by Haulmont Tech.
+This library is provided by Haulmont Tech.
 
-This is a simple library for fast report creation
+It simplifies report generation.
 
-Please see [wiki] (https://github.com/Haulmont/yarg/wiki). 
+[Wiki] (https://github.com/Haulmont/yarg/wiki). 
 
-Or look through following samples: 
+Samples: 
 
 [Incomes](/core/test/sample/incomes/IncomesTest.java)
 
@@ -15,4 +15,4 @@ Or look through following samples:
 
 [Breakdown](/core/test/sample/financedetails/BreakdownTest.java)
 
-To be continued...
+
