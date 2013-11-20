@@ -140,13 +140,15 @@ public class DocFormatter extends AbstractFormatter {
         for (String tableName : tablesNames) {
             TableManager tableManager = new TableManager(xComponent, tableName);
             XTextTable xTextTable = tableManager.getXTextTable();
-            BandData band = rootBand.findBandRecursively(tableName);
+
+            String bandName = tableName;
+            BandData band = rootBand.findBandRecursively(bandName);
             if (band == null) {
                 XText xText = tableManager.findFirstEntryInRow(BAND_NAME_DECLARATION_PATTERN, 0);
                 if (xText != null) {
                     Matcher matcher = BAND_NAME_DECLARATION_PATTERN.matcher(xText.getString());
                     if (matcher.find()) {
-                        String bandName = matcher.group(1);
+                        bandName = matcher.group(1);
                         band = rootBand.findBandRecursively(bandName);
                         XTextCursor xTextCursor = xText.createTextCursor();
 
@@ -171,9 +173,12 @@ public class DocFormatter extends AbstractFormatter {
                 if (columnCount < 2) {
                     xTextTable.getColumns().removeByIndex(columnCount, 1);
                 }
-            } else {
-                if (tableManager.hasValueExpressions())
-                    tableManager.deleteLastRow();
+            } else if (tableManager.hasValueExpressions()
+                    && rootBand.getFirstLevelBandDefinitionNames() != null
+                    && rootBand.getFirstLevelBandDefinitionNames().contains(bandName)) {
+                    //if table is linked with band and has aliases on it, but no band data found -
+                    //we are removing the last row (which usually contains aliases)
+                tableManager.deleteLastRow();
             }
         }
     }
