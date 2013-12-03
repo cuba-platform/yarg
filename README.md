@@ -9,12 +9,8 @@ YARG is a mature and well-tested tool, already used in a number of Haulmont's so
 
 [Wiki] (https://github.com/Haulmont/yarg/wiki)
 
-Samples
+### Samples
 
-[Incomes](/core/test/sample/incomes/IncomesTest.java)
-
-[Invoice](/core/test/sample/invoice/InvoiceTest.java)
-
-[Breakdown](/core/test/sample/financedetails/BreakdownTest.java)
-
-
+  * [Incomes](/core/test/sample/incomes/IncomesTest.java)
+  * [Invoice](/core/test/sample/invoice/InvoiceTest.java)
+  * [Breakdown](/core/test/sample/financedetails/BreakdownTest.java)
