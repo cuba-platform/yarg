@@ -76,7 +76,7 @@ public class SqlDataLoader extends AbstractDbDataLoader {
                         ResultSetMetaData metaData = rs.getMetaData();
                         if (outputParameters.size() == 0) {
                             for (int columnIndex = 1; columnIndex <= metaData.getColumnCount(); columnIndex++) {
-                                String columnName = metaData.getColumnName(columnIndex);
+                                String columnName = metaData.getColumnLabel(columnIndex);
                                 outputParameters.add(columnName);
                             }
                         }
