@@ -68,16 +68,34 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
         List<QueryParameter> queryParameters = new ArrayList<QueryParameter>();
         HashSet<String> paramNames = findParameterNames(query);
-        HashSet<String> paramsToRemoveFromQuery = new HashSet<>();
+        Map<String, String> paramsToRemoveFromQuery = new LinkedHashMap<>();
 
         for (String paramName : paramNames) {
             Object paramValue = currentParams.get(paramName);
             String alias = "${" + paramName + "}";
-            String paramNameRegexp = "\\$\\{" + paramName + "\\}";
-            String deleteRegexp = "(?i)\\s*(and|or)?\\s+[\\w|\\d|\\.|\\_]+\\s+(=|>=|<=|like|>|<)\\s*" + paramNameRegexp;
 
-            if (paramValue == null) {//if value == null - remove condition from query
-                paramsToRemoveFromQuery.add(deleteRegexp);
+            String paramNameRegexp = "\\$\\{" + paramName + "\\}";
+            String valueRegexp = "([\\w|\\d|\\.|\\_]+|\'.+?\'|\".+?\"|\\(.+?\\))";//fieldName|literal|list or sub-query
+            String andRegexp = "\\s+and\\s+";
+            String orRegexp = "\\s+or\\s+";
+            String operatorRegexp = "(=|>=|<=|\\slike\\s|>|<|\\sin\\s)";
+
+            String expression1Rgxp = "\\s*" + valueRegexp + "\\s*" + operatorRegexp + "\\s*" + paramNameRegexp + "\\s*";
+            String expression2Rgxp = "\\s*" + paramNameRegexp + "\\s*" + operatorRegexp + "\\s*" + valueRegexp + "\\s*";
+            String expressionRgxp = "(" + expression1Rgxp + "|" + expression2Rgxp + ")";
+
+            String andFirstRgxp = andRegexp + expressionRgxp;
+            String orFirstRgxp = orRegexp + expressionRgxp;
+            String andLastRgxp = expressionRgxp + andRegexp;
+            String orLastRgxp = expressionRgxp + orRegexp;
+
+            if (paramValue == null && reportParams != null && reportParams.containsKey(paramName)) {//if value == null && this is user parameter - remove condition from query
+                paramsToRemoveFromQuery.put("(?i)" + andFirstRgxp, " and 1=1");
+                paramsToRemoveFromQuery.put("(?i)" + andLastRgxp, " 1=1 and ");
+                paramsToRemoveFromQuery.put("(?i)" + orFirstRgxp, " or 1=0 ");
+                paramsToRemoveFromQuery.put("(?i)" + orLastRgxp, " 1=0 or ");
+
+                paramsToRemoveFromQuery.put("(?i)" + expressionRgxp, " 1=1 ");
             } else if (query.contains(alias)) {//otherwise - create parameter and save each entry's position
                 Pattern pattern = Pattern.compile(paramNameRegexp);
                 Matcher replaceMatcher = pattern.matcher(query);
@@ -91,8 +109,8 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             }
         }
 
-        for (String paramAlias : paramsToRemoveFromQuery) {
-            query = query.replaceAll(paramAlias, "");
+        for (Map.Entry<String, String> entry : paramsToRemoveFromQuery.entrySet()) {
+            query = query.replaceAll(entry.getKey(), entry.getValue());
         }
 
         // Sort params by position
@@ -113,12 +131,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             query = insertParameterToQuery(query, parameter);
         }
 
-        query = query.trim();
-        if (query.endsWith("where")) {
-            query = query.replace("where", "");
-        }
-
-        return new QueryPack(query, queryParameters.toArray(new QueryParameter[queryParameters.size()]));
+        return new QueryPack(query.trim().replaceAll("\\s+", " "), queryParameters.toArray(new QueryParameter[queryParameters.size()]));
     }
 
     protected void addParentBandDataToParameters(BandData parentBand, Map<String, Object> currentParams) {
@@ -146,13 +159,14 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             // Replace single parameter with ?
             query = query.replaceAll(parameter.getParamRegexp(), "?");
         } else {
-            // Replace multiple parameter with ?,..(N)..,?
+            // Replace multiple parameter with (?,..(N)..,?)
             List<?> multipleValues = parameter.getMultipleValues();
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder("(");
             for (Object value : multipleValues) {
                 builder.append("?,");
             }
             builder.deleteCharAt(builder.length() - 1);
+            builder.append(")");
             query = query.replaceAll(parameter.getParamRegexp(), builder.toString());
         }
         return query;

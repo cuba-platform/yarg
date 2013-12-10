@@ -43,7 +43,7 @@ public class ExportImportTest {
                         .name("Band1")
                         .query("Data_set_1", "return [['col1':123, 'col2':321], ['col1':456, 'col2':654]]", "groovy")
                         .build()
-                ).parameter(new ReportParameterImpl("parameterName", "parameterAlias", true, String.class));
+                ).parameter(new ReportParameterImpl("parameterName", "parameterAlias", false, String.class));
         report.template(
                 new ReportTemplateBuilder()
                         .code(ReportTemplate.DEFAULT_TEMPLATE_CODE)

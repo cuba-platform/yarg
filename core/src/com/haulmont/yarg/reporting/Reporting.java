@@ -27,10 +27,7 @@ import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
-import com.haulmont.yarg.structure.BandData;
-import com.haulmont.yarg.structure.Report;
-import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.ReportTemplate;
+import com.haulmont.yarg.structure.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -85,11 +82,25 @@ public class Reporting implements ReportingAPI {
             Preconditions.checkNotNull(params, "\"params\" can not be null");
             Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
 
+            params = new HashMap<>(params);//make sure map is mutable
+
             String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
             BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
-            rootBand.setData(new HashMap<String, Object>(params));
+            rootBand.setData(params);
             rootBand.setReportFieldFormats(report.getReportFieldFormats());
             rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
+
+            for (ReportParameter reportParameter : report.getReportParameters()) {
+                String paramName = reportParameter.getAlias();
+
+                if (Boolean.TRUE.equals(reportParameter.getRequired()) && params.get(paramName) == null) {
+                    throw new IllegalArgumentException(String.format("Required report parameter \"%s\" not found", paramName));
+                }
+
+                if (!params.containsKey(paramName)) {//make sure map contains all user parameters, even if value == null
+                    params.put(paramName, null);
+                }
+            }
 
             dataExtractor.extractData(report, params, rootBand);
 

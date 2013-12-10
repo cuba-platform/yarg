@@ -17,6 +17,7 @@ import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,7 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
 
         params.put("date", "param1");
         params.put("executorId", "param2");
+        params.put("runs", null);
         queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
         Assert.assertEquals(3, StringUtils.countMatches(queryPack.getQuery(), "?"));
@@ -126,6 +128,80 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
         Assert.assertEquals("param2", queryPack.getParams()[2].getValue());
     }
 
+    @Test
+    public void testParamsReplacing() throws Exception {
+        String query = " where id=${param1} and id = ${param2}";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("param1", null);
+        params.put("param2", "param2");
+        params.put("param3", null);
+        AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where 1=1 and id = ?", queryPack.getQuery());
+
+        query = "where id=${param1} or id = ${param2}";
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where 1=0 or id = ?", queryPack.getQuery());
+
+        query = "where (id=${param1}         or          id = ${param2}) and id = ${param3}";
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where ( 1=0 or id = ?) and 1=1", queryPack.getQuery());
+
+        query = "where (id like ${param1}         or          id in ${param2}) and id = ${param3}";
+        params.put("param2", Arrays.asList("1", "2"));
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where ( 1=0 or id in (?,?)) and 1=1", queryPack.getQuery());
+
+        params.put("param2", null);
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where ( 1=0 or 1=0 ) and 1=1", queryPack.getQuery());
+
+        query = "where (${param1} like '123'         or          id in ${param2}) and id = ${param3}";
+        params.put("param1", "1");
+        params.put("param2", Arrays.asList("1", "2"));
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where (? like '123' or id in (?,?)) and 1=1", queryPack.getQuery());
+
+        query = "where (${param1} like 'A' and ${param2} in ('A', 'B')) or field_name=${param3}";
+        params.put("param1", "A");
+        params.put("param2", null);
+        params.put("param3", "1234");
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where (? like 'A' and 1=1) or field_name=?", queryPack.getQuery());
+
+
+        query = "where (${param1} like 'A' and ${param2} in (select 1 from a where a = ${param2})) or field_name=${param3}";
+        params.put("param1", "param1");
+        params.put("param2", null);
+        params.put("param3", "param3");
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where (? like 'A' and 1=1) or field_name=?", queryPack.getQuery());
+
+        query = "where (${param1} like 'A' and ${param2} in (select 1 from a where a = ${param2})) or field_name=${param3}";
+        params.put("param2", "param2");
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where (? like 'A' and ? in (select 1 from a where a = ?)) or field_name=?", queryPack.getQuery());
+
+        Assert.assertEquals("param1", queryPack.getParams()[0].getValue());
+        Assert.assertEquals("param2", queryPack.getParams()[1].getValue());
+        Assert.assertEquals("param2", queryPack.getParams()[2].getValue());
+        Assert.assertEquals("param3", queryPack.getParams()[3].getValue());
+
+        query = "where (${param1} like 'A' and ${param2} in (1,2,3)) or field_name=${param3}";
+        params.put("param1", null);
+        params.put("param3", null);
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where ( 1=1 and ? in (1,2,3)) or 1=0", queryPack.getQuery());
+    }
 
     private void writeParams(QueryPack queryPack) {
         QueryParameter[] params1;

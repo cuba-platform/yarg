@@ -17,6 +17,7 @@ package com.haulmont.yarg.structure;
 
 import com.google.common.base.Preconditions;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +61,7 @@ public class ReportOutputType implements Serializable {
     }
 
     public ReportOutputType(String id) {
+        Preconditions.checkNotNull(id, "\"id\" field can not be null");
         this.id = id;
     }
 
@@ -67,5 +69,9 @@ public class ReportOutputType implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        return getOutputTypeById(id);
     }
 }
