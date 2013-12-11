@@ -90,7 +90,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             String orLastRgxp = expressionRgxp + orRegexp;
 
             if (paramValue == null && reportParams != null && reportParams.containsKey(paramName)) {//if value == null && this is user parameter - remove condition from query
-                paramsToRemoveFromQuery.put("(?i)" + andFirstRgxp, " and 1=1");
+                paramsToRemoveFromQuery.put("(?i)" + andFirstRgxp, " and 1=1 ");
                 paramsToRemoveFromQuery.put("(?i)" + andLastRgxp, " 1=1 and ");
                 paramsToRemoveFromQuery.put("(?i)" + orFirstRgxp, " or 1=0 ");
                 paramsToRemoveFromQuery.put("(?i)" + orLastRgxp, " 1=0 or ");
