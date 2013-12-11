@@ -130,6 +130,7 @@ public class XLSFormatter extends AbstractFormatter {
             initMergeRegions(templateSheet);
             copyCharts(resultSheet);
             removeMergedRegions(resultSheet);
+            cleanupCells(resultSheet);
         }
 
         copyPicturesToResultWorkbook();
@@ -185,6 +186,20 @@ public class XLSFormatter extends AbstractFormatter {
     protected void removeMergedRegions(HSSFSheet resultSheet) {
         for (int i = 0, size = resultSheet.getNumMergedRegions(); i < size; i++) {
             resultSheet.removeMergedRegion(0);//each time we remove region - they "move to left" so region 1 become region 0
+        }
+    }
+
+    protected void cleanupCells(HSSFSheet resultSheet) {
+        for (int i = resultSheet.getFirstRowNum(); i <= resultSheet.getLastRowNum(); i++) {
+            HSSFRow row = resultSheet.getRow(i);
+            if (row != null) {
+                for (int j = 0; j < row.getLastCellNum(); j++) {
+                    HSSFCell cell = row.getCell(j);
+                    if (cell != null) {
+                        row.removeCell(cell);
+                    }
+                }
+            }
         }
     }
 
@@ -577,7 +592,7 @@ public class XLSFormatter extends AbstractFormatter {
     /**
      * Copies template cell to result cell and fills it with bandData data
      *
-     * @param bandData              - bandData
+     * @param bandData          - bandData
      * @param templateCellValue - template cell value
      * @param resultCell        - result cell
      */

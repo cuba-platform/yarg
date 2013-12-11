@@ -63,6 +63,24 @@ public class XlsIntegrationTest {
         compareFiles("./test/integration/etalon-with-aggregation.xls", "./result/integration/result-with-aggregation.xls");
     }
 
+    @Test
+    public void testAggregationsEmpty() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<>();
+        root.setData(rootData);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-empty.xls");
+
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
+                new ReportTemplateImpl("", "smoketest/test.xls", "./test/integration/test-with-aggregation.xls", ReportOutputType.xls), outputStream));
+
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+
+        compareFiles("./test/integration/etalon-empty.xls", "./result/integration/result-empty.xls");
+    }
+
     private void compareFiles(String etalonFile, String resultFile) throws IOException {
         HSSFWorkbook result = new HSSFWorkbook(FileUtils.openInputStream(new File(etalonFile)));
         HSSFWorkbook etalon = new HSSFWorkbook(FileUtils.openInputStream(new File(resultFile)));
