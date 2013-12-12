@@ -34,6 +34,8 @@ import org.apache.commons.lang.StringUtils;
 import java.util.*;
 
 public class DataExtractorImpl implements DataExtractor {
+    protected static final Map<String, Object> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<String, Object>());
+
     protected ReportLoaderFactory loaderFactory;
 
     protected boolean putEmptyRowIfNoDataSelected = true;
@@ -86,15 +88,40 @@ public class DataExtractorImpl implements DataExtractor {
 
     protected List<Map<String, Object>> getBandData(ReportBand band, BandData parentBand, Map<String, Object> params) {
         Collection<ReportQuery> reportQueries = band.getReportQueries();
-        //add input params to band
-        if (CollectionUtils.isEmpty(reportQueries))
+        if (CollectionUtils.isEmpty(reportQueries)) {
             return Collections.singletonList(params);
+        }
 
-        Iterator<ReportQuery> queryIterator = reportQueries.iterator();
+        List<Map<String, Object>> result = null;
+        if (!isEmptyBand(parentBand)) {
+            result = getQueriesResult(band, parentBand, params, reportQueries);
+
+            if (result != null) {
+                //add input params to band
+                for (Map<String, Object> map : result) {
+                    map.putAll(params);
+                }
+            }
+        }
+
+        if (result == null) {
+            result = Collections.emptyList();
+        }
+
+        if (putEmptyRowIfNoDataSelected && CollectionUtils.isEmpty(result)) {
+            result = new ArrayList<>();
+            result.add(EMPTY_MAP);
+        }
+
+        return result;
+    }
+
+    protected List<Map<String, Object>> getQueriesResult(ReportBand band, BandData parentBand, Map<String, Object> params, Collection<ReportQuery> reportQueries) {
+        List<Map<String, Object>> result;Iterator<ReportQuery> queryIterator = reportQueries.iterator();
         ReportQuery firstReportQuery = queryIterator.next();
 
         //gets data from first dataset
-        List<Map<String, Object>> result = getQueryData(parentBand, band, firstReportQuery, params);
+        result = getQueryData(parentBand, band, firstReportQuery, params);
 
         //adds data from second and following datasets to result
         while (queryIterator.hasNext()) {
@@ -129,18 +156,11 @@ public class DataExtractorImpl implements DataExtractor {
             }
         }
 
-        if (CollectionUtils.isEmpty(result) && putEmptyRowIfNoDataSelected){
-            result.add(new HashMap<String, Object>());
-        }
-
-        if (result != null) {
-            //add output params to band
-            for (Map<String, Object> map : result) {
-                map.putAll(params);
-            }
-        }
-
         return result;
+    }
+
+    protected boolean isEmptyBand(BandData parentBand) {
+        return parentBand.getData() == EMPTY_MAP;
     }
 
     protected List<Map<String, Object>> getQueryData(BandData parentBand, ReportBand band, ReportQuery reportQuery, Map<String, Object> paramsMap) {
