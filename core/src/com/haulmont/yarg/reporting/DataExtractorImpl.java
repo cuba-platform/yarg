@@ -21,6 +21,7 @@
  */
 package com.haulmont.yarg.reporting;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
@@ -41,6 +42,7 @@ public class DataExtractorImpl implements DataExtractor {
     protected boolean putEmptyRowIfNoDataSelected = true;
 
     public DataExtractorImpl(ReportLoaderFactory loaderFactory) {
+        Preconditions.checkNotNull(loaderFactory, "\"loaderFactory\" parameter can not be null");
         this.loaderFactory = loaderFactory;
     }
 
@@ -62,6 +64,10 @@ public class DataExtractorImpl implements DataExtractor {
 
     public void setPutEmptyRowIfNoDataSelected(boolean putEmptyRowIfNoDataSelected) {
         this.putEmptyRowIfNoDataSelected = putEmptyRowIfNoDataSelected;
+    }
+
+    public boolean getPutEmptyRowIfNoDataSelected() {
+        return putEmptyRowIfNoDataSelected;
     }
 
     protected List<BandData> createBands(ReportBand definition, BandData parentBand, Map<String, Object> params) {
@@ -108,7 +114,7 @@ public class DataExtractorImpl implements DataExtractor {
             result = Collections.emptyList();
         }
 
-        if (putEmptyRowIfNoDataSelected && CollectionUtils.isEmpty(result)) {
+        if (getPutEmptyRowIfNoDataSelected() && CollectionUtils.isEmpty(result)) {
             result = new ArrayList<>();
             result.add(EMPTY_MAP);
         }
