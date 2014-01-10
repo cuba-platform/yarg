@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class DefaultPropertiesLoader implements PropertiesLoader {
-    protected String propertiesPath = "./reporting.properties";
+    public static final String DEFAULT_PROPERTIES_PATH = "./reporting.properties";
+
+    protected String propertiesPath = DEFAULT_PROPERTIES_PATH;
     protected Properties properties;
     protected final Object lock = new Object();
 

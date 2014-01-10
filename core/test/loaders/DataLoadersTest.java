@@ -1,5 +1,6 @@
 package loaders;
 
+import com.haulmont.yarg.loaders.impl.JsonDataLoader;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
@@ -68,7 +69,21 @@ public class DataLoadersTest {
     @Test
     public void testLinksInQueries() throws Exception {
 
-
     }
 
+    @Test
+    public void testJson() throws Exception {
+        JsonDataLoader jsonDataLoader = new JsonDataLoader();
+        BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
+        rootBand.setData(Collections.<String, Object>emptyMap());
+        ReportQueryImpl reportQuery = new ReportQueryImpl("", "param1", "json", null, null);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("param1", "{\"abc\":\"123\",\"cba\":321}");
+
+        List<Map<String, Object>> maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
+        Map<String, Object> map = maps.get(0);
+        Assert.assertEquals("123", map.get("abc"));
+        Assert.assertEquals("321", map.get("cba"));
+    }
 }

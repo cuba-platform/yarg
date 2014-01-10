@@ -33,6 +33,7 @@ import java.util.Map;
 public class DefaultLoaderFactory implements ReportLoaderFactory {
     public static final String GROOVY_DATA_LOADER = "groovy";
     public static final String SQL_DATA_LOADER = "sql";
+    public static final String JSON_DATA_LOADER = "json";
 
     protected Map<String, ReportDataLoader> dataLoaders = new HashMap<String, ReportDataLoader>();
 
@@ -47,6 +48,10 @@ public class DefaultLoaderFactory implements ReportLoaderFactory {
 
     public DefaultLoaderFactory setSqlDataLoader(ReportDataLoader dataLoader) {
         return registerDataLoader(SQL_DATA_LOADER, dataLoader);
+    }
+
+    public DefaultLoaderFactory setJsonDataLoader(ReportDataLoader dataLoader) {
+        return registerDataLoader(JSON_DATA_LOADER, dataLoader);
     }
 
     public DefaultLoaderFactory registerDataLoader(String key, ReportDataLoader dataLoader) {

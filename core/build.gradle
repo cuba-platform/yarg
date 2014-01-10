@@ -60,9 +60,11 @@ assemble {
     new File("result/integration").mkdir();
     new File("result/smoke").mkdir();
     new File("result/sample").mkdir();
+    new File("result/console").mkdir();
 }
 
 dependencies {
+    compile(group: 'com.haulmont.thirdparty', name: 'gson', version: '1.7.1')
     compile(group: 'commons-cli', name: 'commons-cli', version: '1.2')
     compile(group: 'commons-logging', name: 'commons-logging', version: '1.1.1')
     compile(group: 'commons-lang', name: 'commons-lang', version: '2.6')
