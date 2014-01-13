@@ -62,10 +62,10 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BiMap<BandData, Range> bandsToTemplateRanges = HashBiMap.create();
     protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
-    protected Set<Cell> innerFormulas = new HashSet<>();
-    protected Set<Cell> outerFormulas = new HashSet<>();
+    protected Set<Cell> innerFormulas = new HashSet<Cell>();
+    protected Set<Cell> outerFormulas = new HashSet<Cell>();
 
-    private Map<Worksheet, Long> lastRowForSheet = new HashMap<>();
+    private Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
     private int previousRangesRightOffset;
 
     public XlsxFormatter(FormatterFactoryInput formatterFactoryInput) {
@@ -260,7 +260,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
             for (Range templateRange : rangeDependencies.keySet()) {
                 if (templateRange.contains(formulaRange)) {
-                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.get(templateRange));
+                    List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.get(templateRange));
                     for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
                         Range resultRange = iterator.next();
                         BandData bandData = bandsToResultRanges.inverse().get(resultRange);
@@ -504,7 +504,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow) {
-        List<Cell> resultCells = new ArrayList<>();
+        List<Cell> resultCells = new ArrayList<Cell>();
         for (int i = 0; i <= templateRange.getLastRow() - templateRange.getFirstRow(); i++) {
             Range oneRowRange = new Range(templateRange.getSheet(), templateRange.getFirstColumn(), templateRange.getFirstRow() + i, templateRange.getLastColumn(), templateRange.getFirstRow() + i);
             List<Cell> templateCells = template.getCellsByRange(oneRowRange);
@@ -516,7 +516,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Range> findAlreadyRenderedRanges(BandData band) {
-        List<Range> alreadyRenderedRanges = new ArrayList<>();
+        List<Range> alreadyRenderedRanges = new ArrayList<Range>();
         List<BandData> sameLevelBands = band.getParentBand().getChildrenByName(band.getName());
         for (BandData sameLevelBand : sameLevelBands) {
             Range range = bandsToResultRanges.get(sameLevelBand);
@@ -551,7 +551,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(Range templateRange, BandData bandData, Row newRow, List<Cell> templateCells) {
-        List<Cell> resultCells = new ArrayList<>();
+        List<Cell> resultCells = new ArrayList<Cell>();
         for (Cell templateCell : templateCells) {
             copyRowSettings((Row) templateCell.getParent(), newRow);
 

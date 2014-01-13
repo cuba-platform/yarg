@@ -99,7 +99,7 @@ public class ConsoleRunner {
 
     private static Map<String, Object> parseReportParams(CommandLine cmd, Report report) {
         if (cmd.hasOption(REPORT_PARAMETER)) {
-            Map<String, Object> params = new HashMap<>();
+            Map<String, Object> params = new HashMap<String, Object>();
             Properties optionProperties = cmd.getOptionProperties(REPORT_PARAMETER);
             for (ReportParameter reportParameter : report.getReportParameters()) {
                 String paramValueStr = optionProperties.getProperty(reportParameter.getAlias());
@@ -140,7 +140,17 @@ public class ConsoleRunner {
                         return value;
                     }
                 }
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            } catch (InstantiationException e) {
+                throw new ReportingException(
+                        String.format("Could not instantiate object with class [%s] from [%s] string.",
+                                parameterClass.getCanonicalName(),
+                                paramValueStr));
+            } catch (IllegalAccessException e) {
+                throw new ReportingException(
+                        String.format("Could not instantiate object with class [%s] from [%s] string.",
+                                parameterClass.getCanonicalName(),
+                                paramValueStr));
+            } catch (InvocationTargetException e) {
                 throw new ReportingException(
                         String.format("Could not instantiate object with class [%s] from [%s] string.",
                                 parameterClass.getCanonicalName(),

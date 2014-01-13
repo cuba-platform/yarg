@@ -78,7 +78,7 @@ public class DataLoadersTest {
         rootBand.setData(Collections.<String, Object>emptyMap());
         ReportQueryImpl reportQuery = new ReportQueryImpl("", "param1", "json", null, null);
 
-        Map<String, Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("param1", "{\"abc\":\"123\",\"cba\":321}");
 
         List<Map<String, Object>> maps = jsonDataLoader.loadData(reportQuery, rootBand, params);

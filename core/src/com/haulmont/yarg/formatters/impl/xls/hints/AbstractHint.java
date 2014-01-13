@@ -42,7 +42,7 @@ public abstract class AbstractHint implements XlsHint {
         }
     }
 
-    protected List<DataObject> data = new ArrayList<>();
+    protected List<DataObject> data = new ArrayList<DataObject>();
 
     protected String patternStr;
     protected Pattern pattern;

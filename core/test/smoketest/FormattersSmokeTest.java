@@ -237,12 +237,12 @@ public class FormattersSmokeTest {
     @Test
     public void testDocxWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData letterTable = new BandData("letterTable", root, BandOrientation.HORIZONTAL);
         BandData creatorInfo = new BandData("creatorInfo", root, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> letterTableData = new HashMap<>();
+        HashMap<String, Object> letterTableData = new HashMap<String, Object>();
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
@@ -261,7 +261,7 @@ public class FormattersSmokeTest {
         html += "</body></html>";
         letterTableData.put("html", html);
         letterTable.setData(letterTableData);
-        HashMap<String, Object> creatorInfoData = new HashMap<>();
+        HashMap<String, Object> creatorInfoData = new HashMap<String, Object>();
         creatorInfoData.put("name", "12345");
         creatorInfoData.put("phone", "54321");
         creatorInfo.setData(creatorInfoData);
@@ -281,12 +281,12 @@ public class FormattersSmokeTest {
     @Test
     public void testDocWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData letterTable = new BandData("letterTable", root, BandOrientation.HORIZONTAL);
         BandData creatorInfo = new BandData("creatorInfo", root, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> letterTableData = new HashMap<>();
+        HashMap<String, Object> letterTableData = new HashMap<String, Object>();
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
@@ -305,7 +305,7 @@ public class FormattersSmokeTest {
         html += "</body></html>";
         letterTableData.put("html", html);
         letterTable.setData(letterTableData);
-        HashMap<String, Object> creatorInfoData = new HashMap<>();
+        HashMap<String, Object> creatorInfoData = new HashMap<String, Object>();
         creatorInfoData.put("name", "12345");
         creatorInfoData.put("phone", "54321");
         creatorInfo.setData(creatorInfoData);
@@ -329,7 +329,7 @@ public class FormattersSmokeTest {
 
     private BandData createRootBand(List<BandData> bands) {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData band1_1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);

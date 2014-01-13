@@ -115,7 +115,7 @@ public class DataExtractorImpl implements DataExtractor {
         }
 
         if (getPutEmptyRowIfNoDataSelected() && CollectionUtils.isEmpty(result)) {
-            result = new ArrayList<>();
+            result = new ArrayList<Map<String, Object>>();
             result.add(EMPTY_MAP);
         }
 

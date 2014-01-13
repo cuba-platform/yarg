@@ -18,10 +18,10 @@ package com.haulmont.yarg.formatters.impl.xls.hints;
 
 /**
  * @author artamonov
- * @version $Id: CopyColumnHint.java 9328 2012-10-18 15:28:32Z artamonov $
+ * @version $Id: CopyColumnWidthHint.java 9328 2012-10-18 15:28:32Z artamonov $
  */
-public class CopyColumnHint extends AbstractHint {
-    public CopyColumnHint() {
+public class CopyColumnWidthHint extends AbstractHint {
+    public CopyColumnWidthHint() {
         super("##copyColumnWidth");
     }
 

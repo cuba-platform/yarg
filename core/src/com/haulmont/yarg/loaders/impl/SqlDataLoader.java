@@ -57,7 +57,7 @@ public class SqlDataLoader extends AbstractDbDataLoader {
         try {
             QueryPack pack = prepareQuery(query, parentBand, params);
 
-            ArrayList<Object> resultingParams = new ArrayList<>();
+            ArrayList<Object> resultingParams = new ArrayList<Object>();
             QueryParameter[] queryParameters = pack.getParams();
             for (QueryParameter queryParameter : queryParameters) {
                 if (queryParameter.isSingleValue()) {

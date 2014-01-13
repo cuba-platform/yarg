@@ -29,7 +29,7 @@ import java.util.*;
 public class BandData {
     public static final String ROOT_BAND_NAME = "Root";
 
-    protected Map<String, Object> data = new HashMap<>(10);
+    protected Map<String, Object> data = new HashMap<String, Object>(10);
     protected BandData parentBand;
 
     protected Map<String, List<BandData>> childrenBands = new LinkedHashMap<String, List<BandData>>();
@@ -38,7 +38,7 @@ public class BandData {
     protected final BandOrientation orientation;
     protected Set<String> firstLevelBandDefinitionNames = null;
     protected int level;
-    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<>();
+    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<String, ReportFieldFormat>();
 
 
     public BandData(String name) {

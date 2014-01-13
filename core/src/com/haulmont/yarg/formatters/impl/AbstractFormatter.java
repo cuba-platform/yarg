@@ -50,7 +50,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     protected BandData rootBand;
     protected ReportTemplate reportTemplate;
     protected OutputStream outputStream;
-    protected Set<ReportOutputType> supportedOutputTypes = new HashSet<>();
+    protected Set<ReportOutputType> supportedOutputTypes = new HashSet<ReportOutputType>();
     protected DefaultFormatProvider defaultFormatProvider;
 
     /**

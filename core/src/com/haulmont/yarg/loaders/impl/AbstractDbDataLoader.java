@@ -68,7 +68,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
         List<QueryParameter> queryParameters = new ArrayList<QueryParameter>();
         HashSet<String> paramNames = findParameterNames(query);
-        Map<String, String> paramsToRemoveFromQuery = new LinkedHashMap<>();
+        Map<String, String> paramsToRemoveFromQuery = new LinkedHashMap<String, String>();
 
         for (String paramName : paramNames) {
             Object paramValue = currentParams.get(paramName);
@@ -145,7 +145,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
     }
 
     protected HashSet<String> findParameterNames(String query) {
-        HashSet<String> paramsStr = new LinkedHashSet<>();
+        HashSet<String> paramsStr = new LinkedHashSet<String>();
         Matcher paramMatcher = COMMON_PARAM_PATTERN.matcher(query);
         while (paramMatcher.find()) {
             String paramName = paramMatcher.group(1);

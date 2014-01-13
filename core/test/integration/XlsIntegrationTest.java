@@ -66,7 +66,7 @@ public class XlsIntegrationTest {
     @Test
     public void testAggregationsEmpty() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
 
         FileOutputStream outputStream = new FileOutputStream("./result/integration/result-empty.xls");
@@ -112,7 +112,7 @@ public class XlsIntegrationTest {
 
     private BandData createRootBandForFormulas() {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
         BandData band1_1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
         BandData band1_2 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
@@ -150,7 +150,7 @@ public class XlsIntegrationTest {
 
     private BandData createRootBandForAggregation() {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
 
         BandData band1_1 = band(1, 2, BandOrientation.HORIZONTAL, null, "Band1");

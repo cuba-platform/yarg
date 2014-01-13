@@ -39,7 +39,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected XlsToPdfConverterAPI xlsToPdfConverter;
     protected DefaultFormatProvider defaultFormatProvider;
 
-    protected Map<String, FormatterCreator> formattersMap = new HashMap<>();
+    protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
 
     public DefaultFormatterFactory() {
         formattersMap.put("xls", new FormatterCreator() {

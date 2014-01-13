@@ -94,7 +94,7 @@ public class XLSFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.pdf);
 
         hints.add(new CustomCellStyleHint(fontCache, styleCache));
-        hints.add(new CopyColumnHint());
+        hints.add(new CopyColumnWidthHint());
         hints.add(new AutoWidthHint());
         hints.add(new CustomWidthHint());
     }

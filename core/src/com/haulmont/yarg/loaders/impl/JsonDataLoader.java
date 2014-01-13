@@ -32,7 +32,7 @@ import java.util.*;
 public class JsonDataLoader implements ReportDataLoader {
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
-        List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
         Object parameterValue = params.get(reportQuery.getScript());
         if (parameterValue != null) {
             JsonElement json;
@@ -69,7 +69,7 @@ public class JsonDataLoader implements ReportDataLoader {
     }
 
     private Map<String, Object> convertJsonToMap(JsonObject jsonObject) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
             if (entry.getValue() instanceof JsonPrimitive) {
                 JsonPrimitive value = (JsonPrimitive) entry.getValue();

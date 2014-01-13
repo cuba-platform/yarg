@@ -39,9 +39,9 @@ import java.util.*;
 
 public class Document {
     protected SpreadsheetMLPackage thePackage;
-    protected List<SheetWrapper> worksheets = new ArrayList<>();
+    protected List<SheetWrapper> worksheets = new ArrayList<SheetWrapper>();
 
-    protected Map<Range, ChartPair> chartSpaces = new HashMap<>();
+    protected Map<Range, ChartPair> chartSpaces = new HashMap<Range, ChartPair>();
     protected Workbook workbook;
     protected SharedStrings sharedStrings;
     protected HashSet<Part> handled = new HashSet<Part>();
@@ -118,7 +118,7 @@ public class Document {
         Worksheet sheet = getSheetByName(range.getSheet());
         SheetData data = sheet.getSheetData();
 
-        List<Cell> result = new ArrayList<>();
+        List<Cell> result = new ArrayList<Cell>();
         for (int i = 1; i <= data.getRow().size(); i++) {
             Row row = data.getRow().get(i - 1);
             if (range.getFirstRow() <= row.getR() && row.getR() <= range.getLastRow()) {
