@@ -42,6 +42,10 @@ public class DefaultLoaderFactory implements ReportLoaderFactory {
         return this;
     }
 
+    public Map<String, ReportDataLoader> getDataLoaders() {
+        return dataLoaders;
+    }
+
     public DefaultLoaderFactory setGroovyDataLoader(ReportDataLoader dataLoader) {
         return registerDataLoader(GROOVY_DATA_LOADER, dataLoader);
     }

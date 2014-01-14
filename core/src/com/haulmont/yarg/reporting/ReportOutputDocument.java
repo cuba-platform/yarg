@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Haulmont
+ * Copyright 2014 Haulmont
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,48 +26,20 @@ import com.haulmont.yarg.structure.ReportOutputType;
 
 import java.io.Serializable;
 
-public class ReportOutputDocument implements Serializable {
-    protected Report report;
-    protected byte[] content;
-    protected String documentName;
-    protected ReportOutputType reportOutputType;
+public interface ReportOutputDocument extends Serializable {
+    Report getReport();
 
-    public ReportOutputDocument(Report report, byte[] content, String documentName, ReportOutputType reportOutputType) {
-        this.report = report;
-        this.content = content;
-        this.documentName = documentName;
-        this.reportOutputType = reportOutputType;
-    }
+    byte[] getContent();
 
-    public void setReport(Report report) {
-        this.report = report;
-    }
+    String getDocumentName();
 
-    public void setContent(byte[] content) {
-        this.content = content;
-    }
+    ReportOutputType getReportOutputType();
 
-    public void setDocumentName(String documentName) {
-        this.documentName = documentName;
-    }
+    void setReport(Report report);
 
-    public void setReportOutputType(ReportOutputType reportOutputType) {
-        this.reportOutputType = reportOutputType;
-    }
+    void setContent(byte[] content);
 
-    public Report getReport() {
-        return report;
-    }
+    void setDocumentName(String documentName);
 
-    public byte[] getContent() {
-        return content;
-    }
-
-    public String getDocumentName() {
-        return documentName;
-    }
-
-    public ReportOutputType getReportOutputType() {
-        return reportOutputType;
-    }
+    void setReportOutputType(ReportOutputType reportOutputType);
 }

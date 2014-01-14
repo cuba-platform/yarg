@@ -166,7 +166,7 @@ public class DataExtractorImpl implements DataExtractor {
     }
 
     protected boolean isEmptyBand(BandData parentBand) {
-        return parentBand.getData() == EMPTY_MAP;
+        return parentBand != null && parentBand.getData() == EMPTY_MAP;
     }
 
     protected List<Map<String, Object>> getQueryData(BandData parentBand, ReportBand band, ReportQuery reportQuery, Map<String, Object> paramsMap) {

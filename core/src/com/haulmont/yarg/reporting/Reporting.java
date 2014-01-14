@@ -71,7 +71,7 @@ public class Reporting implements ReportingAPI {
     public ReportOutputDocument runReport(RunParams runParams) {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         ReportOutputDocument reportOutputDocument = runReport(runParams.report, runParams.reportTemplate, runParams.params, result);
-        reportOutputDocument.content = result.toByteArray();
+        reportOutputDocument.setContent(result.toByteArray());
         return reportOutputDocument;
     }
 
@@ -117,10 +117,14 @@ public class Reporting implements ReportingAPI {
                 formatter.renderDocument();
             }
             String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
-            return new ReportOutputDocument(report, null, outputName, reportTemplate.getOutputType());
+            return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
             throw new ReportingException(String.format("%s Report name [%s]", e.getMessage(), report.getName()), e.getCause());
         }
+    }
+
+    protected ReportOutputDocumentImpl createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName) {
+        return new ReportOutputDocumentImpl(report, null, outputName, reportTemplate.getOutputType());
     }
 
     protected String resolveOutputFileName(Report report, ReportTemplate reportTemplate, BandData rootBand) {
