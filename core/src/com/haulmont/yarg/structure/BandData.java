@@ -85,6 +85,11 @@ public class BandData {
         return data.get(name);
     }
 
+    //added for back compatibility
+    public Object getParameter(String name) {
+        return getParameterValue(name);
+    }
+
     public void addAllParameters(Map<String, Object> parameters) {
         data.putAll(parameters);
     }
