@@ -153,7 +153,7 @@ public class Reporting implements ReportingAPI {
                         outputName = fileName.toString();
                     }
                 } else {
-                    throw new ReportingException(String.format("No data in band [%s] found.This band is used for output file name generation.", bandWithFileName));
+                    throw new ReportingException(String.format("No data in band [%s] found.This band is used for output file name generation.", bandName));
                 }
             } else {
                 outputName = outputNamePattern;
