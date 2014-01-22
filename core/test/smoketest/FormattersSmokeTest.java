@@ -72,6 +72,30 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testDocxRunMerge() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        rootData.put("param1", "AAAAAA");
+        root.setData(rootData);
+        BandData cover = new BandData("Cover", root, BandOrientation.HORIZONTAL);
+        cover.setData(new HashMap<String, Object>());
+        cover.addData("index", "123");
+        cover.addData("volume", "321");
+        cover.addData("name", "AAA");
+        BandData documents = new BandData("Documents", root, BandOrientation.HORIZONTAL);
+        documents.setData(new HashMap<String, Object>());
+        root.addChild(cover);
+        root.addChild(documents);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/runMerge.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./test/smoketest/runMerge.docx", "./test/smoketest/runMerge.docx", ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testOdt() throws Exception {
         BandData root = createRootBand();
         BandData footer = root.getChildByName("Footer");

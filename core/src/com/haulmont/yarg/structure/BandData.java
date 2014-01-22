@@ -188,6 +188,10 @@ public class BandData {
 
     public List<BandData> findBandsRecursively(String name) {
         BandData firstBand = findBandRecursively(name);
+        if (firstBand == null) {
+            return Collections.emptyList();
+        }
+
         List<BandData> allBand = firstBand.getParentBand().getChildrenByName(name);
         return allBand;
     }

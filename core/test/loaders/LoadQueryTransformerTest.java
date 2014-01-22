@@ -173,7 +173,7 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
         params.put("param3", "1234");
         queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
-        Assert.assertEquals("where (? like 'A' and 1=1) or field_name=?", queryPack.getQuery());
+        Assert.assertEquals("where (? like 'A' and 1=1 ) or field_name=?", queryPack.getQuery());
 
 
         query = "where (${param1} like 'A' and ${param2} in (select 1 from a where a = ${param2})) or field_name=${param3}";
@@ -182,7 +182,7 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
         params.put("param3", "param3");
         queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
-        Assert.assertEquals("where (? like 'A' and 1=1) or field_name=?", queryPack.getQuery());
+        Assert.assertEquals("where (? like 'A' and 1=1 ) or field_name=?", queryPack.getQuery());
 
         query = "where (${param1} like 'A' and ${param2} in (select 1 from a where a = ${param2})) or field_name=${param3}";
         params.put("param2", "param2");

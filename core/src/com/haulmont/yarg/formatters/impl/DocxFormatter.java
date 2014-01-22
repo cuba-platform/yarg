@@ -22,7 +22,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.docx4j.TextUtils;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
@@ -38,14 +38,19 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 import javax.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * * Document formatter for '.docx' file types
  */
 public class DocxFormatter extends AbstractFormatter {
     private WordprocessingMLPackage wordprocessingMLPackage;
+    private DocumentWrapper documentWrapper;
 
     public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -55,35 +60,27 @@ public class DocxFormatter extends AbstractFormatter {
 
     @Override
     public void renderDocument() {
+        loadDocument();
+
+        fillTables();
+
+        replaceAllAliasesInDocument();
+
+        saveAndClose();
+    }
+
+    protected void loadDocument() {
         if (reportTemplate == null)
             throw new NullPointerException("Template file can't be null.");
         try {
             wordprocessingMLPackage = WordprocessingMLPackage.load(reportTemplate.getDocumentContent());
+            documentWrapper = new DocumentWrapper(wordprocessingMLPackage.getMainDocumentPart());
         } catch (Docx4JException e) {
             throw wrapWithReportingException(String.format("An error occurred while reading docx template. File name [%s]", reportTemplate.getDocumentName()), e);
         }
+    }
 
-        MainDocumentPart mainDocumentPart = wordprocessingMLPackage.getMainDocumentPart();
-        DocumentWrapper documentWrapper = new DocumentWrapper(mainDocumentPart);
-
-        //process tables
-        for (TableWrapper resultingTable : documentWrapper.tables) {
-            if (resultingTable.secondRow == null) {
-                resultingTable.secondRow = resultingTable.firstRow;
-            }
-            List<BandData> bands = rootBand.findBandsRecursively(resultingTable.bandName);
-            for (final BandData band : bands) {
-                Tr newRow = resultingTable.copyRow(resultingTable.secondRow);
-                resultingTable.fillRowFromBand(newRow, band);
-            }
-            resultingTable.table.getContent().remove(resultingTable.secondRow);
-        }
-
-        //replace all other aliases with band data
-        for (TextWrapper text : documentWrapper.texts) {
-            text.fillTextWithBandData();
-        }
-
+    protected void saveAndClose() {
         try {
             if (ReportOutputType.docx.equals(reportTemplate.getOutputType())) {
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
@@ -105,9 +102,28 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    private class DocumentWrapper {
+    protected void replaceAllAliasesInDocument() {
+        for (TextWrapper text : documentWrapper.texts) {
+            text.fillTextWithBandData();
+        }
+    }
+
+    protected void fillTables() {
+        for (TableManager resultingTable : documentWrapper.tables) {
+            if (resultingTable.rowWithAliases != null) {
+                List<BandData> bands = rootBand.findBandsRecursively(resultingTable.bandName);
+                for (final BandData band : bands) {
+                    Tr newRow = resultingTable.copyRow(resultingTable.rowWithAliases);
+                    resultingTable.fillRowFromBand(newRow, band);
+                }
+                resultingTable.table.getContent().remove(resultingTable.rowWithAliases);
+            }
+        }
+    }
+
+    protected class DocumentWrapper {
         MainDocumentPart mainDocumentPart;
-        Set<TableWrapper> tables;
+        Set<TableManager> tables;
         Set<TextWrapper> texts;
 
         DocumentWrapper(MainDocumentPart mainDocumentPart) {
@@ -130,7 +146,7 @@ public class DocxFormatter extends AbstractFormatter {
             new TraversalUtil(mainDocumentPart, collectTablesCallback);
             CollectAliasesCallbackImpl collectAliasesCallback = new CollectAliasesCallbackImpl();
             new TraversalUtil(mainDocumentPart, collectAliasesCallback);
-            tables = collectTablesCallback.tableWrappers;
+            tables = collectTablesCallback.tableManagers;
             texts = collectAliasesCallback.textWrappers;
 
             //collect data from headers
@@ -142,68 +158,73 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    private class TextWrapper {
-        Text text;
-        String alias;
+    protected class TextWrapper {
+        protected Text text;
 
-        private TextWrapper(Text text, String alias) {
+        private TextWrapper(Text text) {
             this.text = text;
-            this.alias = alias;
         }
 
         void fillTextWithBandData() {
-            BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
 
-            if (StringUtils.isBlank(bandAndParameter.bandPath) || StringUtils.isBlank(bandAndParameter.parameterName)) {
-                if (alias.matches("[A-z0-9_]+?")) {//skip aliases in tables
-                    return;
+            Matcher matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(text.getValue());
+            while (matcher.find()) {
+                String alias = matcher.group(1);
+
+                BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
+
+                if (isBlank(bandAndParameter.bandPath) || isBlank(bandAndParameter.parameterName)) {
+                    if (alias.matches("[A-z0-9_]+?")) {//skip aliases in tables
+                        continue;
+                    }
+
+                    throw wrapWithReportingException("Bad alias : " + text.getValue());
                 }
 
-                throw wrapWithReportingException("Bad alias : " + text.getValue());
-            }
+                BandData band = findBandByPath(rootBand, bandAndParameter.bandPath);
 
-            BandData band = findBandByPath(rootBand, bandAndParameter.bandPath);
+                if (band == null) {
+                    throw wrapWithReportingException("No band found for alias : " + alias);
+                }
 
-            if (band == null) {
-                throw wrapWithReportingException("No band found for alias : " + alias);
-            }
+                String paramFullName = band.getName() + "." + bandAndParameter.parameterName;
+                Object paramValue = band.getParameterValue(bandAndParameter.parameterName);
 
-            String paramFullName = band.getName() + "." + bandAndParameter.parameterName;
-            Object paramValue = band.getParameterValue(bandAndParameter.parameterName);
-
-            Map<String, ReportFieldFormat> valueFormats = rootBand.getReportFieldFormats();
-            boolean handled = false;
-            if (paramValue != null && valueFormats != null && valueFormats.containsKey(paramFullName)) {
-                String format = valueFormats.get(paramFullName).getFormat();
-                // Handle doctags
-                for (ContentInliner contentInliner : DocxFormatter.this.contentInliners) {
-                    Matcher matcher = contentInliner.getTagPattern().matcher(format);
-                    if (matcher.find()) {
-                        contentInliner.inlineToDocx(wordprocessingMLPackage, text, paramValue, matcher);
-                        handled = true;
+                Map<String, ReportFieldFormat> valueFormats = rootBand.getReportFieldFormats();
+                boolean handled = false;
+                if (paramValue != null && valueFormats != null && valueFormats.containsKey(paramFullName)) {
+                    String format = valueFormats.get(paramFullName).getFormat();
+                    // Handle doctags
+                    for (ContentInliner contentInliner : DocxFormatter.this.contentInliners) {
+                        Matcher contentMatcher = contentInliner.getTagPattern().matcher(format);
+                        if (contentMatcher.find()) {
+                            contentInliner.inlineToDocx(wordprocessingMLPackage, text, paramValue, contentMatcher);
+                            handled = true;
+                        }
                     }
                 }
-            }
 
-            if (!handled) {
-                text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, paramFullName)));
+                if (!handled) {
+                    text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, paramFullName)));
+                }
             }
         }
     }
 
-    private class TableWrapper {
-        Tbl table;
-        Tr firstRow = null;
-        Tr secondRow = null;
-        String bandName = null;
+    protected class TableManager {
+        protected Tbl table;
+        protected Tr firstRow = null;
+        protected Tr rowWithAliases = null;
+        protected String bandName = null;
 
-        TableWrapper(Tbl tbl) {
+        TableManager(Tbl tbl) {
             this.table = tbl;
         }
 
         public Tr copyRow(Tr row) {
             Tr copiedRow = XmlUtils.deepCopy(row);
-            table.getContent().add(copiedRow);
+            int index = table.getContent().indexOf(row);
+            table.getContent().add(index, copiedRow);
             return copiedRow;
         }
 
@@ -224,52 +245,49 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    private class CollectAliasesCallbackImpl extends TraversalUtil.CallbackImpl {
-        Set<TextWrapper> textWrappers = new HashSet<TextWrapper>();
+    protected class CollectAliasesCallbackImpl extends TraversalUtil.CallbackImpl {
+        protected Set<TextWrapper> textWrappers = new HashSet<TextWrapper>();
+        protected R mergeRun = null;
+        protected boolean doMerge = false;
+        protected List<Text> textsToRemove = new ArrayList<Text>();
+
 
         @Override
         public List<Object> apply(Object o) {
-            if (o instanceof Text) {
-                Text handlingText = (Text) o;
-                String textValue = handlingText.getValue().trim();
-                Matcher matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(textValue);
-                if (matcher.find()) {
-                    String alias = matcher.group(1);
-                    textWrappers.add(new TextWrapper(handlingText, alias));
-                } else if (textValue.contains("}")) {
-                    String previousJoinedTexts = StringUtils.join(currentParagraphTextsValues, "");
-                    matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(previousJoinedTexts);
-                    //if join contains alias - remove all exisitng texts and put join to single text (last one)
-                    if (matcher.find()) {
-                        removeAllTextsInParagraphExceptCurrent(handlingText);
-                        handlingText.setValue(previousJoinedTexts);
-                        textWrappers.add(new TextWrapper(handlingText, matcher.group(1)));
+            if (o instanceof Text && doMerge) {
+                Text text = (Text) o;
+                String textValue = text.getValue();
+                R currentRun = (R) text.getParent();
+                if (mergeRun != null) {//merge started - need to merge current fragment
+                    Text mergeRunText = getFirstText(mergeRun);
+                    mergeRunText.setValue(mergeRunText.getValue() + textValue);
+                    textsToRemove.add(text);
+
+                    if (textValue.contains("}") && !textValue.contains("${")) {
+                        textWrappers.add(new TextWrapper(mergeRunText));
+                        mergeRun = null;
                     }
+                } else if (UNIVERSAL_ALIAS_PATTERN.matcher(textValue).find()
+                        && countMatches(textValue, "${") == countMatches(textValue, "}")) {//no need to merge - fragment is appropriate text to inline band data
+                    textWrappers.add(new TextWrapper(text));
+                } else if (textValue.contains("${") && mergeRun == null) {//need to start merge
+                    mergeRun = currentRun;
                 }
             }
 
             return null;
         }
 
-        private void removeAllTextsInParagraphExceptCurrent(Text handlingText) {
-            for (Iterator<Text> currentParagraphTextsIterator = currentParagraphTexts.iterator(); currentParagraphTextsIterator.hasNext(); ) {
-                Text __text = currentParagraphTextsIterator.next();//not optimal removing
-                if (__text != handlingText) {
-                    R run = (R) __text.getParent();
-                    for (Iterator<Object> currentRunTextsIterator = run.getContent().iterator(); currentRunTextsIterator.hasNext(); ) {
-                        JAXBElement element = (JAXBElement) currentRunTextsIterator.next();
-                        if (element.getValue() == __text) {
-                            currentRunTextsIterator.remove();
-                        }
-                    }
+        private Text getFirstText(R run) {
+            for (Object object : run.getContent()) {
+                Object currentRunElement = XmlUtils.unwrap(object);
+                if (currentRunElement instanceof Text) {
+                    return (Text) currentRunElement;
                 }
-
-                currentParagraphTextsIterator.remove();
             }
-        }
 
-        private Set<Text> currentParagraphTexts;
-        private List<String> currentParagraphTextsValues;
+            throw new IllegalStateException("Merge run doesn't contain text element");//should never be thrown
+        }
 
         public void walkJAXBElements(Object parent) {
             List children = getChildren(parent);
@@ -283,14 +301,7 @@ public class DocxFormatter extends AbstractFormatter {
                     }
 
                     if (o instanceof P) {
-                        currentParagraphTexts = new HashSet<Text>();
-                        currentParagraphTextsValues = new ArrayList<String>();
-                    }
-
-                    if (o instanceof Text && currentParagraphTexts != null) {
-                        Text text = (Text) o;
-                        currentParagraphTexts.add(text);
-                        currentParagraphTextsValues.add(text.getValue());
+                        initParagraph((P) o);
                     }
 
                     this.apply(o);
@@ -298,60 +309,87 @@ public class DocxFormatter extends AbstractFormatter {
                     if (this.shouldTraverse(o)) {
                         walkJAXBElements(o);
                     }
-
-                    if (o instanceof P) {
-                        currentParagraphTexts = null;
-                        currentParagraphTextsValues = null;
-                    }
                 }
             }
         }
+
+        private void initParagraph(P paragraph) {
+            mergeRun = null;
+            String paragraphText = getParagraphText(paragraph);
+            Matcher matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(paragraphText);
+            doMerge = matcher.find();
+
+            for (Text textToRemove : textsToRemove) {
+                R run = (R) textToRemove.getParent();
+                for (Iterator iterator = run.getContent().iterator(); iterator.hasNext(); ) {
+                    Object element = XmlUtils.unwrap(iterator.next());
+                    if (element instanceof Text && element == textToRemove) {
+                        iterator.remove();
+                    }
+                }
+            }
+            textsToRemove.clear();
+        }
+
+        private String getParagraphText(P paragraph) {
+            StringWriter w = new StringWriter();
+            try {
+                TextUtils.extractText(paragraph, w);
+            } catch (Exception e) {
+                throw wrapWithReportingException(String.format("An error occurred while rendering docx template. File name [%s]", reportTemplate.getDocumentName()), e);
+            }
+
+            return w.toString();
+        }
     }
 
-    private class CollectTablesCallbackImpl extends TraversalUtil.CallbackImpl {
-        private Stack<TableWrapper> currentTables = new Stack<TableWrapper>();
-        private Set<TableWrapper> tableWrappers = new HashSet<TableWrapper>();
+    protected class CollectTablesCallbackImpl extends TraversalUtil.CallbackImpl {
+        private Stack<TableManager> currentTables = new Stack<TableManager>();
+        private Set<TableManager> tableManagers = new HashSet<TableManager>();
         private boolean skipCurrentTable = false;
 
         public List<Object> apply(Object o) {
             if (skipCurrentTable) return null;
 
             if (o instanceof Tr) {
-                final TableWrapper currentTable = currentTables.peek();
+                final TableManager currentTable = currentTables.peek();
 
                 Tr currentRow = (Tr) o;
                 if (currentTable.firstRow == null) {
                     currentTable.firstRow = currentRow;
 
-                    new TraversalUtil(currentTable.firstRow, new TraversalUtil.CallbackImpl() {
-                        @Override
-                        public List<Object> apply(Object o) {
-                            if (o instanceof Text && currentTable.bandName == null) {
-                                String text = ((Text) o).getValue();
-                                if (StringUtils.isNotBlank(text)) {
-                                    Matcher matcher = BAND_NAME_DECLARATION_PATTERN.matcher(text);
-                                    if (matcher.find()) {
-                                        currentTable.bandName = matcher.group(1);
-                                        ((Text) o).setValue("");
-                                    }
-                                }
-                            }
-
-                            return null;
-                        }
-                    });
+                    findNameForCurrentTable(currentTable);
 
                     if (currentTable.bandName == null) {
                         skipCurrentTable = true;
                     } else {
-                        tableWrappers.add(currentTable);
+                        tableManagers.add(currentTable);
                     }
-                } else if (currentTable.secondRow == null) {
-                    currentTable.secondRow = currentRow;
+                }
+
+                if (currentTable.rowWithAliases == null) {
+                    RegexpFindCallback callback = new RegexpFindCallback(UNIVERSAL_ALIAS_PATTERN);
+                    new TraversalUtil(currentRow, callback);
+
+                    if (callback.getValue() != null) {
+                        currentTable.rowWithAliases = currentRow;
+                    }
                 }
             }
 
             return null;
+        }
+
+        private void findNameForCurrentTable(final TableManager currentTable) {
+            new TraversalUtil(currentTable.firstRow,
+                    new RegexpFindCallback(BAND_NAME_DECLARATION_PATTERN) {
+                        @Override
+                        protected void onFind(Text o, Matcher matcher) {
+                            super.onFind(o, matcher);
+                            currentTable.bandName = matcher.group(1);
+                            o.setValue("");
+                        }
+                    });
         }
 
         // Depth first
@@ -367,7 +405,7 @@ public class DocxFormatter extends AbstractFormatter {
                     }
 
                     if (o instanceof Tbl) {
-                        currentTables.push(new TableWrapper((Tbl) o));
+                        currentTables.push(new TableManager((Tbl) o));
                     }
 
                     this.apply(o);
@@ -386,7 +424,39 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    private void writeToOutputStream(WordprocessingMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
+    protected class RegexpFindCallback extends TraversalUtil.CallbackImpl {
+        protected Pattern regularExpression;
+        protected String value;
+
+        public RegexpFindCallback(Pattern regularExpression) {
+            this.regularExpression = regularExpression;
+        }
+
+        @Override
+        public List<Object> apply(Object o) {
+            if (o instanceof Text) {
+                String text = ((Text) o).getValue();
+                if (isNotBlank(text)) {
+                    Matcher matcher = regularExpression.matcher(text);
+                    if (matcher.find()) {
+                        onFind((Text) o, matcher);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        protected void onFind(Text o, Matcher matcher) {
+            value = matcher.group(0);
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    protected void writeToOutputStream(WordprocessingMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
         SaveToZipFile saver = new SaveToZipFile(mlPackage);
         saver.save(outputStream);
     }

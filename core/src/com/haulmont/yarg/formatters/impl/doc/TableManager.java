@@ -22,7 +22,6 @@ import com.sun.star.container.XNameAccess;
 import com.sun.star.frame.XController;
 import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.frame.XDispatchProvider;
-import com.sun.star.lang.IllegalArgumentException;
 import com.sun.star.lang.IndexOutOfBoundsException;
 import com.sun.star.lang.WrappedTargetException;
 import com.sun.star.lang.XComponent;
@@ -46,13 +45,19 @@ import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.paste;
 
 public class TableManager {
     protected XTextTable xTextTable;
+    protected String tableName;
 
     public TableManager(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
         xTextTable = getTableByName(xComponent, tableName);
+        this.tableName = tableName;
     }
 
     public XTextTable getXTextTable() {
         return xTextTable;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 
     public static List<String> getTablesNames(XComponent xComponent) {
@@ -60,38 +65,40 @@ public class TableManager {
         return new ArrayList<String>(Arrays.asList(tables.getElementNames()));
     }
 
-    protected static XTextTable getTableByName(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
+    public static XTextTable getTableByName(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
         XNameAccess tables = asXTextTablesSupplier(xComponent).getTextTables();
         return (XTextTable) ((Any) tables.getByName(tableName)).getObject();
     }
 
-    public boolean hasValueExpressions() {
+    public int findRowWithAliases() {
         XTextTable xTextTable = getXTextTable();
-        int lastRow = xTextTable.getRows().getCount() - 1;
-        try {
-            for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
-                XCell xCell = null;
-                try {
-                    xCell = getXCell(i, lastRow);
-                } catch (IndexOutOfBoundsException e) {
-                    //stop loop - this row has less columns than first one
-                    break;
+        for (int currentRow = 0; currentRow < xTextTable.getRows().getCount(); currentRow++) {
+            try {
+                for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
+                    XCell xCell = null;
+                    try {
+                        xCell = getXCell(i, currentRow);
+                    } catch (IndexOutOfBoundsException e) {
+                        //stop loop - this row has less columns than first one
+                        break;
+                    }
+                    String templateText = asXText(xCell).getString();
+                    if (AbstractFormatter.UNIVERSAL_ALIAS_PATTERN.matcher(templateText).find()) {
+                        return currentRow;
+                    }
                 }
-                String templateText = asXText(xCell).getString();
-                if (AbstractFormatter.UNIVERSAL_ALIAS_PATTERN.matcher(templateText).find()) {
-                    return true;
-                }
+            } catch (Exception e) {
+                throw new ReportFormattingException(e);
             }
-        } catch (Exception e) {
-            throw new ReportFormattingException(e);
         }
-        return false;
+
+        return -1;
     }
 
-    public XText findFirstEntryInRow(Pattern pattern, int rowNumber) {
+    public XText findFirstEntryInRow(Pattern pattern, int row) {
         try {
             for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
-                XText xText = asXText(getXCell(i, rowNumber));
+                XText xText = asXText(getXCell(i, row));
                 String templateText = xText.getString();
 
                 if (pattern.matcher(templateText).find()) {
@@ -127,23 +134,22 @@ public class TableManager {
         }
     }
 
-    public void deleteLastRow() {
+    public void deleteRow(int row) {
         XTableRows xTableRows = xTextTable.getRows();
-        xTableRows.removeByIndex(xTableRows.getCount() - 1, 1);
+        xTableRows.removeByIndex(row, 1);
     }
 
-    public void insertRowToEnd() {
+    public void insertEmptyRow(int indexAfter) {
         XTableRows xTableRows = xTextTable.getRows();
-        xTableRows.insertByIndex(xTableRows.getCount(), 1);
+        xTableRows.insertByIndex(indexAfter + 1, 1);
     }
 
-    public void duplicateLastRow(XDispatchHelper xDispatchHelper, XController xController) throws com.sun.star.uno.Exception, IllegalArgumentException {
-        int lastRowNum = xTextTable.getRows().getCount() - 1;
-        selectRow(xController, lastRowNum);
+    public void copyRow(XDispatchHelper xDispatchHelper, XController xController, int row) throws com.sun.star.uno.Exception {
+        selectRow(xController, row);
         XDispatchProvider xDispatchProvider = asXDispatchProvider(xController.getFrame());
         copy(xDispatchHelper, xDispatchProvider);
-        insertRowToEnd();
-        selectRow(xController, ++lastRowNum);
+        insertEmptyRow(row);
+        selectRow(xController, row + 1);
         paste(xDispatchHelper, xDispatchProvider);
     }
 }

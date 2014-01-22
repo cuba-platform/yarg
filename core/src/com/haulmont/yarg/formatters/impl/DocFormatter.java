@@ -58,7 +58,7 @@ import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
 import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.*;
 
 /**
- * Document formatter for '.doc' file types
+ * Document formatter for '.doc' and '.odt' file types
  */
 public class DocFormatter extends AbstractFormatter {
     protected static final Logger log = LoggerFactory.getLogger(DocFormatter.class);
@@ -101,9 +101,7 @@ public class DocFormatter extends AbstractFormatter {
             @Override
             public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
                 try {
-                    XInputStream xis = getXInputStream(reportTemplate);
-                    xComponent = loadXComponent(ooResourceProvider.getXComponentLoader(), xis);
-                    officeComponent = new OfficeComponent(ooResourceProvider, xComponent);
+                    loadDocument(ooResourceProvider);
 
                     // Handling tables
                     fillTables(ooResourceProvider.getXDispatchHelper());
@@ -119,6 +117,12 @@ public class DocFormatter extends AbstractFormatter {
         };
 
         officeIntegration.runTaskWithTimeout(officeTask, officeIntegration.getTimeoutInSeconds());
+    }
+
+    private void loadDocument(OfficeResourceProvider ooResourceProvider) throws com.sun.star.lang.IllegalArgumentException, IOException {
+        XInputStream xis = getXInputStream(reportTemplate);
+        xComponent = loadXComponent(ooResourceProvider.getXComponentLoader(), xis);
+        officeComponent = new OfficeComponent(ooResourceProvider, xComponent);
     }
 
     private void saveAndClose(XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
@@ -139,51 +143,39 @@ public class DocFormatter extends AbstractFormatter {
 
         for (String tableName : tablesNames) {
             TableManager tableManager = new TableManager(xComponent, tableName);
-            XTextTable xTextTable = tableManager.getXTextTable();
+            BandFinder bandFinder = new BandFinder(tableManager).find();
 
-            String bandName = tableName;
-            BandData band = rootBand.findBandRecursively(bandName);
-            if (band == null) {
-                XText xText = tableManager.findFirstEntryInRow(BAND_NAME_DECLARATION_PATTERN, 0);
-                if (xText != null) {
-                    Matcher matcher = BAND_NAME_DECLARATION_PATTERN.matcher(xText.getString());
-                    if (matcher.find()) {
-                        bandName = matcher.group(1);
-                        band = rootBand.findBandRecursively(bandName);
-                        XTextCursor xTextCursor = xText.createTextCursor();
+            BandData band = bandFinder.getBand();
+            String bandName = bandFinder.getBandName();
+            int numberOfRowWithAliases = tableManager.findRowWithAliases();
 
-                        xTextCursor.gotoStart(false);
-                        xTextCursor.goRight((short) matcher.end(), false);
-                        xTextCursor.goLeft((short) matcher.group().length(), true);
+            if (band != null && numberOfRowWithAliases > -1) {
+                XTextTable xTextTable = tableManager.getXTextTable();
 
-                        xText.insertString(xTextCursor, "", true);
-                    }
-                }
-            }
-
-            if (band != null) {
                 // todo remove this hack!
                 // try to select one cell without it workaround
                 int columnCount = xTextTable.getColumns().getCount();
                 if (columnCount < 2) {
                     xTextTable.getColumns().insertByIndex(columnCount, 1);
                 }
-                fillTable(band.getName(), band.getParentBand(), tableManager, xDispatchHelper);
+
+                fillTable(band.getName(), band.getParentBand(), tableManager, xDispatchHelper, numberOfRowWithAliases);
+
                 // end of workaround ->
                 if (columnCount < 2) {
                     xTextTable.getColumns().removeByIndex(columnCount, 1);
                 }
-            } else if (tableManager.hasValueExpressions()
+            } else if (numberOfRowWithAliases > -1
                     && rootBand.getFirstLevelBandDefinitionNames() != null
                     && rootBand.getFirstLevelBandDefinitionNames().contains(bandName)) {
-                    //if table is linked with band and has aliases on it, but no band data found -
-                    //we are removing the last row (which usually contains aliases)
-                tableManager.deleteLastRow();
+                //if table is linked with band and has aliases on it, but no band data found -
+                //we are removing the row
+                tableManager.deleteRow(numberOfRowWithAliases);
             }
         }
     }
 
-    private void fillTable(String name, BandData parentBand, TableManager tableManager, XDispatchHelper xDispatchHelper)
+    private void fillTable(String name, BandData parentBand, TableManager tableManager, XDispatchHelper xDispatchHelper, int numberOfRowWithAliases)
             throws com.sun.star.uno.Exception {
         // Lock clipboard, cause uno uses it to grow tables
         synchronized (clipboardLock) {//todo try get rid of it
@@ -191,21 +183,21 @@ public class DocFormatter extends AbstractFormatter {
             if (officeIntegration.isDisplayDeviceAvailable()) {
                 clearClipboard();
             }
-            int startRow = xTextTable.getRows().getCount() - 1;
             List<BandData> childrenBands = parentBand.getChildrenList();
             for (BandData child : childrenBands) {
                 if (name.equals(child.getName())) {
-                    tableManager.duplicateLastRow(xDispatchHelper, asXTextDocument(xComponent).getCurrentController());
+                    tableManager.copyRow(xDispatchHelper, asXTextDocument(xComponent).getCurrentController(), numberOfRowWithAliases);
                 }
             }
-            int i = startRow;
+
+            int i = numberOfRowWithAliases;
             for (BandData child : childrenBands) {
                 if (name.equals(child.getName())) {
                     fillRow(child, tableManager, i);
                     i++;
                 }
             }
-            tableManager.deleteLastRow();
+            tableManager.deleteRow(i);
         }
     }
 
@@ -247,8 +239,7 @@ public class DocFormatter extends AbstractFormatter {
     /**
      * Replaces all aliases ${bandname.paramname} in document text.
      *
-     * @throws com.haulmont.yarg.exception.ReportingException
-     *          If there is not appropriate band or alias is bad
+     * @throws com.haulmont.yarg.exception.ReportingException If there is not appropriate band or alias is bad
      */
     private void replaceAllAliasesInDocument() {
         XTextDocument xTextDocument = asXTextDocument(xComponent);
@@ -271,11 +262,11 @@ public class DocFormatter extends AbstractFormatter {
 
                 BandData band = findBandByPath(rootBand, bandAndParameter.bandPath);
 
-                if (band == null) {
+                if (band != null) {
+                    insertValue(textRange.getText(), textRange, band, bandAndParameter.parameterName);
+                } else {
                     throw wrapWithReportingException(String.format("No band for alias : [%s] found", alias));
                 }
-
-                insertValue(textRange.getText(), textRange, band, bandAndParameter.parameterName);
             } catch (ReportingException e) {
                 throw e;
             } catch (Exception e) {
@@ -344,6 +335,49 @@ public class DocFormatter extends AbstractFormatter {
             }, null);
         } catch (IllegalStateException ignored) {
             //ignore exception
+        }
+    }
+
+    protected class BandFinder {
+        private String tableName;
+        private TableManager tableManager;
+        private String bandName;
+        private BandData band;
+
+        public BandFinder(TableManager tableManager) {
+            this.tableName = tableManager.getTableName();
+            this.tableManager = tableManager;
+        }
+
+        public String getBandName() {
+            return bandName;
+        }
+
+        public BandData getBand() {
+            return band;
+        }
+
+        public BandFinder find() {
+            bandName = tableName;
+            band = rootBand.findBandRecursively(bandName);
+            if (band == null) {
+                XText xText = tableManager.findFirstEntryInRow(BAND_NAME_DECLARATION_PATTERN, 0);
+                if (xText != null) {
+                    Matcher matcher = BAND_NAME_DECLARATION_PATTERN.matcher(xText.getString());
+                    if (matcher.find()) {
+                        bandName = matcher.group(1);
+                        band = rootBand.findBandRecursively(bandName);
+                        XTextCursor xTextCursor = xText.createTextCursor();
+
+                        xTextCursor.gotoStart(false);
+                        xTextCursor.goRight((short) matcher.end(), false);
+                        xTextCursor.goLeft((short) matcher.group().length(), true);
+
+                        xText.insertString(xTextCursor, "", true);
+                    }
+                }
+            }
+            return this;
         }
     }
 }
