@@ -119,7 +119,8 @@ public class Reporting implements ReportingAPI {
             String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
             return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
-            throw new ReportingException(String.format("%s Report name [%s]", e.getMessage(), report.getName()), e.getCause());
+            e.setReportDetails(String.format(" Report name [%s]", report.getName()));
+            throw e;
         }
     }
 

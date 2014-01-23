@@ -16,6 +16,8 @@
 package com.haulmont.yarg.exception;
 
 public class ReportingException extends RuntimeException {
+    protected String reportDetails;
+
     public ReportingException() {
     }
 
@@ -31,5 +33,20 @@ public class ReportingException extends RuntimeException {
         super(cause);
     }
 
+    public String getReportDetails() {
+        return reportDetails;
+    }
 
+    public void setReportDetails(String reportDetails) {
+        this.reportDetails = reportDetails;
+    }
+
+    @Override
+    public String getMessage() {
+        if (reportDetails != null) {
+            return super.getMessage() + reportDetails;
+        } else {
+            return super.getMessage();
+        }
+    }
 }
