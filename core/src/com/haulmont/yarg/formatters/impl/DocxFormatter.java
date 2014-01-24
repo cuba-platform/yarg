@@ -49,8 +49,8 @@ import static org.apache.commons.lang.StringUtils.*;
  * * Document formatter for '.docx' file types
  */
 public class DocxFormatter extends AbstractFormatter {
-    private WordprocessingMLPackage wordprocessingMLPackage;
-    private DocumentWrapper documentWrapper;
+    protected WordprocessingMLPackage wordprocessingMLPackage;
+    protected DocumentWrapper documentWrapper;
 
     public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -278,7 +278,7 @@ public class DocxFormatter extends AbstractFormatter {
             return null;
         }
 
-        private Text getFirstText(R run) {
+        protected Text getFirstText(R run) {
             for (Object object : run.getContent()) {
                 Object currentRunElement = XmlUtils.unwrap(object);
                 if (currentRunElement instanceof Text) {
@@ -313,7 +313,7 @@ public class DocxFormatter extends AbstractFormatter {
             }
         }
 
-        private void initParagraph(P paragraph) {
+        protected void initParagraph(P paragraph) {
             mergeRun = null;
             String paragraphText = getParagraphText(paragraph);
             Matcher matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(paragraphText);
@@ -331,7 +331,7 @@ public class DocxFormatter extends AbstractFormatter {
             textsToRemove.clear();
         }
 
-        private String getParagraphText(P paragraph) {
+        protected String getParagraphText(P paragraph) {
             StringWriter w = new StringWriter();
             try {
                 TextUtils.extractText(paragraph, w);
@@ -380,7 +380,7 @@ public class DocxFormatter extends AbstractFormatter {
             return null;
         }
 
-        private void findNameForCurrentTable(final TableManager currentTable) {
+        protected void findNameForCurrentTable(final TableManager currentTable) {
             new TraversalUtil(currentTable.firstRow,
                     new RegexpFindCallback(BAND_NAME_DECLARATION_PATTERN) {
                         @Override

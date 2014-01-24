@@ -65,7 +65,7 @@ public class HtmlFormatter extends AbstractFormatter {
     }
 
 
-    private void renderPdfDocument(String htmlContent, OutputStream outputStream) {
+    protected void renderPdfDocument(String htmlContent, OutputStream outputStream) {
         ITextRenderer renderer = new ITextRenderer();
         try {
             File tmpFile = File.createTempFile("htmlReport", ".htm");
@@ -85,7 +85,7 @@ public class HtmlFormatter extends AbstractFormatter {
         }
     }
 
-    private void writeHtmlDocument(BandData rootBand, OutputStream outputStream) {
+    protected void writeHtmlDocument(BandData rootBand, OutputStream outputStream) {
         Map templateModel = getTemplateModel(rootBand);
 
         Template htmlTemplate = getTemplate();
@@ -103,13 +103,13 @@ public class HtmlFormatter extends AbstractFormatter {
         }
     }
 
-    private Map getTemplateModel(BandData rootBand) {
+    protected Map getTemplateModel(BandData rootBand) {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(rootBand.getName(), getBandModel(rootBand));
         return model;
     }
 
-    private Map getBandModel(BandData band) {
+    protected Map getBandModel(BandData band) {
         Map<String, Object> model = new HashMap<String, Object>();
 
         Map<String, Object> bands = new HashMap<String, Object>();
@@ -128,7 +128,7 @@ public class HtmlFormatter extends AbstractFormatter {
         return model;
     }
 
-    private Template getTemplate() {
+    protected Template getTemplate() {
         try {
             String templateContent = IOUtils.toString(reportTemplate.getDocumentContent());
             StringTemplateLoader stringLoader = new StringTemplateLoader();

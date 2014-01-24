@@ -96,7 +96,7 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    private void doCreateDocument(final ReportOutputType outputType, final OutputStream outputStream) throws NoFreePortsException {
+    protected void doCreateDocument(final ReportOutputType outputType, final OutputStream outputStream) throws NoFreePortsException {
         OfficeTask officeTask = new OfficeTask() {
             @Override
             public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
@@ -119,13 +119,13 @@ public class DocFormatter extends AbstractFormatter {
         officeIntegration.runTaskWithTimeout(officeTask, officeIntegration.getTimeoutInSeconds());
     }
 
-    private void loadDocument(OfficeResourceProvider ooResourceProvider) throws com.sun.star.lang.IllegalArgumentException, IOException {
+    protected void loadDocument(OfficeResourceProvider ooResourceProvider) throws com.sun.star.lang.IllegalArgumentException, IOException {
         XInputStream xis = getXInputStream(reportTemplate);
         xComponent = loadXComponent(ooResourceProvider.getXComponentLoader(), xis);
         officeComponent = new OfficeComponent(ooResourceProvider, xComponent);
     }
 
-    private void saveAndClose(XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
+    protected void saveAndClose(XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
             throws IOException {
         OfficeOutputStream ooos = new OfficeOutputStream(outputStream);
         String filterName;
@@ -138,7 +138,7 @@ public class DocFormatter extends AbstractFormatter {
         closeXComponent(xComponent);
     }
 
-    private void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
+    protected void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
         List<String> tablesNames = TableManager.getTablesNames(xComponent);
 
         for (String tableName : tablesNames) {
@@ -175,7 +175,7 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    private void fillTable(String name, BandData parentBand, TableManager tableManager, XDispatchHelper xDispatchHelper, int numberOfRowWithAliases)
+    protected void fillTable(String name, BandData parentBand, TableManager tableManager, XDispatchHelper xDispatchHelper, int numberOfRowWithAliases)
             throws com.sun.star.uno.Exception {
         // Lock clipboard, cause uno uses it to grow tables
         synchronized (clipboardLock) {//todo try get rid of it
@@ -201,7 +201,7 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    private void fillRow(BandData band, TableManager tableManager, int row)
+    protected void fillRow(BandData band, TableManager tableManager, int row)
             throws com.sun.star.lang.IndexOutOfBoundsException, NoSuchElementException, WrappedTargetException {
         XTextTable xTextTable = tableManager.getXTextTable();
         int colCount = xTextTable.getColumns().getCount();
@@ -210,7 +210,7 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    private void fillCell(BandData band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
+    protected void fillCell(BandData band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
         XText xText = asXText(xCell);
         String cellText = xText.getString();
         List<String> parametersToInsert = new ArrayList<String>();
@@ -241,7 +241,7 @@ public class DocFormatter extends AbstractFormatter {
      *
      * @throws com.haulmont.yarg.exception.ReportingException If there is not appropriate band or alias is bad
      */
-    private void replaceAllAliasesInDocument() {
+    protected void replaceAllAliasesInDocument() {
         XTextDocument xTextDocument = asXTextDocument(xComponent);
         XReplaceable xReplaceable = asXReplaceable(xTextDocument);
         XSearchDescriptor searchDescriptor = xReplaceable.createSearchDescriptor();
@@ -275,7 +275,7 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    private void insertValue(XText text, XTextRange textRange, BandData band, String paramName) {
+    protected void insertValue(XText text, XTextRange textRange, BandData band, String paramName) {
         String paramFullName = band.getName() + "." + paramName;
         Object paramValue = band.getParameterValue(paramName);
 
@@ -308,7 +308,7 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     //delete nonexistent symbols from cell text
-    private String formatCellText(String cellText) {
+    protected String formatCellText(String cellText) {
         if (cellText != null) {
             return cellText.replace("\r", "");
         } else {
@@ -316,9 +316,9 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    private static final Object clipboardLock = new Object();
+    protected static final Object clipboardLock = new Object();
 
-    private static void clearClipboard() {
+    protected static void clearClipboard() {
         try {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
                 public DataFlavor[] getTransferDataFlavors() {
@@ -339,10 +339,10 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     protected class BandFinder {
-        private String tableName;
-        private TableManager tableManager;
-        private String bandName;
-        private BandData band;
+        protected String tableName;
+        protected TableManager tableManager;
+        protected String bandName;
+        protected BandData band;
 
         public BandFinder(TableManager tableManager) {
             this.tableName = tableManager.getTableName();
