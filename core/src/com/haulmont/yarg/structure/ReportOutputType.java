@@ -38,26 +38,26 @@ public class ReportOutputType implements Serializable {
     public final static ReportOutputType csv = new ReportOutputType("csv");
     public final static ReportOutputType custom = new ReportOutputType("custom");
 
-    private static Map<String, ReportOutputType> typeMap = new ConcurrentHashMap<String, ReportOutputType>();
+    protected static Map<String, ReportOutputType> values = new ConcurrentHashMap<String, ReportOutputType>();
 
     static {
-        typeMap.put(xls.id, xls);
-        typeMap.put(doc.id, doc);
-        typeMap.put(docx.id, docx);
-        typeMap.put(html.id, html);
-        typeMap.put(pdf.id, pdf);
-        typeMap.put(csv.id, csv);
-        typeMap.put(custom.id, custom);
-        typeMap.put(xlsx.id, xlsx);
+        values.put(xls.id, xls);
+        values.put(doc.id, doc);
+        values.put(docx.id, docx);
+        values.put(html.id, html);
+        values.put(pdf.id, pdf);
+        values.put(csv.id, csv);
+        values.put(custom.id, custom);
+        values.put(xlsx.id, xlsx);
     }
 
-    public static void registerOutputType(ReportOutputType outputType) {
+    protected static void registerOutputType(ReportOutputType outputType) {
         Preconditions.checkNotNull(outputType, "\"outputType\" parameter can not be null");
-        typeMap.put(outputType.id, outputType);
+        values.put(outputType.id, outputType);
     }
 
     public static ReportOutputType getOutputTypeById(String id) {
-        return typeMap.get(id);
+        return values.get(id);
     }
 
     public ReportOutputType(String id) {

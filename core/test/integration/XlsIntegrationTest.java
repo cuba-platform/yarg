@@ -24,12 +24,32 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class XlsIntegrationTest {
+
+    @Test
+    public void testFormats() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+        BandData band1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band1.addData("date", new SimpleDateFormat("dd-MM-yyyy").parse("12-04-1961"));
+        root.addChild(band1);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-formats.xls");
+
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xls", root,
+                new ReportTemplateImpl("", "./test/integration/test-formats.xls", "./test/integration/test-formats.xls", ReportOutputType.xls), outputStream));
+
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+
+        compareFiles("./test/integration/etalon-formats.xls", "./result/integration/result-formats.xls");
+    }
+
 
     @Test
     public void testFormulas() throws Exception {
