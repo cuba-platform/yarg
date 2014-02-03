@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <!--             <param name="ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/> -->            <param name="ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/>
+
+            <param name="ConversionPattern" value="%p %c %x.%M line %L - %m%n" />
+
+        </layout>
+    </appender>
+
+    <logger name="com.plutext">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.apache.commons">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.jaxb">
+        <level value="error"/>
+    </logger>
+
+
+    <logger name="org.docx4j.document.wordprocessingml">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.openpackaging">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.openpackaging.io">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.openpackaging.packages">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.openpackaging.parts">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.fonts">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.model.table">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.convert.out">
+        <level value="info"/>
+    </logger>
+
+    <logger name="org.docx4j.convert.out.pdf.viaXSLFO">
+        <level value="info"/>
+    </logger>
+
+    <root>
+        <level value="info" />
+        <appender-ref ref="console"/>
+    </root>
+
+</log4j:configuration>

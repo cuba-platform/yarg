@@ -72,6 +72,22 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testDocxToPdf() throws Exception {
+        BandData root = createRootBand();
+        BandData footer = root.getChildByName("Footer");
+        BandData footerChild = new BandData("FooterChild", footer);
+        footerChild.addData("nestedData", "NESTED_DATA");
+        footer.addChild(footerChild);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_docx.pdf");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./test/smoketest/test.docx", "./test/smoketest/test.docx", ReportOutputType.pdf), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDocxRunMerge() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<String, Object>();

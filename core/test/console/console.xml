@@ -42,7 +42,7 @@
                 <bands/>
                 <queries>
                     <query name="Data_set_1" type="json">
-                        <script>param4</script>
+                        <script>parameter=param4 $</script>
                     </query>
                 </queries>
             </band>

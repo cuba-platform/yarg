@@ -7,7 +7,9 @@ import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
 import com.haulmont.yarg.structure.impl.ReportQueryImpl;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
+import com.jayway.jsonpath.JsonPath;
 import junit.framework.Assert;
+import net.minidev.json.JSONObject;
 import org.junit.Test;
 import utils.TestDatabase;
 
@@ -76,14 +78,37 @@ public class DataLoadersTest {
         JsonDataLoader jsonDataLoader = new JsonDataLoader();
         BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
         rootBand.setData(Collections.<String, Object>emptyMap());
-        ReportQueryImpl reportQuery = new ReportQueryImpl("", "param1", "json", null, null);
+        ReportQueryImpl reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[*]", "json", null, null);
+
+        String json = "{ \"store\": {\n" +
+                "    \"book\": [ \n" +
+                "      { \"category\": \"reference\",\n" +
+                "        \"author\": \"Nigel Rees\",\n" +
+                "        \"title\": \"Sayings of the Century\",\n" +
+                "        \"price\": 8.95\n" +
+                "      },\n" +
+                "      { \"category\": \"fiction\",\n" +
+                "        \"author\": \"Evelyn Waugh\",\n" +
+                "        \"title\": \"Sword of Honour\",\n" +
+                "        \"price\": 12.99,\n" +
+                "        \"isbn\": \"0-553-21311-3\"\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"bicycle\": {\n" +
+                "      \"color\": \"red\",\n" +
+                "      \"price\": 19.95\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("param1", "{\"abc\":\"123\",\"cba\":321}");
+        params.put("param1", json);
 
         List<Map<String, Object>> maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
-        Map<String, Object> map = maps.get(0);
-        Assert.assertEquals("123", map.get("abc"));
-        Assert.assertEquals("321", map.get("cba"));
+        System.out.println(maps);
+        Assert.assertEquals(2, maps.size());
+
+        Map<String, Object> book1 = maps.get(0);
+        Assert.assertEquals("Sayings of the Century", book1.get("title"));
     }
 }

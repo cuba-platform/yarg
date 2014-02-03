@@ -21,62 +21,93 @@
  */
 package com.haulmont.yarg.loaders.impl;
 
-import com.google.gson.*;
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
+import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JsonDataLoader implements ReportDataLoader {
+    protected Pattern parameterPattern = Pattern.compile("parameter=([A-z0-9_]+)");
+
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-        Object parameterValue = params.get(reportQuery.getScript());
-        if (parameterValue != null) {
-            JsonElement json;
-            if (parameterValue instanceof String) {
-                JsonParser parser = new JsonParser();
-                json = parser.parse((String) parameterValue);
-            } else if (parameterValue instanceof JsonElement) {
-                json = (JsonElement) parameterValue;
-            } else {
-                throw new DataLoadingException(
-                        String.format("The parameter [%s] has type [%s]. Supported types [java.lang.String, com.google.gson.JsonElement]",
-                                reportQuery.getScript(),
-                                parameterValue.getClass()));
-            }
 
-            if (json instanceof JsonArray) {
-                JsonArray jsonArray = (JsonArray) json;
-                for (JsonElement next : jsonArray) {
-                    if (next instanceof JsonObject) {
-                        Map<String, Object> map = convertJsonToMap((JsonObject) next);
-                        result.add(map);
-                    }
+
+        Matcher matcher = parameterPattern.matcher(reportQuery.getScript());
+        String parameterName = getParameterName(matcher);
+
+        if (parameterName != null) {
+            Object parameterValue = params.get(parameterName);
+            if (parameterValue != null && StringUtils.isNotBlank(parameterValue.toString())) {
+                String json = parameterValue.toString();
+                String script = matcher.replaceAll("");
+
+                if (StringUtils.isBlank(script)) {
+                    throw new DataLoadingException(
+                            String.format("The script doesn't contain json path expression. " +
+                                    "Script [%s]", reportQuery.getScript()));
                 }
-            } else if (json instanceof JsonObject) {
-                Map<String, Object> map = convertJsonToMap((JsonObject) json);
-                result.add(map);
+
+                try {
+                    Object scriptResult = JsonPath.read(json, script);
+                    parseScriptResult(result, script, scriptResult);
+                } catch (Exception e) {
+                    throw new DataLoadingException(
+                            String.format("An error occurred while loading data with script [%s]", reportQuery.getScript()), e);
+                }
             } else {
-                throw new DataLoadingException(
-                        String.format("Provided json is neither array nor object [%s]", json.toString()));
+                return Collections.emptyList();
             }
+        } else {
+            throw new DataLoadingException(String.format("Query string doesn't contain link to parameter. " +
+                    "Script [%s]", reportQuery.getScript()));
         }
 
         return result;
     }
 
-    private Map<String, Object> convertJsonToMap(JsonObject jsonObject) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-            if (entry.getValue() instanceof JsonPrimitive) {
-                JsonPrimitive value = (JsonPrimitive) entry.getValue();
-                map.put(entry.getKey(), value.getAsString());
+    private void parseScriptResult(List<Map<String, Object>> result, String script, Object scriptResult) {
+        if (scriptResult instanceof List) {//JSONArray is also list
+            List theList = (List) scriptResult;
+            if (CollectionUtils.isNotEmpty(theList)) {
+                Object listObject = theList.get(0);
+                if (listObject instanceof JSONObject) {
+                    for (Object object : theList) {
+                        result.add((JSONObject) object);
+                    }
+                } else {
+                    throw new DataLoadingException(
+                            String.format("The list collected with script does not contain objects. " +
+                                    "It contains %s instead. " +
+                                    "Script [%s]", listObject, script));
+                }
             }
+        } else if (scriptResult instanceof JSONObject) {
+            result.add((JSONObject) scriptResult);
+        } else {
+            throw new DataLoadingException(
+                    String.format("The script collects neither object nor list of objects. " +
+                            "Script [%s]", script));
+        }
+    }
+
+    private String getParameterName(Matcher matcher) {
+        if (matcher.find()) {
+            return matcher.group(1);
         }
 
-        return map;
+        return null;
     }
 }
