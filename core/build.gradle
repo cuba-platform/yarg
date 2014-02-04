@@ -1,6 +1,9 @@
 apply(plugin: 'java')
 apply(plugin: 'idea')
 apply(plugin: 'maven')
+apply(plugin: 'application')
+
+mainClassName = "com.haulmont.yarg.console.ConsoleRunner"
 
 sourceSets {
     main {
@@ -124,12 +127,32 @@ uploadArchives.configure {
     }
 }
 
+jar {
+    from "src/log4j.xml"
+    from "src/reporting.xsd"
+}
+
+startScripts << {
+    copy {
+        from "reporting.properties"
+        into outputDir
+    }
+}
+
+installApp << {
+    def outputDir = destinationDir
+    copy {
+        from "reporting.properties"
+        into "$outputDir/bin"
+    }
+}
+
 task sourceJar(type: Jar) {
     from sourceSets.main.java
     classifier = 'sources'
 }
 
-artifacts{
+artifacts {
     archives sourceJar
 }
 

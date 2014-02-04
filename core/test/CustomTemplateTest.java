@@ -36,7 +36,7 @@ public class CustomTemplateTest {
 
         Reporting reporting = new Reporting();
         reporting.setFormatterFactory(new DefaultFormatterFactory());
-        reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader()).create()));
+        reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader("./test/reporting.properties")).create()));
 
         ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/smoke/result.custom"));
 

@@ -24,6 +24,7 @@ package com.haulmont.yarg.loaders.factory;
 import com.haulmont.yarg.exception.InitializationException;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
+import org.apache.commons.lang.StringUtils;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -43,6 +44,10 @@ public class PropertiesSqlLoaderFactory {
             String dbUrl = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_DB_URL);
             String user = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_USER);
             String password = properties.getProperty(PropertiesLoader.CUBA_REPORTING_SQL_PASSWORD);
+
+            if (StringUtils.isBlank(driver) || StringUtils.isBlank(dbUrl)) {
+                return null;
+            }
 
             DataSource dataSource = DefaultLoaderFactory.setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
             SqlDataLoader sqlDataLoader = new SqlDataLoader(dataSource);
