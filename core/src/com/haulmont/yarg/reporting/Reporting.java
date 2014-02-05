@@ -37,6 +37,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +83,9 @@ public class Reporting implements ReportingAPI {
             Preconditions.checkNotNull(params, "\"params\" can not be null");
             Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
 
-            params = new HashMap<String, Object>(params);//make sure map is mutable
+            if (!(params instanceof HashMap) && !(params instanceof TreeMap)) {//just a workaround to check if map is mutable
+                params = new HashMap<String, Object>(params);//make sure map is mutable
+            }
 
             String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
             BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
