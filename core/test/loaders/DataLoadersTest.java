@@ -37,8 +37,34 @@ public class DataLoadersTest {
             rootBand.setData(Collections.<String, Object>emptyMap());
 
             List<Map<String, Object>> result = sqlDataLoader.loadData(
-                    new ReportQueryImpl("", "select login as \"login\", password as \"password\" from user where create_ts > ${startDate} and login like ${start} limit 10", "sql", null, null), rootBand, params);
+                    new ReportQueryImpl("", "select login as \"Login\", password as \"Password\" from user where create_ts > ${startDate} and login like ${start} limit 10", "sql", null, null), rootBand, params);
             printResult(result);
+            Assert.assertNotNull(result.get(0).get("Login"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+
+        testDatabase.stop();
+    }
+
+    @Test
+    public void testCaseSensitiveSqlLoader() throws Exception {
+        TestDatabase testDatabase = new TestDatabase();
+        testDatabase.setUpDatabase();
+
+        try {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("startDate", new Timestamp(new Date().getTime()));
+            params.put("start", "login%");
+            SqlDataLoader sqlDataLoader = new SqlDataLoader(testDatabase.getDs());
+            BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
+            rootBand.setData(Collections.<String, Object>emptyMap());
+
+            List<Map<String, Object>> result = sqlDataLoader.loadData(
+                    new ReportQueryImpl("", "select login as Login, password as Password from user where create_ts > ${startDate} and login like ${start} limit 10", "sql", null, null), rootBand, params);
+            printResult(result);
+            Assert.assertNotNull(result.get(0).get("Login"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author degtyarjov
@@ -46,7 +48,7 @@ public class SqlDataLoader extends AbstractDbDataLoader {
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
         List resList;
-        final List<String> outputParameters = new ArrayList<String>();
+        final List<OutputValue> outputValues = new ArrayList<OutputValue>();
 
         String query = reportQuery.getScript();
         if (StringUtils.isBlank(query)) {
@@ -55,7 +57,7 @@ public class SqlDataLoader extends AbstractDbDataLoader {
 
         QueryRunner runner = new QueryRunner(dataSource);
         try {
-            QueryPack pack = prepareQuery(query, parentBand, params);
+            final QueryPack pack = prepareQuery(query, parentBand, params);
 
             ArrayList<Object> resultingParams = new ArrayList<Object>();
             QueryParameter[] queryParameters = pack.getParams();
@@ -74,12 +76,15 @@ public class SqlDataLoader extends AbstractDbDataLoader {
 
                     while (rs.next()) {
                         ResultSetMetaData metaData = rs.getMetaData();
-                        if (outputParameters.size() == 0) {
+                        if (outputValues.size() == 0) {
                             for (int columnIndex = 1; columnIndex <= metaData.getColumnCount(); columnIndex++) {
                                 String columnName = metaData.getColumnLabel(columnIndex);
-                                outputParameters.add(columnName);
+                                OutputValue outputValue = new OutputValue(columnName);
+                                setCaseSensitiveSynonym(columnName, outputValue);
+                                outputValues.add(outputValue);
                             }
                         }
+
                         Object[] values = new Object[metaData.getColumnCount()];
                         for (int columnIndex = 0; columnIndex < metaData.getColumnCount(); columnIndex++) {
                             values[columnIndex] = convertOutputValue(rs.getObject(columnIndex + 1));
@@ -89,11 +94,18 @@ public class SqlDataLoader extends AbstractDbDataLoader {
 
                     return resList;
                 }
+
+                private void setCaseSensitiveSynonym(String columnName, OutputValue outputValue) {
+                    Matcher matcher = Pattern.compile("(?i)as\\s*(" + columnName + ")").matcher(pack.getQuery());
+                    if (matcher.find()) {
+                        outputValue.setSynonym(matcher.group(1));
+                    }
+                }
             });
         } catch (SQLException e) {
             throw new DataLoadingException(String.format("An error occurred while loading data for data set [%s]", reportQuery.getName()), e);
         }
 
-        return fillOutputData(resList, outputParameters);
+        return fillOutputData(resList, outputValues);
     }
 }

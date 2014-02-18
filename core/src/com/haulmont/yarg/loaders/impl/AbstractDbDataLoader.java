@@ -18,6 +18,7 @@ package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.structure.BandData;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -31,11 +32,11 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
     public static final Pattern COMMON_PARAM_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
 
-    protected List<Map<String, Object>> fillOutputData(List resList, List<String> parametersNames) {
+    protected List<Map<String, Object>> fillOutputData(List resList, List<OutputValue> parametersNames) {
         List<Map<String, Object>> outputData = new ArrayList<Map<String, Object>>();
 
         for (Object resultRecordObject : resList) {
-            Map<String, Object> outputParameters = new HashMap<String, Object>();
+            Map<String, Object> outputValues = new HashMap<String, Object>();
             if (resultRecordObject instanceof Object[]) {
                 Object[] resultRecord = (Object[]) resultRecordObject;
 
@@ -44,14 +45,25 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
                 }
 
                 for (Integer i = 0; i < resultRecord.length; i++) {
-                    outputParameters.put(parametersNames.get(i), resultRecord[i]);
+                    OutputValue outputValue = parametersNames.get(i);
+                    Object value = resultRecord[i];
+                    putValue(outputValues, outputValue, value);
+
                 }
             } else {
-                outputParameters.put(parametersNames.get(0), resultRecordObject);
+                OutputValue outputValue = parametersNames.get(0);
+                putValue(outputValues, outputValue, resultRecordObject);
             }
-            outputData.add(outputParameters);
+            outputData.add(outputValues);
         }
         return outputData;
+    }
+
+    private void putValue(Map<String, Object> outputData, OutputValue outputValue, Object value) {
+        outputData.put(outputValue.getValueName(), value);
+        if (StringUtils.isNotBlank(outputValue.getSynonym())){
+            outputData.put(outputValue.getSynonym(), value);
+        }
     }
 
     protected QueryPack prepareQuery(String query, BandData parentBand, Map<String, Object> reportParams) {
@@ -233,6 +245,27 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             }
 
             return null;
+        }
+    }
+
+    protected static class OutputValue {
+        private String valueName;
+        private String synonym;
+
+        public OutputValue(String valueName) {
+            this.valueName = valueName;
+        }
+
+        public void setSynonym(String synonym) {
+            this.synonym = synonym;
+        }
+
+        public String getValueName() {
+            return valueName;
+        }
+
+        public String getSynonym() {
+            return synonym;
         }
     }
 }

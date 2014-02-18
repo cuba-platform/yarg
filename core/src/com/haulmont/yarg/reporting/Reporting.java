@@ -127,7 +127,7 @@ public class Reporting implements ReportingAPI {
         }
     }
 
-    protected ReportOutputDocumentImpl createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName) {
+    protected ReportOutputDocument createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName) {
         return new ReportOutputDocumentImpl(report, null, outputName, reportTemplate.getOutputType());
     }
 
