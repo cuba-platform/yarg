@@ -624,41 +624,42 @@ public class XlsxFormatter extends AbstractFormatter {
         }
 
         if (UNIVERSAL_ALIAS_PATTERN.matcher(cellValue).matches()) {
-            String paramName = unwrapParameterName(cellValue);
-            String paramFullName = bandData.getName() + "." + paramName;
-            Object value = bandData.getData().get(paramName);
+            String parameterName = unwrapParameterName(cellValue);
+            String fullParameterName = bandData.getName() + "." + parameterName;
+            Object value = bandData.getData().get(parameterName);
 
-            boolean handledByTags = false;
+            if (value == null) {
+                newCell.setV("");
+                return;
+            } else if (value instanceof Boolean) {
+                newCell.setT(STCellType.B);
+            } else if (value instanceof Number) {
+                newCell.setT(STCellType.N);
+            } else {
+                newCell.setT(STCellType.STR);
+            }
+
             Map<String, ReportFieldFormat> fieldFormats = rootBand.getReportFieldFormats();
-            if (value != null && fieldFormats != null && fieldFormats.containsKey(paramFullName)) {
-                String format = fieldFormats.get(paramFullName).getFormat();
-                // Handle doctags
-                for (ContentInliner contentInliner : contentInliners) {
-                    Matcher matcher = contentInliner.getTagPattern().matcher(format);
-                    if (matcher.find()) {
-                        contentInliner.inlineToXlsx(result.getPackage(), worksheetPart, newCell, value, matcher);
-                        handledByTags = true;
+            if (fieldFormats != null) {
+                String formatString = null;
+                if (fieldFormats.containsKey(fullParameterName)) {
+                    formatString = fieldFormats.get(fullParameterName).getFormat();
+                } else if (fieldFormats.containsKey(parameterName)) {
+                    formatString = fieldFormats.get(parameterName).getFormat();
+                }
+
+                if (formatString != null) {
+                    for (ContentInliner contentInliner : contentInliners) {
+                        Matcher matcher = contentInliner.getTagPattern().matcher(formatString);
+                        if (matcher.find()) {
+                            contentInliner.inlineToXlsx(result.getPackage(), worksheetPart, newCell, value, matcher);
+                            return;
+                        }
                     }
                 }
             }
-//            we probably don't need it for in xlsx files
-//            else {
-//                value = formatValue(value, paramFullName);
-//            }
 
-            if (!handledByTags) {
-                if (value != null) {
-                    if (value instanceof Number) {
-                        newCell.setT(STCellType.N);
-                    } else {
-                        newCell.setT(STCellType.STR);
-                    }
-                    newCell.setV(value.toString());
-
-                } else {
-                    newCell.setV("");
-                }
-            }
+            newCell.setV(formatValue(value, parameterName, fullParameterName));
         } else {
             String value = insertBandDataToString(bandData, cellValue);
             newCell.setV(value);

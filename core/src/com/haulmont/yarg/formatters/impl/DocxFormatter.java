@@ -35,7 +35,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.*;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
-import javax.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -187,13 +186,13 @@ public class DocxFormatter extends AbstractFormatter {
                     throw wrapWithReportingException("No band found for alias : " + alias);
                 }
 
-                String paramFullName = band.getName() + "." + bandAndParameter.parameterName;
+                String fullParameterName = band.getName() + "." + bandAndParameter.parameterName;
                 Object paramValue = band.getParameterValue(bandAndParameter.parameterName);
 
                 Map<String, ReportFieldFormat> valueFormats = rootBand.getReportFieldFormats();
                 boolean handled = false;
-                if (paramValue != null && valueFormats != null && valueFormats.containsKey(paramFullName)) {
-                    String format = valueFormats.get(paramFullName).getFormat();
+                if (paramValue != null && valueFormats != null && valueFormats.containsKey(fullParameterName)) {
+                    String format = valueFormats.get(fullParameterName).getFormat();
                     // Handle doctags
                     for (ContentInliner contentInliner : DocxFormatter.this.contentInliners) {
                         Matcher contentMatcher = contentInliner.getTagPattern().matcher(format);
@@ -205,7 +204,7 @@ public class DocxFormatter extends AbstractFormatter {
                 }
 
                 if (!handled) {
-                    text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, paramFullName)));
+                    text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, bandAndParameter.parameterName, fullParameterName)));
                 }
             }
         }

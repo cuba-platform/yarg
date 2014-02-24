@@ -95,12 +95,23 @@ public abstract class AbstractFormatter implements ReportFormatter {
         return nameWithAlias.replaceAll("[\\$|\\{|\\}]", "");
     }
 
-    protected String formatValue(Object value, String fullParameterName) {
-        String valueString = "";
+    protected String formatValue(Object value, String parameterName, String fullParameterName) {
+        if (value == null) {
+            return "";
+        }
+
+        String valueString;
+
         Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
-        if (value != null) {
-            if (formats != null && formats.containsKey(fullParameterName)) {
-                String formatString = formats.get(fullParameterName).getFormat();
+        if (formats != null) {
+            String formatString = null;
+            if (formats.containsKey(fullParameterName)) {
+                formatString = formats.get(fullParameterName).getFormat();
+            } else if (formats.containsKey(parameterName)) {
+                formatString = formats.get(parameterName).getFormat();
+            }
+
+            if (formatString != null) {
                 if (value instanceof Number) {
                     DecimalFormat decimalFormat = new DecimalFormat(formatString);
                     valueString = decimalFormat.format(value);
@@ -113,6 +124,8 @@ public abstract class AbstractFormatter implements ReportFormatter {
             } else {
                 valueString = defaultFormat(value);
             }
+        } else {
+            valueString = defaultFormat(value);
         }
 
         return valueString;
@@ -134,8 +147,8 @@ public abstract class AbstractFormatter implements ReportFormatter {
         }
         for (String parameterName : parametersToInsert) {
             Object value = bandData.getData().get(parameterName);
-            String paramFullName = bandData.getName() + "." + parameterName;
-            String valueStr = formatValue(value, paramFullName);
+            String fullParameterName = bandData.getName() + "." + parameterName;
+            String valueStr = formatValue(value, parameterName, fullParameterName);
             resultStr = inlineParameterValue(resultStr, parameterName, valueStr);
         }
         return resultStr;

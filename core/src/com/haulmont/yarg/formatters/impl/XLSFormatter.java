@@ -599,6 +599,7 @@ public class XLSFormatter extends AbstractFormatter {
     protected void updateValueCell(BandData rootBand, BandData bandData, String templateCellValue, HSSFCell resultCell, HSSFPatriarch patriarch) {
         String parameterName = templateCellValue;
         parameterName = unwrapParameterName(parameterName);
+        String fullParameterName = bandData.getName() + "." + parameterName;
 
         if (StringUtils.isEmpty(parameterName)) return;
 
@@ -607,34 +608,39 @@ public class XLSFormatter extends AbstractFormatter {
             return;
         }
 
-        Object parameterValue = bandData.getData().get(parameterName);
-        Map<String, ReportFieldFormat> valuesFormats = rootBand.getReportFieldFormats();
+        Object value = bandData.getData().get(parameterName);
 
-        if (parameterValue == null) {
+        if (value == null) {
             resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
-        } else if (parameterValue instanceof Number) {
-            resultCell.setCellValue(((Number) parameterValue).doubleValue());
-        } else if (parameterValue instanceof Boolean) {
-            resultCell.setCellValue((Boolean) parameterValue);
-        } else if (parameterValue instanceof Date) {
-            resultCell.setCellValue((Date) parameterValue);
+        } else if (value instanceof Number) {
+            resultCell.setCellValue(((Number) value).doubleValue());
+        } else if (value instanceof Boolean) {
+            resultCell.setCellValue((Boolean) value);
+        } else if (value instanceof Date) {
+            resultCell.setCellValue((Date) value);
         } else {
-            String bandName = bandData.getName();
-            String fullParamName = bandName + "." + parameterName;
+            Map<String, ReportFieldFormat> valuesFormats = rootBand.getReportFieldFormats();
 
-            if (valuesFormats != null && valuesFormats.containsKey(fullParamName)) {
-                String formatString = valuesFormats.get(fullParamName).getFormat();
-                for (ContentInliner contentInliner : contentInliners) {
-                    Matcher matcher = contentInliner.getTagPattern().matcher(formatString);
-                    if (matcher.find()) {
-                        contentInliner.inlineToXls(patriarch, resultCell, parameterValue, matcher);
-                        return;
+            if (valuesFormats != null) {
+                String formatString = null;
+                if (valuesFormats.containsKey(fullParameterName)) {
+                    formatString = valuesFormats.get(fullParameterName).getFormat();
+                } else if (valuesFormats.containsKey(parameterName)) {
+                    formatString = valuesFormats.get(parameterName).getFormat();
+                }
+
+                if (formatString != null) {
+                    for (ContentInliner contentInliner : contentInliners) {
+                        Matcher matcher = contentInliner.getTagPattern().matcher(formatString);
+                        if (matcher.find()) {
+                            contentInliner.inlineToXls(patriarch, resultCell, value, matcher);
+                            return;
+                        }
                     }
                 }
             }
 
-            String paramFullName = bandData.getName() + "." + parameterName;
-            resultCell.setCellValue(new HSSFRichTextString(formatValue(parameterValue, paramFullName)));
+            resultCell.setCellValue(new HSSFRichTextString(formatValue(value, parameterName, fullParameterName)));
         }
     }
 

@@ -275,17 +275,17 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    protected void insertValue(XText text, XTextRange textRange, BandData band, String paramName) {
-        String paramFullName = band.getName() + "." + paramName;
-        Object paramValue = band.getParameterValue(paramName);
+    protected void insertValue(XText text, XTextRange textRange, BandData band, String parameterName) {
+        String fullParameterName = band.getName() + "." + parameterName;
+        Object paramValue = band.getParameterValue(parameterName);
 
         Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
         try {
             boolean handled = false;
 
             if (paramValue != null) {
-                if ((formats != null) && (formats.containsKey(paramFullName))) {
-                    String format = formats.get(paramFullName).getFormat();
+                if ((formats != null) && (formats.containsKey(fullParameterName))) {
+                    String format = formats.get(fullParameterName).getFormat();
                     // Handle doctags
                     for (ContentInliner contentInliner : contentInliners) {
                         Matcher matcher = contentInliner.getTagPattern().matcher(format);
@@ -296,14 +296,14 @@ public class DocFormatter extends AbstractFormatter {
                     }
                 }
                 if (!handled) {
-                    String valueString = formatValue(paramValue, paramFullName);
+                    String valueString = formatValue(paramValue, parameterName, fullParameterName);
                     text.insertString(textRange, valueString, true);
                 }
             } else {
                 text.insertString(textRange, "", true);
             }
         } catch (Exception ex) {
-            throw wrapWithReportingException(String.format("An error occurred while inserting parameter [%s] into text line [%s]", paramName, text.getString()), ex);
+            throw wrapWithReportingException(String.format("An error occurred while inserting parameter [%s] into text line [%s]", parameterName, text.getString()), ex);
         }
     }
 
