@@ -38,8 +38,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractFormatter implements ReportFormatter {
-    public static final String UNIVERSAL_ALIAS_REGEXP = "\\$\\{[A-z0-9_\\.#]+?\\}";//# is not really needed now but I keep i here for future purposes
-    public static final String ALIAS_WITH_BAND_NAME_REGEXP = "\\$\\{([A-z0-9_\\.]+?#?[A-z0-9_\\.]+?)\\}";//# is not really needed now but I keep i here for future purposes
+    public static final String STRING_FUNCTION_GROUP = "(\\[\\d+\\])";
+    public static final String ALIAS_GROUP = "([A-z0-9_\\.#]+?)";
+    public static final String UNIVERSAL_ALIAS_REGEXP = "\\$\\{" + ALIAS_GROUP + " *" + STRING_FUNCTION_GROUP + "?\\}";
+    public static final String ALIAS_WITH_BAND_NAME_REGEXP = "\\$\\{([A-z0-9_\\.]+?#?[A-z0-9_\\.]+?) *(\\[\\d+\\])?\\}";
     public static final String BAND_NAME_DECLARATION_REGEXP = "##band=([A-z_0-9]+) *";
 
     public static final Pattern UNIVERSAL_ALIAS_PATTERN = Pattern.compile(UNIVERSAL_ALIAS_REGEXP, Pattern.CASE_INSENSITIVE);
@@ -92,10 +94,19 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected String unwrapParameterName(String nameWithAlias) {
-        return nameWithAlias.replaceAll("[\\$|\\{|\\}]", "");
+        Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(nameWithAlias);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
     }
 
     protected String formatValue(Object value, String parameterName, String fullParameterName) {
+        return formatValue(value, parameterName, fullParameterName, null);
+    }
+
+    protected String formatValue(Object value, String parameterName, String fullParameterName, String stringFunction) {
         if (value == null) {
             return "";
         }
@@ -128,6 +139,22 @@ public abstract class AbstractFormatter implements ReportFormatter {
             valueString = defaultFormat(value);
         }
 
+        if (stringFunction != null) {
+            valueString = applyStringFunction(valueString, stringFunction);
+        }
+
+        return valueString;
+    }
+
+    protected String applyStringFunction(String valueString, String stringFunction) {
+        if (stringFunction.matches(STRING_FUNCTION_GROUP)) {
+            Integer index = Integer.valueOf(stringFunction.replaceAll("[^\\d]", ""));
+
+            if (valueString.length() >= index) {
+                return valueString.substring(index, index + 1);
+            }
+        }
+
         return valueString;
     }
 
@@ -155,7 +182,8 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected String inlineParameterValue(String template, String parameterName, String value) {
-        return template.replaceAll("\\$\\{" + parameterName + "\\}", value);
+        String parameterRegex = UNIVERSAL_ALIAS_REGEXP.replace(ALIAS_GROUP, parameterName);
+        return template.replaceAll(parameterRegex, value);
     }
 
     protected BandData findBandByPath(BandData rootBand, String path) {

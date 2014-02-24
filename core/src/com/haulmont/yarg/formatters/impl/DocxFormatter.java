@@ -169,6 +169,7 @@ public class DocxFormatter extends AbstractFormatter {
             Matcher matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(text.getValue());
             while (matcher.find()) {
                 String alias = matcher.group(1);
+                String stringFunction = matcher.group(2);
 
                 BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
 
@@ -190,22 +191,18 @@ public class DocxFormatter extends AbstractFormatter {
                 Object paramValue = band.getParameterValue(bandAndParameter.parameterName);
 
                 Map<String, ReportFieldFormat> valueFormats = rootBand.getReportFieldFormats();
-                boolean handled = false;
                 if (paramValue != null && valueFormats != null && valueFormats.containsKey(fullParameterName)) {
                     String format = valueFormats.get(fullParameterName).getFormat();
-                    // Handle doctags
                     for (ContentInliner contentInliner : DocxFormatter.this.contentInliners) {
                         Matcher contentMatcher = contentInliner.getTagPattern().matcher(format);
                         if (contentMatcher.find()) {
                             contentInliner.inlineToDocx(wordprocessingMLPackage, text, paramValue, contentMatcher);
-                            handled = true;
+                            return;
                         }
                     }
                 }
 
-                if (!handled) {
-                    text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, bandAndParameter.parameterName, fullParameterName)));
-                }
+                text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, bandAndParameter.parameterName, fullParameterName, stringFunction)));
             }
         }
     }
