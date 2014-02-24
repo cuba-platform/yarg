@@ -121,19 +121,19 @@ public class DocxFormatter extends AbstractFormatter {
     }
 
     protected class DocumentWrapper {
-        MainDocumentPart mainDocumentPart;
-        Set<TableManager> tables;
-        Set<TextWrapper> texts;
+        protected MainDocumentPart mainDocumentPart;
+        protected Set<TableManager> tables;
+        protected Set<TextWrapper> texts;
 
-        DocumentWrapper(MainDocumentPart mainDocumentPart) {
+        protected DocumentWrapper(MainDocumentPart mainDocumentPart) {
             this.mainDocumentPart = mainDocumentPart;
             collectData();
         }
 
-        private void collectDataFromObjects(Object... objects) {
+        protected void collectDataFromObjects(Object... objects) {
             for (Object object : objects) {
                 if (object != null) {
-                    CollectAliasesCallbackImpl collectAliasesCallback = new CollectAliasesCallbackImpl();
+                    AliasCollector collectAliasesCallback = new AliasCollector();
                     new TraversalUtil(object, collectAliasesCallback);
                     texts.addAll(collectAliasesCallback.textWrappers);
                 }
@@ -141,9 +141,9 @@ public class DocxFormatter extends AbstractFormatter {
         }
 
         void collectData() {
-            CollectTablesCallbackImpl collectTablesCallback = new CollectTablesCallbackImpl();
+            TableCollector collectTablesCallback = new TableCollector();
             new TraversalUtil(mainDocumentPart, collectTablesCallback);
-            CollectAliasesCallbackImpl collectAliasesCallback = new CollectAliasesCallbackImpl();
+            AliasCollector collectAliasesCallback = new AliasCollector();
             new TraversalUtil(mainDocumentPart, collectAliasesCallback);
             tables = collectTablesCallback.tableManagers;
             texts = collectAliasesCallback.textWrappers;
@@ -160,7 +160,7 @@ public class DocxFormatter extends AbstractFormatter {
     protected class TextWrapper {
         protected Text text;
 
-        private TextWrapper(Text text) {
+        protected TextWrapper(Text text) {
             this.text = text;
         }
 
@@ -241,7 +241,7 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    protected class CollectAliasesCallbackImpl extends TraversalUtil.CallbackImpl {
+    protected class AliasCollector extends TraversalUtil.CallbackImpl {
         protected Set<TextWrapper> textWrappers = new HashSet<TextWrapper>();
         protected R mergeRun = null;
         protected boolean doMerge = false;
@@ -339,10 +339,10 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    protected class CollectTablesCallbackImpl extends TraversalUtil.CallbackImpl {
-        private Stack<TableManager> currentTables = new Stack<TableManager>();
-        private Set<TableManager> tableManagers = new HashSet<TableManager>();
-        private boolean skipCurrentTable = false;
+    protected class TableCollector extends TraversalUtil.CallbackImpl {
+        protected Stack<TableManager> currentTables = new Stack<TableManager>();
+        protected Set<TableManager> tableManagers = new HashSet<TableManager>();
+        protected boolean skipCurrentTable = false;
 
         public List<Object> apply(Object o) {
             if (skipCurrentTable) return null;
@@ -364,7 +364,7 @@ public class DocxFormatter extends AbstractFormatter {
                 }
 
                 if (currentTable.rowWithAliases == null) {
-                    RegexpFindCallback callback = new RegexpFindCallback(UNIVERSAL_ALIAS_PATTERN);
+                    RegexpFinder callback = new RegexpFinder(UNIVERSAL_ALIAS_PATTERN);
                     new TraversalUtil(currentRow, callback);
 
                     if (callback.getValue() != null) {
@@ -378,7 +378,7 @@ public class DocxFormatter extends AbstractFormatter {
 
         protected void findNameForCurrentTable(final TableManager currentTable) {
             new TraversalUtil(currentTable.firstRow,
-                    new RegexpFindCallback(BAND_NAME_DECLARATION_PATTERN) {
+                    new RegexpFinder(BAND_NAME_DECLARATION_PATTERN) {
                         @Override
                         protected void onFind(Text o, Matcher matcher) {
                             super.onFind(o, matcher);
@@ -420,11 +420,11 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    protected class RegexpFindCallback extends TraversalUtil.CallbackImpl {
+    protected class RegexpFinder extends TraversalUtil.CallbackImpl {
         protected Pattern regularExpression;
         protected String value;
 
-        public RegexpFindCallback(Pattern regularExpression) {
+        public RegexpFinder(Pattern regularExpression) {
             this.regularExpression = regularExpression;
         }
 
