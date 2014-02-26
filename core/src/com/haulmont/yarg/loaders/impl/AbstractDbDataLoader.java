@@ -61,7 +61,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
     private void putValue(Map<String, Object> outputData, OutputValue outputValue, Object value) {
         outputData.put(outputValue.getValueName(), value);
-        if (StringUtils.isNotBlank(outputValue.getSynonym())){
+        if (StringUtils.isNotBlank(outputValue.getSynonym())) {
             outputData.put(outputValue.getSynonym(), value);
         }
     }
@@ -179,7 +179,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             }
             builder.deleteCharAt(builder.length() - 1);
             builder.append(")");
-            query = query.replaceAll(parameter.getParamRegexp(), builder.toString());
+            query = query.replaceAll("\\(?\\s*" + parameter.getParamRegexp() + "\\s*\\)?", builder.toString());//if user already set up () - we remove it
         }
         return query;
     }
