@@ -22,6 +22,9 @@ sourceSets {
 
 //def artifactVersion = '1.0-SNAPSHOT'
 def artifactVersion = '1.0.16'
+if (rootProject.hasProperty('buildVersion')) {
+    artifactVersion = rootProject['buildVersion']
+}
 def isSnapshot = artifactVersion.endsWith('-SNAPSHOT')
 
 group = 'com.haulmont.yarg'
