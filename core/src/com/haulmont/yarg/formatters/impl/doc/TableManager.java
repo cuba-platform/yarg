@@ -122,8 +122,7 @@ public class TableManager {
         String lastCellName = cellNames[row * colCount + colCount - 1];
         XTextTableCursor xTextTableCursor = xTextTable.createCursorByCellName(firstCellName);
         xTextTableCursor.gotoCellByName(lastCellName, true);
-        // stupid shit. It works only if XCellRange was created via cursor. why????
-        // todo: refactor this if possible
+        // It works only if XCellRange was created via cursor. why????
         if (firstCellName.equalsIgnoreCase(lastCellName)) {
             XCell cell = asXCellRange(xTextTable).getCellByPosition(0, row);
             asXSelectionSupplier(xController).select(new Any(new Type(XCell.class), cell));

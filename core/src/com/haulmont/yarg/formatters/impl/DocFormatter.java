@@ -152,7 +152,6 @@ public class DocFormatter extends AbstractFormatter {
             if (band != null && numberOfRowWithAliases > -1) {
                 XTextTable xTextTable = tableManager.getXTextTable();
 
-                // todo remove this hack!
                 // try to select one cell without it workaround
                 int columnCount = xTextTable.getColumns().getCount();
                 if (columnCount < 2) {
@@ -177,8 +176,8 @@ public class DocFormatter extends AbstractFormatter {
 
     protected void fillTable(String name, BandData parentBand, TableManager tableManager, XDispatchHelper xDispatchHelper, int numberOfRowWithAliases)
             throws com.sun.star.uno.Exception {
-        // Lock clipboard, cause uno uses it to grow tables
-        synchronized (clipboardLock) {//todo try get rid of it
+        // Lock clipboard, cause uno uses it to grow tables, relevant for desktops
+        synchronized (clipboardLock) {
             XTextTable xTextTable = tableManager.getXTextTable();
             if (officeIntegration.isDisplayDeviceAvailable()) {
                 clearClipboard();

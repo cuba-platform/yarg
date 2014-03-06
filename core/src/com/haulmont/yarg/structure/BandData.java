@@ -16,6 +16,7 @@
 
 package com.haulmont.yarg.structure;
 
+import com.google.common.base.Preconditions;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 
 import java.util.*;
@@ -172,18 +173,11 @@ public class BandData {
         return false;
     }
 
-    //todo use visitor
     public BandData findBandRecursively(String name) {
-        if (getName().equals(name)) {
-            return this;
-        }
-        for (BandData child : getChildrenList()) {
-            BandData fromChild = child.findBandRecursively(name);
-            if (fromChild != null) {
-                return fromChild;
-            }
-        }
-        return null;
+        BandNameVisitor visitor = new BandNameVisitor(name);
+        visit(visitor);
+
+        return visitor.foundBand;
     }
 
     public List<BandData> findBandsRecursively(String name) {
@@ -238,6 +232,26 @@ public class BandData {
             sbf.append(band.toString());
         }
         return sbf.toString();
+    }
+
+    protected static class BandNameVisitor implements BandVisitor {
+        protected String name;
+        protected BandData foundBand;
+
+        public BandNameVisitor(String name) {
+            Preconditions.checkNotNull(name, "Could not find band with name = null");
+            this.name = name;
+        }
+
+        @Override
+        public boolean visit(BandData band) {
+            boolean found = band.getName().equals(name);
+            if (found) {
+                foundBand = band;
+            }
+
+            return found;
+        }
     }
 }
 
