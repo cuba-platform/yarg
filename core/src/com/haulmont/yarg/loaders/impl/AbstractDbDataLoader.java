@@ -173,13 +173,15 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         } else {
             // Replace multiple parameter with (?,..(N)..,?)
             List<?> multipleValues = parameter.getMultipleValues();
-            StringBuilder builder = new StringBuilder("(");
+            StringBuilder builder = new StringBuilder(" (");
             for (Object value : multipleValues) {
                 builder.append("?,");
             }
             builder.deleteCharAt(builder.length() - 1);
             builder.append(")");
-            query = query.replaceAll("\\(?\\s*" + parameter.getParamRegexp() + "\\s*\\)?", builder.toString());//if user already set up () - we remove it
+
+            query = query.replaceAll("\\(\\s*" + parameter.getParamRegexp() + "\\s*\\)", builder.toString());//if user already set up () - we remove it
+            query = query.replaceAll(parameter.getParamRegexp(), builder.toString());
         }
         return query;
     }

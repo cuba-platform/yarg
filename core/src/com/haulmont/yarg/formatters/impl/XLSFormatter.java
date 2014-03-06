@@ -16,6 +16,8 @@
 
 package com.haulmont.yarg.formatters.impl;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
@@ -27,6 +29,7 @@ import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverterAPI;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.yarg.formatters.impl.xls.hints.*;
+import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -57,6 +60,8 @@ import static com.haulmont.yarg.formatters.impl.xls.HSSFRangeHelper.*;
 /**
  * Document formatter for '.xls' file types
  */
+
+//todo : we need to rewrite logic in the way similar to XlsxFormatter (store rendered ranges in memory) - use bandsToResultRanges etc.
 public class XLSFormatter extends AbstractFormatter {
     protected static final String DYNAMIC_HEIGHT_STYLE = "styleWithoutHeight";
 
@@ -87,6 +92,8 @@ public class XLSFormatter extends AbstractFormatter {
     protected List<XlsHint> hints = new ArrayList<XlsHint>();
 
     protected XlsToPdfConverterAPI xlsToPdfConverter;
+
+    protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
     public XLSFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -291,7 +298,7 @@ public class XLSFormatter extends AbstractFormatter {
             int currentColumnCount = 0;
             int offset = 0;
 
-            topLeft = new CellReference(rownum, 0);
+            topLeft = new CellReference(rownum + rowsAddedByHorizontalBand, 0);
             // no child bands - merge regions now
             if (band.getChildrenList().isEmpty()) {
                 copyMergeRegions(resultSheet, rangeName, rownum + rowsAddedByHorizontalBand,
@@ -333,6 +340,10 @@ public class XLSFormatter extends AbstractFormatter {
 
             areaDependencyManager.addDependency(new Area(band.getName(), Area.AreaAlign.HORIZONTAL, templateRange),
                     new Area(band.getName(), Area.AreaAlign.HORIZONTAL, resultRange));
+            bandsToResultRanges.put(band, new Range(resultSheet.getSheetName(),
+                    resultRange.getFirstCell().getCol() + 1, resultRange.getFirstCell().getRow() + 1,
+                    resultRange.getLastCell().getCol() + 1, resultRange.getLastCell().getRow() + 1
+            ));
         }
 
         for (BandData child : band.getChildrenList()) {
@@ -370,7 +381,11 @@ public class XLSFormatter extends AbstractFormatter {
 
             Bounds thisBounds = templateBounds.get(band.getName());
             Bounds parentBounds = templateBounds.get(band.getParentBand().getName());
-            int localRowNum = parentBounds != null ? rownum + (rowsAddedByHorizontalBand - 1) + thisBounds.row0 - parentBounds.row0 : rownum;
+            Range parentRange = bandsToResultRanges.get(band.getParentBand());
+
+            int localRowNum = parentBounds != null && parentRange != null ?
+                    parentRange.getFirstRow() - 1 + thisBounds.row0 - parentBounds.row0 :
+                    rownum;
 
             colnum = colnum == 0 ? getCellFromReference(crefs[0], templateSheet).getColumnIndex() : colnum;
             copyMergeRegions(resultSheet, rangeName, localRowNum, colnum);
@@ -410,6 +425,10 @@ public class XLSFormatter extends AbstractFormatter {
             AreaReference resultRange = new AreaReference(topLeft, bottomRight);
             areaDependencyManager.addDependency(new Area(band.getName(), Area.AreaAlign.VERTICAL, templateRange),
                     new Area(band.getName(), Area.AreaAlign.VERTICAL, resultRange));
+            bandsToResultRanges.put(band, new Range(resultSheet.getSheetName(),
+                    resultRange.getFirstCell().getCol() + 1, resultRange.getFirstCell().getRow() + 1,
+                    resultRange.getLastCell().getCol() + 1, resultRange.getLastCell().getRow() + 1
+            ));
         }
 
         //for first level vertical bands we should increase rownum by number of rows added by vertical band

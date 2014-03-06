@@ -20,8 +20,8 @@ sourceSets {
     }
 }
 
-//def artifactVersion = '1.0-SNAPSHOT'
-def artifactVersion = '1.0.16'
+def artifactVersion = '1.0-SNAPSHOT'
+//def artifactVersion = '1.0.17'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
@@ -97,10 +97,10 @@ dependencies {
     compile(group: "org.plutext", name: "jaxb-svg11", version: "1.0.2")
     compile(group: "org.plutext", name: "jaxb-xslfo", version: "1.0.1")
     compile(group: "org.plutext", name: "jaxb-xmldsig-core", version: "1.0.0")
-    compile(group: "batik", name: "batik-bridge", version: "1.5")
-    compile(group: "batik", name: "batik-svggen", version: "1.5")
-    compile(group: "batik", name: "batik-awt-util", version: "1.5")
-    compile(group: "batik", name: "batik-css", version: "1.5")
+    compile(group: "org.apache.xmlgraphics", name: "batik-bridge", version: "1.5")
+    compile(group: "org.apache.xmlgraphics", name: "batik-svggen", version: "1.5")
+    compile(group: "org.apache.xmlgraphics", name: "batik-awt-util", version: "1.5")
+    compile(group: "org.apache.xmlgraphics", name: "batik-css", version: "1.5")
     compile(group: "xalan", name: "xalan", version: "2.7.1")
     compile(group: "xalan", name: "serializer", version: "2.7.1")
     compile(group: "com.lowagie", name: "itext", version: "2.1.0") {

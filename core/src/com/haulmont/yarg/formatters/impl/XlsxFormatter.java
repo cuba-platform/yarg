@@ -28,6 +28,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
+import com.haulmont.yarg.formatters.impl.xls.*;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
@@ -49,6 +50,7 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
+import org.xlsx4j.sml.Cell;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -552,6 +554,13 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected List<Cell> copyCells(Range templateRange, BandData bandData, Row newRow, List<Cell> templateCells) {
         List<Cell> resultCells = new ArrayList<Cell>();
+
+        //if no template cells (xlsx doesn't store empty cells) - create at least 1, to help rendering
+        if (CollectionUtils.isEmpty(templateCells)) {
+            Cell newCell = createEmptyCell(templateRange, bandData, newRow);
+            resultCells.add(newCell);
+        }
+
         for (Cell templateCell : templateCells) {
             copyRowSettings((Row) templateCell.getParent(), newRow);
 
@@ -597,6 +606,22 @@ public class XlsxFormatter extends AbstractFormatter {
             }
         }
         return resultCells;
+    }
+
+    protected Cell createEmptyCell(Range templateRange, BandData bandData, Row newRow) {
+        Cell newCell =  Context.getsmlObjectFactory().createCell();
+        newRow.getC().add(newCell);
+        newCell.setParent(newRow);
+
+        CellReference newRef = new CellReference(templateRange.getSheet(), templateRange.getFirstColumn(), templateRange.getFirstRow());
+        newRef.move(newRow.getR().intValue(), newRef.getColumn());
+        if (bandData.getOrientation() == BandOrientation.VERTICAL) {
+            newRef.shift(0, previousRangesRightOffset);
+
+        }
+
+        newCell.setR(newRef.toReference());
+        return newCell;
     }
 
     protected void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {
