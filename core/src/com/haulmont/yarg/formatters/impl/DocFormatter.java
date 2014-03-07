@@ -264,7 +264,7 @@ public class DocFormatter extends AbstractFormatter {
                 if (band != null) {
                     insertValue(textRange.getText(), textRange, band, bandAndParameter.parameterName);
                 } else {
-                    throw wrapWithReportingException(String.format("No band for alias : [%s] found", alias));
+                    throw wrapWithReportingException(String.format("No band for alias [%s] found", alias));
                 }
             } catch (ReportingException e) {
                 throw e;

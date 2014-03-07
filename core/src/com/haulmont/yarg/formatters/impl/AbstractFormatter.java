@@ -210,10 +210,20 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected BandPathAndParameterName separateBandNameAndParameterName(String alias) {
-        String bandPathPart;
-        String paramNamePart;
-        bandPathPart = StringUtils.substringBeforeLast(alias, ".");
-        paramNamePart = StringUtils.substringAfterLast(alias, ".");
+        List<String> bandPathList = new ArrayList<String>();
+        String[] pathParts = alias.split("\\.");
+        BandData currentBand = rootBand;
+        for (String pathPart : pathParts) {
+            currentBand = currentBand.findBandRecursively(pathPart);
+            if (currentBand != null) {
+                bandPathList.add(pathPart);
+            } else {
+                break;
+            }
+        }
+
+        String bandPathPart = StringUtils.join(bandPathList, ".");
+        String paramNamePart = alias.replaceFirst(bandPathPart + ".", "");
 
         return new BandPathAndParameterName(bandPathPart, paramNamePart);
     }

@@ -61,6 +61,7 @@ public class FormattersSmokeTest {
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
         footerChild.addData("nestedData", "NESTED_DATA");
+        footerChild.addData("nestedData.withPoint", "NESTED_DATA_WITH_POINT");
         footer.addChild(footerChild);
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.docx");

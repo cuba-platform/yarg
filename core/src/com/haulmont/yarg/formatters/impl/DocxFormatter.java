@@ -184,7 +184,7 @@ public class DocxFormatter extends AbstractFormatter {
                 BandData band = findBandByPath(rootBand, bandAndParameter.bandPath);
 
                 if (band == null) {
-                    throw wrapWithReportingException("No band found for alias : " + alias);
+                    throw wrapWithReportingException(String.format("No band for alias [%s] found", alias));
                 }
 
                 String fullParameterName = band.getName() + "." + bandAndParameter.parameterName;
