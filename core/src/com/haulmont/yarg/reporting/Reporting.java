@@ -30,6 +30,8 @@ import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +49,8 @@ public class Reporting implements ReportingAPI {
     protected ReportLoaderFactory loaderFactory;
 
     protected DataExtractor dataExtractor;
+
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     public void setFormatterFactory(ReportFormatterFactory formatterFactory) {
         this.formatterFactory = formatterFactory;
@@ -82,6 +86,8 @@ public class Reporting implements ReportingAPI {
             Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" can not be null");
             Preconditions.checkNotNull(params, "\"params\" can not be null");
             Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
+
+            logReport("Started report [%s] with parameters [%s]", report, params);
 
             if (!(params instanceof HashMap) && !(params instanceof TreeMap)) {//just a workaround to check if map is mutable
                 params = new HashMap<String, Object>(params);//make sure map is mutable
@@ -120,11 +126,22 @@ public class Reporting implements ReportingAPI {
                 formatter.renderDocument();
             }
             String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
+
+            logReport("Finished report [%s] with parameters [%s]", report, params);
+
             return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
             e.setReportDetails(String.format(" Report name [%s]", report.getName()));
             throw e;
         }
+    }
+
+    protected void logReport(String caption, Report report, Map<String, Object> params) {
+        StringBuilder parametersString = new StringBuilder("\n");
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            parametersString.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
+        }
+        logger.info(String.format(caption, report.getName(), parametersString));
     }
 
     protected ReportOutputDocument createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName) {
