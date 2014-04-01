@@ -2,7 +2,7 @@
 
 <report name="report">
     <templates>
-        <template code="DEFAULT" documentName="invoice.docx" documentPath="./test/sample/invoice/invoice.docx" outputType="docx" outputNamePattern="invoice.docx"/>
+        <template code="DEFAULT" documentName="invoice.docx" documentPath="./test/sample/invoice/invoice.docx" outputType="pdf" outputNamePattern="invoice.pdf"/>
     </templates>
     <formats>
         <format name="Main.date" format="dd/MM/yyyy"/>
@@ -33,9 +33,9 @@
                     <query name="Main" type="groovy">
                         <script>
                             return [
-                                ['name':'Solar plasma', 'price' : 15000],
-                                ['name':'Flying tables', 'price' : 13000],
-                                ['name':'Black T-shirts', 'price' : 12000]
+                                ['name':'Java Concurrency in practice', 'price' : 15000],
+                                ['name':'Clear code', 'price' : 13000],
+                                ['name':'Scala in action', 'price' : 12000]
                             ]
                         </script>
                     </query>

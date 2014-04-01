@@ -64,9 +64,9 @@ public class InvoiceTest {
 
         bandBuilder = new BandBuilder();
         ReportBand items = bandBuilder.name("Items").query("Items", "return [\n" +
-                "                                ['name':'Solar plasma', 'price' : 15000],\n" +
-                "                                ['name':'Flying tables', 'price' : 13000],\n" +
-                "                                ['name':'Black T-shirts', 'price' : 12000]\n" +
+                "                                ['name':'Java Concurrency in practice', 'price' : 15000],\n" +
+                "                                ['name':'Clear code', 'price' : 13000],\n" +
+                "                                ['name':'Scala in action', 'price' : 12000]\n" +
                 "                            ]", "groovy").build();
 
         reportBuilder.band(main);
