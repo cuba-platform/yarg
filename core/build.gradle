@@ -111,7 +111,7 @@ dependencies {
     compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9')
     compile(group: 'commons-codec', name: 'commons-codec', version: '1.6')
     compile(group: 'com.haulmont.thirdparty', name: 'core-renderer', version: 'R8')
-    compile(group: "com.haulmont.thirdparty", name: "docx4j", version: "2.8.1.20130201")
+    compile(group: "org.docx4j", name: "docx4j", version: "3.0.1")
     compile(group: "com.jayway.jsonpath", name: "json-path", version: "0.9.1")
 
     testCompile(group: 'junit', name: 'junit', version: '4.5')
