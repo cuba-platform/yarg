@@ -22,9 +22,11 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.io.IOUtils;
+import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.SectionWrapper;
@@ -85,9 +87,12 @@ public class DocxFormatter extends AbstractFormatter {
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
-                org.docx4j.convert.out.pdf.PdfConversion c
-                        = new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordprocessingMLPackage);
-                c.output(outputStream, new PdfSettings());
+                Docx4J.toPDF(wordprocessingMLPackage,outputStream);
+                outputStream.flush();
+            } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
+                HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
+                htmlSettings.setWmlPackage(wordprocessingMLPackage);
+                Docx4J.toHTML(htmlSettings, outputStream, Docx4J.FLAG_NONE);
                 outputStream.flush();
             } else {
                 throw new UnsupportedOperationException(String.format("DocxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
