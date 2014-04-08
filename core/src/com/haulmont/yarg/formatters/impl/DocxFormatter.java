@@ -388,7 +388,7 @@ public class DocxFormatter extends AbstractFormatter {
                         protected void onFind(Text o, Matcher matcher) {
                             super.onFind(o, matcher);
                             currentTable.bandName = matcher.group(1);
-                            o.setValue("");
+                            o.setValue(matcher.replaceFirst(""));
                         }
                     });
         }
