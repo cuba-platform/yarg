@@ -27,7 +27,6 @@ import org.docx4j.TextUtils;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
-import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;

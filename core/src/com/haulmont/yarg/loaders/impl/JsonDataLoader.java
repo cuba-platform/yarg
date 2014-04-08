@@ -23,6 +23,7 @@ package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
+import com.haulmont.yarg.loaders.impl.json.JsonMap;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
 import com.jayway.jsonpath.JsonPath;
@@ -63,6 +64,8 @@ public class JsonDataLoader implements ReportDataLoader {
                 try {
                     Object scriptResult = JsonPath.read(json, script);
                     parseScriptResult(result, script, scriptResult);
+                } catch (com.jayway.jsonpath.PathNotFoundException e) {
+                    return Collections.emptyList();
                 } catch (Exception e) {
                     throw new DataLoadingException(
                             String.format("An error occurred while loading data with script [%s]", reportQuery.getScript()), e);
@@ -78,14 +81,14 @@ public class JsonDataLoader implements ReportDataLoader {
         return result;
     }
 
-    private void parseScriptResult(List<Map<String, Object>> result, String script, Object scriptResult) {
+    protected void parseScriptResult(List<Map<String, Object>> result, String script, Object scriptResult) {
         if (scriptResult instanceof List) {//JSONArray is also list
             List theList = (List) scriptResult;
             if (CollectionUtils.isNotEmpty(theList)) {
                 Object listObject = theList.get(0);
                 if (listObject instanceof JSONObject) {
                     for (Object object : theList) {
-                        result.add((JSONObject) object);
+                        result.add(createMap((JSONObject) object));
                     }
                 } else {
                     throw new DataLoadingException(
@@ -95,7 +98,7 @@ public class JsonDataLoader implements ReportDataLoader {
                 }
             }
         } else if (scriptResult instanceof JSONObject) {
-            result.add((JSONObject) scriptResult);
+            result.add(createMap((JSONObject) scriptResult));
         } else {
             throw new DataLoadingException(
                     String.format("The script collects neither object nor list of objects. " +
@@ -103,11 +106,15 @@ public class JsonDataLoader implements ReportDataLoader {
         }
     }
 
-    private String getParameterName(Matcher matcher) {
+    protected String getParameterName(Matcher matcher) {
         if (matcher.find()) {
             return matcher.group(1);
         }
 
         return null;
+    }
+
+    protected Map<String, Object> createMap(JSONObject jsonObject) {
+        return new JsonMap(jsonObject);
     }
 }

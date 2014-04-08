@@ -131,10 +131,21 @@ public class DataLoadersTest {
         params.put("param1", json);
 
         List<Map<String, Object>> maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
-        System.out.println(maps);
         Assert.assertEquals(2, maps.size());
 
         Map<String, Object> book1 = maps.get(0);
         Assert.assertEquals("Sayings of the Century", book1.get("title"));
+
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $", "json", null, null);
+        maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
+
+        Map<String, Object> map = maps.get(0);
+
+        Assert.assertEquals("red", map.get("store.bicycle.color"));
+
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $some.not.existing", "json", null, null);
+        maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
+        Assert.assertEquals(0, maps.size());
+
     }
 }
