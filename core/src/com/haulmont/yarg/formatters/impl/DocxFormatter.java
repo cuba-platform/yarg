@@ -86,7 +86,7 @@ public class DocxFormatter extends AbstractFormatter {
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
-                Docx4J.toPDF(wordprocessingMLPackage,outputStream);
+                Docx4J.toPDF(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
                 HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
@@ -137,7 +137,7 @@ public class DocxFormatter extends AbstractFormatter {
         protected void collectDataFromObjects(Object... objects) {
             for (Object object : objects) {
                 if (object != null) {
-                    AliasCollector collectAliasesCallback = new AliasCollector();
+                    TextVisitor collectAliasesCallback = new TextVisitor();
                     new TraversalUtil(object, collectAliasesCallback);
                     texts.addAll(collectAliasesCallback.textWrappers);
                 }
@@ -147,7 +147,7 @@ public class DocxFormatter extends AbstractFormatter {
         void collectData() {
             TableCollector collectTablesCallback = new TableCollector();
             new TraversalUtil(mainDocumentPart, collectTablesCallback);
-            AliasCollector collectAliasesCallback = new AliasCollector();
+            TextVisitor collectAliasesCallback = new TextVisitor();
             new TraversalUtil(mainDocumentPart, collectAliasesCallback);
             tables = collectTablesCallback.tableManagers;
             texts = collectAliasesCallback.textWrappers;
@@ -229,24 +229,27 @@ public class DocxFormatter extends AbstractFormatter {
         }
 
         public void fillRowFromBand(Tr row, final BandData band) {
-            new TraversalUtil(row, new TraversalUtil.CallbackImpl() {
+            new TraversalUtil(row, new AliasVisitor() {
                 @Override
-                public List<Object> apply(Object o) {
-                    if (o instanceof Text) {
-                        Text text = (Text) o;
-                        String sourceString = text.getValue();
-                        String resultString = insertBandDataToString(band, sourceString);
-                        text.setValue(resultString);
-                    }
-
-                    return null;
+                protected void handle(Text text) {
+                    String sourceString = text.getValue();
+                    String resultString = insertBandDataToString(band, sourceString);
+                    text.setValue(resultString);
                 }
             });
         }
     }
 
-    protected class AliasCollector extends TraversalUtil.CallbackImpl {
+    protected class TextVisitor extends AliasVisitor {
         protected Set<TextWrapper> textWrappers = new HashSet<TextWrapper>();
+
+        @Override
+        protected void handle(Text text) {
+            textWrappers.add(new TextWrapper(text));
+        }
+    }
+
+    protected abstract class AliasVisitor extends TraversalUtil.CallbackImpl {
         protected R mergeRun = null;
         protected boolean doMerge = false;
         protected List<Text> textsToRemove = new ArrayList<Text>();
@@ -264,12 +267,14 @@ public class DocxFormatter extends AbstractFormatter {
                     textsToRemove.add(text);
 
                     if (textValue.contains("}") && !textValue.contains("${")) {
-                        textWrappers.add(new TextWrapper(mergeRunText));
+                        //textWrappers.add(new TextWrapper(mergeRunText));
+                        handle(mergeRunText);
                         mergeRun = null;
                     }
                 } else if (UNIVERSAL_ALIAS_PATTERN.matcher(textValue).find()
                         && countMatches(textValue, "${") == countMatches(textValue, "}")) {//no need to merge - fragment is appropriate text to inline band data
-                    textWrappers.add(new TextWrapper(text));
+                    //textWrappers.add(new TextWrapper(text));
+                    handle(text);
                 } else if (textValue.contains("${") && mergeRun == null) {//need to start merge
                     mergeRun = currentRun;
                 }
@@ -277,6 +282,8 @@ public class DocxFormatter extends AbstractFormatter {
 
             return null;
         }
+
+        protected abstract void handle(Text text);
 
         protected Text getFirstText(R run) {
             for (Object object : run.getContent()) {
