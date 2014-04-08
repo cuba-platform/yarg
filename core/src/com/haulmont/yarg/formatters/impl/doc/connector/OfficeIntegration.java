@@ -61,6 +61,7 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
             Callable<Void> task = new Callable<Void>() {
                 @Override
                 public Void call() throws java.lang.Exception {
+                    connection.open();
                     officeTask.processTaskInOpenOffice(connection.getOOResourceProvider());
                     connection.close();
                     return null;

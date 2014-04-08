@@ -30,12 +30,19 @@ public class OfficeConnection {
     protected OfficeResourceProvider officeResourceProvider;
 
     public OfficeConnection(String openOfficePath, Integer port, ProcessManager processManager, OfficeIntegration connector) {
+        this.port = port;
+        this.connector = connector;
+        this.oooServer = new OOServer(openOfficePath, OOServer.getDefaultOOoOptions(), "localhost", port, processManager);
+        this.bsc = new BootstrapSocketConnector(oooServer);
+        this.openOfficePath = openOfficePath;
+    }
+
+    public OfficeResourceProvider getOOResourceProvider() {
+        return officeResourceProvider;
+    }
+
+    public void open() throws OpenOfficeException {
         try {
-            this.port = port;
-            this.connector = connector;
-            this.oooServer = new OOServer(openOfficePath, OOServer.getDefaultOOoOptions(), "localhost", port, processManager);
-            this.bsc = new BootstrapSocketConnector(oooServer);
-            this.openOfficePath = openOfficePath;
             this.xComponentContext = bsc.connect("localhost", port);
             this.officeResourceProvider = new OfficeResourceProvider(xComponentContext);
         } catch (Exception e) {
@@ -43,10 +50,6 @@ public class OfficeConnection {
         } catch (BootstrapException e) {
             throw new OpenOfficeException("Unable to start Open office instance.", e);
         }
-    }
-
-    public OfficeResourceProvider getOOResourceProvider() {
-        return officeResourceProvider;
     }
 
     public void close() {
