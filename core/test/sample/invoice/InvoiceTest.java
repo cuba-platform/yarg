@@ -36,7 +36,7 @@ public class InvoiceTest {
         reporting.setFormatterFactory(new DefaultFormatterFactory());
         reporting.setLoaderFactory(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl())));
 
-        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/sample/invoice.docx"));
+        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/sample/invoice.pdf"));
     }
 
 
