@@ -179,7 +179,7 @@ public class ConsoleRunner {
             OfficeIntegration officeIntegration = new OfficeIntegration(openOfficePath, ports);
             formatterFactory.setOfficeIntegration(officeIntegration);
 
-            String openOfficeTimeout = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_DISPLAY_DEVICE_AVAILABLE);
+            String openOfficeTimeout = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_TIMEOUT);
             if (StringUtils.isNotBlank(openOfficeTimeout)) {
                 officeIntegration.setTimeoutInSeconds(Integer.valueOf(openOfficeTimeout));
             }

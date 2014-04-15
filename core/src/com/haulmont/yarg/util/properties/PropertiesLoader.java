@@ -30,6 +30,7 @@ public interface PropertiesLoader {
     String CUBA_REPORTING_OPENOFFICE_PATH = "cuba.reporting.openoffice.path";
     String CUBA_REPORTING_OPENOFFICE_PORTS = "cuba.reporting.openoffice.ports";
     String CUBA_REPORTING_OPENOFFICE_DISPLAY_DEVICE_AVAILABLE = "cuba.reporting.openoffice.displayDeviceAvailable";
+    String CUBA_REPORTING_OPENOFFICE_TIMEOUT = "cuba.reporting.openoffice.timeout";
 
     Properties load() throws IOException;
 }
