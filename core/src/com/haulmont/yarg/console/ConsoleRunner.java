@@ -169,7 +169,7 @@ public class ConsoleRunner {
         String openOfficePath = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PATH);
         String openOfficePorts = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PORTS);
         if (StringUtils.isNotBlank(openOfficePath) && StringUtils.isNotBlank(openOfficePorts)) {
-            String[] portsStr = openOfficePorts.split(",");
+            String[] portsStr = openOfficePorts.split("[,|]");
             Integer[] ports = new Integer[portsStr.length];
             for (int i = 0, portsStrLength = portsStr.length; i < portsStrLength; i++) {
                 String str = portsStr[i];
