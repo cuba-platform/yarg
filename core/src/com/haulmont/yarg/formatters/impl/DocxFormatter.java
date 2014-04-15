@@ -207,6 +207,7 @@ public class DocxFormatter extends AbstractFormatter {
                 }
 
                 text.setValue(inlineParameterValue(text.getValue(), alias, formatValue(paramValue, bandAndParameter.parameterName, fullParameterName, stringFunction)));
+                text.setSpace("preserve");
             }
         }
     }
@@ -235,6 +236,7 @@ public class DocxFormatter extends AbstractFormatter {
                     String sourceString = text.getValue();
                     String resultString = insertBandDataToString(band, sourceString);
                     text.setValue(resultString);
+                    text.setSpace("preserve");
                 }
             });
         }

@@ -186,9 +186,9 @@ public abstract class AbstractInliner implements ContentInliner {
                 BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, image.imageContent);
                 Inline inline = imagePart.createImageInline("", "", docxUniqueId1++, docxUniqueId2++, false);
                 ImageSize oldSize = imagePart.getImageInfo().getSize();
-                double widhtExtent = (double) image.width / oldSize.getWidthPx();
+                double widthExtent = (double) image.width / oldSize.getWidthPx();
                 double heightExtent = (double) image.height / oldSize.getHeightPx();
-                inline.getExtent().setCx((long) (inline.getExtent().getCx() * widhtExtent));
+                inline.getExtent().setCx((long) (inline.getExtent().getCx() * widthExtent));
                 inline.getExtent().setCy((long) (inline.getExtent().getCy() * heightExtent));
                 org.docx4j.wml.Drawing drawing = new org.docx4j.wml.ObjectFactory().createDrawing();
                 R run = (R) text.getParent();

@@ -129,6 +129,8 @@ public abstract class AbstractFormatter implements ReportFormatter {
                 } else if (value instanceof Date) {
                     SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
                     valueString = dateFormat.format(value);
+                } else if (value instanceof String) {
+                    valueString = String.format(formatString, value);
                 } else {
                     valueString = value.toString();
                 }

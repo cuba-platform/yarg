@@ -386,6 +386,7 @@ public class FormattersSmokeTest {
 
     private BandData createRootBand(List<BandData> bands) {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.param1", "%16s")));
         HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
