@@ -91,6 +91,7 @@ public class ConsoleRunner {
                     .templateCode(templateCode)
                     .params(params),
                     new FileOutputStream(cmd.getOptionValue(OUTPUT_PATH)));
+            System.exit(0);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);

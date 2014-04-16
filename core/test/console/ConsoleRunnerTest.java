@@ -30,7 +30,7 @@ public class ConsoleRunnerTest {
     public void testConsoleReport() throws Exception {
         ConsoleRunner.main(new String[]{
                 "-" + ConsoleRunner.REPORT_PATH, "./test/console/console.xml",
-                "-" + ConsoleRunner.OUTPUT_PATH, "./result/console/console.xls",
+                "-" + ConsoleRunner.OUTPUT_PATH, "./result/console/console.pdf",
                 "-Pparam1=param1",
                 "-Pparam2=12/12/12 12:12",
                 "-Pparam3=10",
