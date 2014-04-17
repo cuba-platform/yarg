@@ -61,6 +61,7 @@ public class ConsoleRunner {
     public static final String REPORT_PARAMETER = "P";
     public static final String DEFAULT_DATE_FORMAT_STR = "dd/MM/yyyy hh:mm";
     public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DEFAULT_DATE_FORMAT_STR);
+    public static volatile boolean doExitWhenFinished = true;
 
     public static void main(String[] args) {
         Options options = createOptions();
@@ -91,10 +92,14 @@ public class ConsoleRunner {
                     .templateCode(templateCode)
                     .params(params),
                     new FileOutputStream(cmd.getOptionValue(OUTPUT_PATH)));
-            System.exit(0);
+            if (doExitWhenFinished) {
+                System.exit(0);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(-1);
+            if (doExitWhenFinished) {
+                System.exit(-1);
+            }
         }
     }
 

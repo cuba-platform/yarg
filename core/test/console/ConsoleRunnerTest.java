@@ -22,12 +22,12 @@
 package console;
 
 import com.haulmont.yarg.console.ConsoleRunner;
-import com.haulmont.yarg.exception.ReportingException;
 import org.junit.Test;
 
 public class ConsoleRunnerTest {
     @Test
     public void testConsoleReport() throws Exception {
+        ConsoleRunner.doExitWhenFinished = false;
         ConsoleRunner.main(new String[]{
                 "-" + ConsoleRunner.REPORT_PATH, "./test/console/console.xml",
                 "-" + ConsoleRunner.OUTPUT_PATH, "./result/console/console.pdf",
