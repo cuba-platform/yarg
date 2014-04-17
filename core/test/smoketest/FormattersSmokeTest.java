@@ -292,6 +292,95 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testHtml2() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        rootData.put("param1", "AAAAAA");
+        root.setData(rootData);
+
+        class StrangeMap implements Map {
+            Random random = new Random();
+
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
+
+            @Override
+            public boolean containsKey(Object key) {
+                return false;
+            }
+
+            @Override
+            public boolean containsValue(Object value) {
+                return false;
+            }
+
+            @Override
+            public Object get(Object key) {
+                return random.nextInt();
+            }
+
+            @Override
+            public Object put(Object key, Object value) {
+                return null;
+            }
+
+            @Override
+            public Object remove(Object key) {
+                return null;
+            }
+
+            @Override
+            public void putAll(Map m) {
+
+            }
+
+            @Override
+            public void clear() {
+
+            }
+
+            @Override
+            public Set keySet() {
+                return null;
+            }
+
+            @Override
+            public Collection values() {
+                return null;
+            }
+
+            @Override
+            public Set<Entry> entrySet() {
+                return null;
+            }
+        }
+
+        BandData band11 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band11.setData(new StrangeMap());
+
+        BandData band12 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band12.setData(new StrangeMap());
+
+        root.addChild(band11);
+        root.addChild(band12);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.html");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
+                new ReportTemplateImpl("", "test.ftl", "./test/smoketest/test.ftl", ReportOutputType.html), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDocxWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<String, Object>();
@@ -401,6 +490,7 @@ public class FormattersSmokeTest {
         datamap.put("col1", 111);
         datamap.put("col2", 222);
         datamap.put("col3", 333);
+        datamap.put("col.nestedCol", "NESTED0");
         datamap.put("cwidth", 10000);
         band1_1.setData(datamap);
 

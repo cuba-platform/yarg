@@ -22,6 +22,9 @@
                     <td>
                         ${row.fields.col2}
                     </td>
+                    <td>
+                        ${row.fields('col.nestedCol')}
+                    </td>
                 </tr>
             </#list>
             </tbody>

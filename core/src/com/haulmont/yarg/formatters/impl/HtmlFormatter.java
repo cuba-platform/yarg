@@ -21,9 +21,9 @@ import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
 import freemarker.cache.StringTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.ext.beans.MapModel;
+import freemarker.template.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -139,6 +139,15 @@ public class HtmlFormatter extends AbstractFormatter {
             fmConfiguration.setDefaultEncoding("UTF-8");
 
             Template htmlTemplate = fmConfiguration.getTemplate(reportTemplate.getDocumentName());
+            htmlTemplate.setObjectWrapper(new DefaultObjectWrapper() {
+                @Override
+                public TemplateModel wrap(Object obj) throws TemplateModelException {
+                    if (obj instanceof Map) {
+                        return new MapModel((Map) obj, BeansWrapper.getDefaultInstance());
+                    }
+                    return super.wrap(obj);
+                }
+            });
             return htmlTemplate;
         } catch (Exception e) {
             throw wrapWithReportingException("An error occurred while creating freemarker template", e);
