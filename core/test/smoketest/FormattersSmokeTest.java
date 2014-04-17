@@ -408,6 +408,7 @@ public class FormattersSmokeTest {
         datamap2.put("col1", 444);
         datamap2.put("col2", 555);
         datamap2.put("col3", 666);
+        datamap2.put("col.nestedCol", "NESTED1");
         datamap2.put("cwidth", 10000);
         band1_2.setData(datamap2);
 
@@ -415,6 +416,7 @@ public class FormattersSmokeTest {
         datamap3.put("col1", 777);
         datamap3.put("col2", 888);
         datamap3.put("col3", 999);
+        datamap3.put("col.nestedCol", "NESTED2");
         datamap3.put("cwidth", 10000);
         band1_3.setData(datamap3);
 

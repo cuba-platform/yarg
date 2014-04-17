@@ -178,7 +178,7 @@ public class DocxFormatter extends AbstractFormatter {
                 BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
 
                 if (isBlank(bandAndParameter.bandPath) || isBlank(bandAndParameter.parameterName)) {
-                    if (alias.matches("[A-z0-9_]+?")) {//skip aliases in tables
+                    if (alias.matches("[A-z0-9_\\.]+?")) {//skip aliases in tables
                         continue;
                     }
 

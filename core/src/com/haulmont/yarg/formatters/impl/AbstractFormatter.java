@@ -224,10 +224,13 @@ public abstract class AbstractFormatter implements ReportFormatter {
             }
         }
 
-        String bandPathPart = StringUtils.join(bandPathList, ".");
-        String paramNamePart = alias.replaceFirst(bandPathPart + ".", "");
-
-        return new BandPathAndParameterName(bandPathPart, paramNamePart);
+        if (bandPathList.isEmpty()) {
+            return new BandPathAndParameterName("", alias);
+        } else {
+            String bandPathPart = StringUtils.join(bandPathList, ".");
+            String paramNamePart = alias.replaceFirst(bandPathPart + ".", "");
+            return new BandPathAndParameterName(bandPathPart, paramNamePart);
+        }
     }
 
     protected ReportFormattingException wrapWithReportingException(String message, Exception e) {
