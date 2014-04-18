@@ -39,12 +39,15 @@ import java.util.Map;
  * Document formatter for '.html' and '.ftl' file types
  */
 public class HtmlFormatter extends AbstractFormatter {
+    protected BeansWrapper beansWrapper = new BeansWrapper();
+
     public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
         supportedOutputTypes.add(ReportOutputType.custom);
         supportedOutputTypes.add(ReportOutputType.csv);
         supportedOutputTypes.add(ReportOutputType.html);
         supportedOutputTypes.add(ReportOutputType.pdf);
+        beansWrapper.setNullModel(TemplateScalarModel.EMPTY_STRING);
     }
 
     @Override
@@ -143,7 +146,7 @@ public class HtmlFormatter extends AbstractFormatter {
                 @Override
                 public TemplateModel wrap(Object obj) throws TemplateModelException {
                     if (obj instanceof Map) {
-                        return new MapModel((Map) obj, BeansWrapper.getDefaultInstance());
+                        return new MapModel((Map) obj, beansWrapper);
                     }
                     return super.wrap(obj);
                 }
