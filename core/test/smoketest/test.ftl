@@ -25,6 +25,9 @@
                     <td>
                         ${row.fields('col.nestedCol')}
                     </td>
+                    <td>
+                        ${row.fields('col.nestedBool')?string!}
+                    </td>
                 </tr>
             </#list>
             </tbody>
