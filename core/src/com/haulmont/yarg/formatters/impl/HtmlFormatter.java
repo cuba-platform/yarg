@@ -40,6 +40,7 @@ import java.util.Map;
  */
 public class HtmlFormatter extends AbstractFormatter {
     protected BeansWrapper beansWrapper = new BeansWrapper();
+    protected ObjectWrapper objectWrapper;
 
     public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -48,6 +49,16 @@ public class HtmlFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.html);
         supportedOutputTypes.add(ReportOutputType.pdf);
         beansWrapper.setNullModel(TemplateScalarModel.EMPTY_STRING);
+
+        objectWrapper = new DefaultObjectWrapper() {
+            @Override
+            public TemplateModel wrap(Object obj) throws TemplateModelException {
+                if (obj instanceof Map) {
+                    return new MapModel((Map) obj, beansWrapper);
+                }
+                return super.wrap(obj);
+            }
+        };
     }
 
     @Override
@@ -142,15 +153,7 @@ public class HtmlFormatter extends AbstractFormatter {
             fmConfiguration.setDefaultEncoding("UTF-8");
 
             Template htmlTemplate = fmConfiguration.getTemplate(reportTemplate.getDocumentName());
-            htmlTemplate.setObjectWrapper(new DefaultObjectWrapper() {
-                @Override
-                public TemplateModel wrap(Object obj) throws TemplateModelException {
-                    if (obj instanceof Map) {
-                        return new MapModel((Map) obj, beansWrapper);
-                    }
-                    return super.wrap(obj);
-                }
-            });
+            htmlTemplate.setObjectWrapper(objectWrapper);
             return htmlTemplate;
         } catch (Exception e) {
             throw wrapWithReportingException("An error occurred while creating freemarker template", e);
