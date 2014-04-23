@@ -17,6 +17,8 @@
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,14 +65,14 @@ public class LinuxProcessManager extends JavaProcessManager implements ProcessMa
         log.info("Linux office process manager is going to kill following processes " + pids);
         for (Long pid : pids) {
             try {
-                if (pid > 0) {
+                if (PID_UNKNOWN != pid) {
                     execute("/bin/kill", "-KILL", Long.toString(pid));
                 } else {
-                    log.warn("Fail to kill open office process with platform dependend manager - PID not found.");
+                    log.warn("Fail to kill open office process with platform dependent manager - PID not found.");
                     super.kill(process, Collections.singletonList(pid));
                 }
             } catch (Exception e) {
-                log.error(String.format("An error occured while killing process %d in linux system. Process.destroy() will be called.", pid), e);
+                log.error(String.format("An error occurred while killing process %d in linux system. Process.destroy() will be called.", pid), e);
                 super.kill(process, Collections.singletonList(pid));
             }
         }

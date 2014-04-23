@@ -101,6 +101,8 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             String andLastRgxp = expressionRgxp + andRegexp;
             String orLastRgxp = expressionRgxp + orRegexp;
 
+            String boundsRegexp = "\\[\\[.+?" + paramNameRegexp + ".+?\\]\\]";
+
             if (paramValue == null && reportParams != null && reportParams.containsKey(paramName)) {//if value == null && this is user parameter - remove condition from query
                 paramsToRemoveFromQuery.put("(?i)" + andFirstRgxp, " and 1=1 ");
                 paramsToRemoveFromQuery.put("(?i)" + andLastRgxp, " 1=1 and ");
@@ -108,6 +110,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
                 paramsToRemoveFromQuery.put("(?i)" + orLastRgxp, " 1=0 or ");
 
                 paramsToRemoveFromQuery.put("(?i)" + expressionRgxp, " 1=1 ");
+                paramsToRemoveFromQuery.put("(?i)" + boundsRegexp, " ");
             } else if (query.contains(alias)) {//otherwise - create parameter and save each entry's position
                 Pattern pattern = Pattern.compile(paramNameRegexp);
                 Matcher replaceMatcher = pattern.matcher(query);
@@ -124,6 +127,8 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         for (Map.Entry<String, String> entry : paramsToRemoveFromQuery.entrySet()) {
             query = query.replaceAll(entry.getKey(), entry.getValue());
         }
+        query = query.replaceAll("\\[\\[", "");
+        query = query.replaceAll("\\]\\]", "");
 
         // Sort params by position
         Collections.sort(queryParameters, new Comparator<QueryParameter>() {

@@ -34,15 +34,14 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
  * @author subbotin
  * @version $Id$
  */
-public class WinProcessManager implements ProcessManager {
-    protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
+public class WinProcessManager extends JavaProcessManager implements ProcessManager {
+    protected static final Logger log = LoggerFactory.getLogger(WinProcessManager.class);
 
     protected static final String KILL_COMMAND = "taskkill /f /PID %s";
     protected static final String FIND_PID_COMMAND = "cmd /c netstat -a -n -o -p TCP|findstr \"%s\"";
     protected static final Pattern NETSTAT_PATTERN =
             Pattern.compile("^.*?(\\d+\\.\\d+\\.\\d+\\.\\d+)[\\.\\:](\\d+)\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)[\\.\\:](\\d+)\\s+\\w+\\s+(\\d+)");
     protected static final String LOCAL_HOST = "127.0.0.1";
-
 
 
     protected static class NetStatInfo {
@@ -86,18 +85,19 @@ public class WinProcessManager implements ProcessManager {
 
     @Override
     public void kill(Process process, List<Long> pids) {
+        log.info("Windows office process manager is going to kill following processes " + pids);
         for (Long pid : pids) {
-            if (PID_UNKNOWN == pid) {
-                if (process != null) {
-                    process.destroy();
-                }
-            } else {
-                String command = String.format(KILL_COMMAND, pid);
-                try {
+            try {
+                if (PID_UNKNOWN != pid) {
+                    String command = String.format(KILL_COMMAND, pid);
                     Runtime.getRuntime().exec(command);
-                } catch (IOException e) {
-                    log.warn(String.format("Unable to kill OO process id=%s", pid), e);
+                } else {
+                    log.warn("Fail to kill open office process with platform dependent manager - PID not found.");
+                    super.kill(process, Collections.singletonList(pid));
                 }
+            } catch (IOException e) {
+                log.error(String.format("An error occurred while killing process %d in windows system. Process.destroy() will be called.", pid), e);
+                super.kill(process, Collections.singletonList(pid));
             }
         }
     }

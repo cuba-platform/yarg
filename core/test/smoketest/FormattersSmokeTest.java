@@ -10,6 +10,7 @@ import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
+import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author degtyarjov
@@ -25,6 +27,8 @@ import java.util.*;
  */
 
 public class FormattersSmokeTest {
+    public static final String OPEN_OFFICE_PATH = "C:\\Program Files (x86)\\OpenOffice.org 3\\program";
+
     @Test
     public void testXlsFormatter() throws Exception {
         BandData root = createRootBand();
@@ -46,7 +50,7 @@ public class FormattersSmokeTest {
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.pdf");
 
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.xls", "./test/smoketest/test.xls", ReportOutputType.pdf), outputStream));
 
@@ -138,7 +142,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.odt", "./test/smoketest/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
@@ -156,13 +160,94 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
     }
+
+    @Test
+    public void testParallelDoc() throws Exception {
+        final CountDownLatch countDownLatch = new CountDownLatch(3);
+        final DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        final OfficeIntegration officeIntegrationAPI = new OfficeIntegration(OPEN_OFFICE_PATH, 8100, 8101, 8102);
+        officeIntegrationAPI.setTimeoutInSeconds(10);
+        defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    BandData root = createRootBand();
+                    BandData footer = root.getChildByName("Footer");
+                    BandData footerChild = new BandData("FooterChild", footer);
+                    footerChild.addData("nestedData", "NESTED_DATA");
+                    footer.addChild(footerChild);
+                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel1.doc");
+                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
+                    formatter.renderDocument();
+
+                    IOUtils.closeQuietly(outputStream);
+                } catch (IOException e) {
+                    Assert.fail();
+                } finally {
+                    countDownLatch.countDown();
+                }
+            }
+        }.start();
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    BandData root = createRootBand();
+                    BandData footer = root.getChildByName("Footer");
+                    BandData footerChild = new BandData("FooterChild", footer);
+                    footerChild.addData("nestedData", "NESTED_DATA");
+                    footer.addChild(footerChild);
+
+                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel2.doc");
+                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
+                    formatter.renderDocument();
+
+                    IOUtils.closeQuietly(outputStream);
+                } catch (IOException e) {
+                    Assert.fail();
+                } finally {
+                    countDownLatch.countDown();
+                }
+            }
+        }.start();
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    BandData root = createRootBand();
+                    BandData footer = root.getChildByName("Footer");
+                    BandData footerChild = new BandData("FooterChild", footer);
+                    footerChild.addData("nestedData", "NESTED_DATA");
+                    footer.addChild(footerChild);
+
+                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel3.doc");
+                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
+                    formatter.renderDocument();
+
+                    IOUtils.closeQuietly(outputStream);
+                } catch (IOException e) {
+                    Assert.fail();
+                } finally {
+                    countDownLatch.countDown();
+                }
+            }
+        }.start();
+        countDownLatch.await();
+    }
+
 
     @Test
     public void testXlsx() throws Exception {
@@ -461,7 +546,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/colontitules.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration("C:\\Program Files (x86)\\OpenOffice.org 3\\program", 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl("", "./test/smoketest/colontitules.odt", "./test/smoketest/colontitules.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
