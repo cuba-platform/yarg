@@ -137,9 +137,9 @@ public class Reporting implements ReportingAPI {
     }
 
     protected void logReport(String caption, Report report, Map<String, Object> params) {
-        StringBuilder parametersString = new StringBuilder("\n");
+        StringBuilder parametersString = new StringBuilder();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
-            parametersString.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
+            parametersString.append("\n").append(entry.getKey()).append(":").append(entry.getValue());
         }
         logger.info(String.format(caption, report.getName(), parametersString));
     }
