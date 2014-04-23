@@ -28,7 +28,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.xls.*;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
@@ -38,6 +38,7 @@ import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.*;
 import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
@@ -50,12 +51,15 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
-import org.xlsx4j.sml.Cell;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
+    protected PdfConverterAPI pdfConverter;
     protected Document template;
     protected Document result;
 
@@ -75,6 +79,10 @@ public class XlsxFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.xlsx);
     }
 
+    public void setPdfConverter(PdfConverterAPI pdfConverter) {
+        this.pdfConverter = pdfConverter;
+    }
+
     @Override
     public void renderDocument() {
         init();
@@ -91,22 +99,41 @@ public class XlsxFormatter extends AbstractFormatter {
         updateCharts();
         updateFormulas();
 
+        saveAndClose();
+    }
+
+    protected void saveAndClose() {
         try {
-            SaveToZipFile saver = new SaveToZipFile(result.getPackage());
-            saver.save(outputStream);
+            if (ReportOutputType.xlsx.equals(reportTemplate.getOutputType())) {
+                writeToOutputStream(result.getPackage(), outputStream);
+                outputStream.flush();
+            } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
+                if (pdfConverter != null) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    writeToOutputStream(result.getPackage(), bos);
+                    pdfConverter.convertToPdf(PdfConverterAPI.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
+                    outputStream.flush();
+                } else {
+                    throw new UnsupportedOperationException(
+                            String.format(
+                                    "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
+                                            "Please setup Libre/Open office connection details."));
+                }
+            } else {
+                throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
+            }
         } catch (Docx4JException e) {
-            throw wrapWithReportingException("An error occurred during save result document", e);
+            throw wrapWithReportingException("An error occurred while saving result report", e);
+        } catch (IOException e) {
+            throw wrapWithReportingException("An error occurred while saving result report to PDF", e);
+        } finally {
+            IOUtils.closeQuietly(outputStream);
         }
     }
 
     protected void init() {
         try {
             template = Document.create((SpreadsheetMLPackage) SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
-
-//            SpreadsheetMLPackage pkg = SpreadsheetMLPackage.createPackage();
-//            WorksheetPart sheet = pkg.createWorksheetPart(new PartName("/sheet1.xml"), "data", 1);
-
-//            result = create(pkg);
             result = Document.create((SpreadsheetMLPackage) SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
             result.getWorkbook().getCalcPr().setCalcMode(STCalcMode.AUTO);
             result.getWorkbook().getCalcPr().setFullCalcOnLoad(true);
@@ -609,7 +636,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected Cell createEmptyCell(Range templateRange, BandData bandData, Row newRow) {
-        Cell newCell =  Context.getsmlObjectFactory().createCell();
+        Cell newCell = Context.getsmlObjectFactory().createCell();
         newRow.getC().add(newCell);
         newCell.setParent(newRow);
 
@@ -709,6 +736,11 @@ public class XlsxFormatter extends AbstractFormatter {
         }
 
         return null;
+    }
+
+    protected void writeToOutputStream(SpreadsheetMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
+        SaveToZipFile saver = new SaveToZipFile(mlPackage);
+        saver.save(outputStream);
     }
 
     protected static class Offset {

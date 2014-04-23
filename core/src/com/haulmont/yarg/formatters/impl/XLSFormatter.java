@@ -25,7 +25,7 @@ import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.Area;
 import com.haulmont.yarg.formatters.impl.xls.AreaDependencyManager;
 import com.haulmont.yarg.formatters.impl.xls.Cell;
-import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.yarg.formatters.impl.xls.hints.*;
@@ -91,7 +91,7 @@ public class XLSFormatter extends AbstractFormatter {
     protected Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<HSSFSheet, HSSFPatriarch>();
     protected List<XlsHint> hints = new ArrayList<XlsHint>();
 
-    protected XlsToPdfConverterAPI xlsToPdfConverter;
+    protected PdfConverterAPI pdfConverter;
 
     protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
@@ -106,8 +106,8 @@ public class XLSFormatter extends AbstractFormatter {
         hints.add(new CustomWidthHint());
     }
 
-    public void setXlsToPdfConverter(XlsToPdfConverterAPI xlsToPdfConverter) {
-        this.xlsToPdfConverter = xlsToPdfConverter;
+    public void setPdfConverter(PdfConverterAPI pdfConverter) {
+        this.pdfConverter = pdfConverter;
     }
 
     @Override
@@ -168,11 +168,11 @@ public class XLSFormatter extends AbstractFormatter {
                 throw wrapWithReportingException("An error occurred while writing result to file.", e);
             }
         } else if (ReportOutputType.pdf.equals(outputType)) {
-            if (xlsToPdfConverter != null) {
+            if (pdfConverter != null) {
                 try {
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     resultWorkbook.write(stream);
-                    xlsToPdfConverter.convertXlsToPdf(stream.toByteArray(), outputStream);
+                    pdfConverter.convertToPdf(PdfConverterAPI.FileType.SPREADSHEET, stream.toByteArray(), outputStream);
                 } catch (IOException e) {
                     throw wrapWithReportingException("An error occurred while converting xls to pdf.", e);
                 }

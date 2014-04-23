@@ -18,6 +18,7 @@ package com.haulmont.yarg.formatters.impl;
 
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -36,6 +37,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.*;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -51,11 +53,16 @@ import static org.apache.commons.lang.StringUtils.*;
 public class DocxFormatter extends AbstractFormatter {
     protected WordprocessingMLPackage wordprocessingMLPackage;
     protected DocumentWrapper documentWrapper;
+    protected PdfConverterAPI pdfConverter;
 
     public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
         supportedOutputTypes.add(ReportOutputType.docx);
         supportedOutputTypes.add(ReportOutputType.pdf);
+    }
+
+    public void setPdfConverter(PdfConverterAPI pdfConverter) {
+        this.pdfConverter = pdfConverter;
     }
 
     @Override
@@ -86,8 +93,15 @@ public class DocxFormatter extends AbstractFormatter {
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
-                Docx4J.toPDF(wordprocessingMLPackage, outputStream);
-                outputStream.flush();
+                if (pdfConverter != null) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    writeToOutputStream(wordprocessingMLPackage, bos);
+                    pdfConverter.convertToPdf(PdfConverterAPI.FileType.DOCUMENT, bos.toByteArray(), outputStream);
+                    outputStream.flush();
+                } else {
+                    Docx4J.toPDF(wordprocessingMLPackage, outputStream);
+                    outputStream.flush();
+                }
             } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
                 HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
                 htmlSettings.setWmlPackage(wordprocessingMLPackage);

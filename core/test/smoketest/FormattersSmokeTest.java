@@ -85,7 +85,9 @@ public class FormattersSmokeTest {
         footer.addChild(footerChild);
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_docx.pdf");
-        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("docx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.docx", "./test/smoketest/test.docx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
 
@@ -278,6 +280,42 @@ public class FormattersSmokeTest {
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xlsx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.xlsx", "./test/smoketest/test.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testXlsxToPdf() throws Exception {
+        BandData root = createRootBand();
+
+        BandData band3_1 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_1.addData("col1", 123);
+        band3_1.addData("col2", 321);
+        BandData band3_2 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_2.addData("col1", 456);
+        band3_2.addData("col2", 654);
+        BandData band3_3 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_3.addData("col1", 789);
+        band3_3.addData("col2", 987);
+        BandData second = new BandData("Second", root, BandOrientation.HORIZONTAL);
+
+
+        root.addChild(band3_1);
+        root.addChild(band3_2);
+        root.addChild(band3_3);
+        root.addChild(second);
+
+        BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
+        split.setData(new HashMap<String, Object>());
+        split.addData("image", FileUtils.readFileToByteArray(new File("./test/yarg.png")));
+        root.addChild(split);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_xlsx.pdf");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./test/smoketest/test.xlsx", "./test/smoketest/test.xlsx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

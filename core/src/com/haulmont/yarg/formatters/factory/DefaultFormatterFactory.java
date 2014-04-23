@@ -25,8 +25,8 @@ import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
-import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverter;
-import com.haulmont.yarg.formatters.impl.xls.XlsToPdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 
@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected OfficeIntegrationAPI officeIntegration;
-    protected XlsToPdfConverterAPI xlsToPdfConverter;
+    protected PdfConverterAPI pdfConverter;
     protected DefaultFormatProvider defaultFormatProvider;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
@@ -46,7 +46,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             @Override
             public ReportFormatter create(FormatterFactoryInput factoryInput) {
                 XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
-                xlsFormatter.setXlsToPdfConverter(xlsToPdfConverter);
+                xlsFormatter.setPdfConverter(pdfConverter);
                 xlsFormatter.setDefaultFormatProvider(defaultFormatProvider);
                 return xlsFormatter;
             }
@@ -80,6 +80,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             public ReportFormatter create(FormatterFactoryInput factoryInput) {
                 DocxFormatter docxFormatter = new DocxFormatter(factoryInput);
                 docxFormatter.setDefaultFormatProvider(defaultFormatProvider);
+                docxFormatter.setPdfConverter(pdfConverter);
                 return docxFormatter;
             }
         });
@@ -88,6 +89,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             public ReportFormatter create(FormatterFactoryInput factoryInput) {
                 XlsxFormatter xlsxFormatter = new XlsxFormatter(factoryInput);
                 xlsxFormatter.setDefaultFormatProvider(defaultFormatProvider);
+                xlsxFormatter.setPdfConverter(pdfConverter);
                 return xlsxFormatter;
             }
         });
@@ -95,7 +97,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
         this.officeIntegration = officeIntegrationAPI;
-        this.xlsToPdfConverter = new XlsToPdfConverter(officeIntegrationAPI);
+        this.pdfConverter = new PdfConverter(officeIntegrationAPI);
     }
 
     public void setDefaultFormatProvider(DefaultFormatProvider defaultFormatProvider) {

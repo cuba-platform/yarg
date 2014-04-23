@@ -32,32 +32,34 @@ import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 
-public class XlsToPdfConverter implements XlsToPdfConverterAPI {
-    protected static final Logger log = LoggerFactory.getLogger(XlsToPdfConverter.class);
+public class PdfConverter implements PdfConverterAPI {
+    protected static final Logger log = LoggerFactory.getLogger(PdfConverter.class);
 
     private static final String XLS_TO_PDF_OUTPUT_FILE = "calc_pdf_Export";
+    private static final String ODT_TO_PDF_OUTPUT_FILE = "writer_pdf_Export";
 
     protected OfficeIntegrationAPI officeIntegration;
 
-    public XlsToPdfConverter(OfficeIntegrationAPI officeIntegration) {
+    public PdfConverter(OfficeIntegrationAPI officeIntegration) {
         this.officeIntegration = officeIntegration;
     }
 
     @Override
-    public void convertXlsToPdf(final byte[] documentBytes, final OutputStream outputStream) {
+    public void convertToPdf(FileType fileType, final byte[] documentBytes, final OutputStream outputStream) {
+        String convertPattern = FileType.SPREADSHEET == fileType ? XLS_TO_PDF_OUTPUT_FILE : ODT_TO_PDF_OUTPUT_FILE;
         try {
-            doConvertXlsToPdf(documentBytes, outputStream);
+            doConvertXlsToPdf(convertPattern, documentBytes, outputStream);
         } catch (Exception e) {
             log.warn("An error occurred while converting xls to pdf. System will retry to generate report once again.", e);
             try {
-                doConvertXlsToPdf(documentBytes, outputStream);
+                doConvertXlsToPdf(convertPattern, documentBytes, outputStream);
             } catch (NoFreePortsException e1) {
                 throw new ReportingException("An error occurred while converting xls to pdf.", e);
             }
         }
     }
 
-    private void doConvertXlsToPdf(final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
+    private void doConvertXlsToPdf(final String convertPattern, final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
         OfficeTask officeTask = new OfficeTask() {
             @Override
             public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
@@ -65,7 +67,7 @@ public class XlsToPdfConverter implements XlsToPdfConverterAPI {
                     XInputStream xis = new OfficeInputStream(documentBytes);
                     XComponentLoader xComponentLoader = ooResourceProvider.getXComponentLoader();
                     XComponent xComponent = UnoHelper.loadXComponent(xComponentLoader, xis);
-                    saveAndClose(xComponent, outputStream, XLS_TO_PDF_OUTPUT_FILE);
+                    saveAndClose(xComponent, outputStream, convertPattern);
                 } catch (Exception e) {
                     throw new ReportingException("An error occurred while running task in Open Office server", e);
                 }
