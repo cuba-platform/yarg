@@ -310,6 +310,7 @@ public class XLSFormatter extends AbstractFormatter {
                 HSSFRow resultRow;
                 if (templateCell.getRowIndex() != currentRowNum) { //create new row
                     resultRow = resultSheet.createRow(rownum + rowsAddedByHorizontalBand);
+                    copyPageBreaks(templateSheet, resultSheet, templateCell.getRowIndex(), resultRow.getRowNum());
                     rowsAddedByHorizontalBand += 1;
 
                     //todo move to options
@@ -362,6 +363,15 @@ public class XLSFormatter extends AbstractFormatter {
         rowsAddedByVerticalBand = 0;
     }
 
+    private void copyPageBreaks(HSSFSheet templateSheet, HSSFSheet resultSheet, int templateRowIndex, int resultRowIndex) {
+        int[] rowBreaks = templateSheet.getRowBreaks();
+        for (int rowBreak : rowBreaks) {
+            if (rowBreak == templateRowIndex) {
+                resultSheet.setRowBreak(resultRowIndex);
+            }
+        }
+    }
+
     /**
      * Method writes vertical band
      * Note: no child support for vertical band ;)
@@ -397,7 +407,8 @@ public class XLSFormatter extends AbstractFormatter {
                 int currentRow = cref.getRow();
                 final int rowOffset = currentRow - firstRow;
                 if (!rowExists(resultSheet, localRowNum + rowOffset)) {
-                    resultSheet.createRow(localRowNum + rowOffset);
+                    HSSFRow resultRow = resultSheet.createRow(localRowNum + rowOffset);
+                    copyPageBreaks(templateSheet, resultSheet, cref.getRow(), resultRow.getRowNum());
                 }
                 addedRowNumbers.add(cref.getRow());
             }
