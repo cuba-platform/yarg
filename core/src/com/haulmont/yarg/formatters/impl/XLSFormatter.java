@@ -368,6 +368,7 @@ public class XLSFormatter extends AbstractFormatter {
         for (int rowBreak : rowBreaks) {
             if (rowBreak == templateRowIndex) {
                 resultSheet.setRowBreak(resultRowIndex);
+                break;
             }
         }
     }
