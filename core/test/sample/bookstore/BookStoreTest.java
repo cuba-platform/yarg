@@ -45,15 +45,22 @@ public class BookStoreTest {
         connection.createStatement().executeUpdate("create table store (id integer, name varchar, address varchar);");
         connection.createStatement().executeUpdate("create table book(id integer, name varchar, author varchar, price decimal, store_id integer);");
 
-        connection.createStatement().executeUpdate("insert into store values(1, 'First shop', '1st Street');");
-        connection.createStatement().executeUpdate("insert into store values(2, 'Second shop', '2nd Street');");
+        connection.createStatement().executeUpdate("insert into store values(1, 'Main store', 'Some street');");
+        connection.createStatement().executeUpdate("insert into store values(2, 'Secondary store', 'Another street');");
 
-        connection.createStatement().executeUpdate("insert into book values(1, '1st book', '1st author', 10.0, 1);");
-        connection.createStatement().executeUpdate("insert into book values(2, '1st book', '1st author', 10.0, 1);");
-        connection.createStatement().executeUpdate("insert into book values(3, '2nd book', '2nd author', 20.0, 2);");
-        connection.createStatement().executeUpdate("insert into book values(4, '2nd book', '2nd author', 20.0, 2);");
-        connection.createStatement().executeUpdate("insert into book values(5, '2nd book', '2nd author', 20.0, 1);");
-        connection.createStatement().executeUpdate("insert into book values(6, '1st book', '1st author', 10.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(1, 'Concurrency in practice', 'Brian Goetz', 10.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(2, 'Concurrency in practice', 'Brian Goetz', 10.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(2, 'Concurrency in practice', 'Brian Goetz', 10.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(3, 'Effective Java', 'Josh Bloch', 20.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(4, '2nd book', 'Josh Bloch', 20.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(4, '2nd book', 'Josh Bloch', 20.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(5, '2nd book', 'Josh Bloch', 20.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(5, '2nd book', 'Josh Bloch', 20.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(6, 'Concurrency in practice', 'Brian Goetz', 10.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(7, 'Refactoring', 'Martin Fowler', 15.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(8, 'Refactoring', 'Martin Fowler', 15.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(8, 'Refactoring', 'Martin Fowler', 15.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(9, 'Refactoring', 'Martin Fowler', 15.0, 1);");
 
         connection.commit();
 
