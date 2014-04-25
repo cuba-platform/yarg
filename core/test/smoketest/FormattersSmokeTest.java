@@ -18,6 +18,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -170,85 +171,85 @@ public class FormattersSmokeTest {
         IOUtils.closeQuietly(outputStream);
     }
 
-    @Test
-    public void testParallelDoc() throws Exception {
-        final CountDownLatch countDownLatch = new CountDownLatch(3);
-        final DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        final OfficeIntegration officeIntegrationAPI = new OfficeIntegration(OPEN_OFFICE_PATH, 8100, 8101, 8102);
-        officeIntegrationAPI.setTimeoutInSeconds(10);
-        defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    BandData root = createRootBand();
-                    BandData footer = root.getChildByName("Footer");
-                    BandData footerChild = new BandData("FooterChild", footer);
-                    footerChild.addData("nestedData", "NESTED_DATA");
-                    footer.addChild(footerChild);
-                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel1.doc");
-                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
-                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
-                    formatter.renderDocument();
-
-                    IOUtils.closeQuietly(outputStream);
-                } catch (IOException e) {
-                    Assert.fail();
-                } finally {
-                    countDownLatch.countDown();
-                }
-            }
-        }.start();
-
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    BandData root = createRootBand();
-                    BandData footer = root.getChildByName("Footer");
-                    BandData footerChild = new BandData("FooterChild", footer);
-                    footerChild.addData("nestedData", "NESTED_DATA");
-                    footer.addChild(footerChild);
-
-                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel2.doc");
-                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
-                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
-                    formatter.renderDocument();
-
-                    IOUtils.closeQuietly(outputStream);
-                } catch (IOException e) {
-                    Assert.fail();
-                } finally {
-                    countDownLatch.countDown();
-                }
-            }
-        }.start();
-
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    BandData root = createRootBand();
-                    BandData footer = root.getChildByName("Footer");
-                    BandData footerChild = new BandData("FooterChild", footer);
-                    footerChild.addData("nestedData", "NESTED_DATA");
-                    footer.addChild(footerChild);
-
-                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel3.doc");
-                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
-                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
-                    formatter.renderDocument();
-
-                    IOUtils.closeQuietly(outputStream);
-                } catch (IOException e) {
-                    Assert.fail();
-                } finally {
-                    countDownLatch.countDown();
-                }
-            }
-        }.start();
-        countDownLatch.await();
-    }
+//    @Test
+//    public void testParallelDoc() throws Exception {
+//        final CountDownLatch countDownLatch = new CountDownLatch(3);
+//        final DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+//        final OfficeIntegration officeIntegrationAPI = new OfficeIntegration(OPEN_OFFICE_PATH, 8100, 8101, 8102);
+//        officeIntegrationAPI.setTimeoutInSeconds(10);
+//        defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    BandData root = createRootBand();
+//                    BandData footer = root.getChildByName("Footer");
+//                    BandData footerChild = new BandData("FooterChild", footer);
+//                    footerChild.addData("nestedData", "NESTED_DATA");
+//                    footer.addChild(footerChild);
+//                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel1.doc");
+//                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+//                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
+//                    formatter.renderDocument();
+//
+//                    IOUtils.closeQuietly(outputStream);
+//                } catch (IOException e) {
+//                    Assert.fail();
+//                } finally {
+//                    countDownLatch.countDown();
+//                }
+//            }
+//        }.start();
+//
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    BandData root = createRootBand();
+//                    BandData footer = root.getChildByName("Footer");
+//                    BandData footerChild = new BandData("FooterChild", footer);
+//                    footerChild.addData("nestedData", "NESTED_DATA");
+//                    footer.addChild(footerChild);
+//
+//                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel2.doc");
+//                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+//                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
+//                    formatter.renderDocument();
+//
+//                    IOUtils.closeQuietly(outputStream);
+//                } catch (IOException e) {
+//                    Assert.fail();
+//                } finally {
+//                    countDownLatch.countDown();
+//                }
+//            }
+//        }.start();
+//
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    BandData root = createRootBand();
+//                    BandData footer = root.getChildByName("Footer");
+//                    BandData footerChild = new BandData("FooterChild", footer);
+//                    footerChild.addData("nestedData", "NESTED_DATA");
+//                    footer.addChild(footerChild);
+//
+//                    FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_parallel3.doc");
+//                    ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
+//                            new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
+//                    formatter.renderDocument();
+//
+//                    IOUtils.closeQuietly(outputStream);
+//                } catch (IOException e) {
+//                    Assert.fail();
+//                } finally {
+//                    countDownLatch.countDown();
+//                }
+//            }
+//        }.start();
+//        countDownLatch.await();
+//    }
 
 
     @Test
@@ -433,6 +434,65 @@ public class FormattersSmokeTest {
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/charts.xlsx", "./test/smoketest/charts.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testXlsxCrosstab() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+
+        BandData header = new BandData("Header", root, BandOrientation.HORIZONTAL);
+        root.addChild(header);
+
+        for (int i = 1; i <= 10; i++) {
+            BandData dateHeader = new BandData("DateHeader", root, BandOrientation.VERTICAL);
+            dateHeader.addData("date", "2014/04/" + i);
+            root.addChild(dateHeader);
+        }
+
+        BandData dateHeader = new BandData("DateHeader", root, BandOrientation.VERTICAL);
+        dateHeader.addData("date", "...");
+        root.addChild(dateHeader);
+
+        BandData band11 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band11.addData("name", "Stanley");
+
+        BandData band12 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band12.addData("name", "Kyle");
+
+        BandData band13 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band13.addData("name", "Eric");
+
+        BandData band14 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band14.addData("name", "Kenney");
+
+        BandData band15 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band15.addData("name", "Craig");
+
+        List<BandData> bands = Arrays.asList(band11, band12, band13, band14, band15);
+        root.addChildren(bands);
+
+        Random random = new Random();
+        for (BandData band : bands) {
+            for (int i = 1; i <= 10; i++) {
+                BandData nested = new BandData("Band2", band, BandOrientation.VERTICAL);
+                band.addChild(nested);
+                nested.addData("income", new BigDecimal(20 + i + Math.abs(random.nextDouble()) * 60));
+            }
+        }
+
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Header");
+        root.getFirstLevelBandDefinitionNames().add("DateHeader");
+        root.getFirstLevelBandDefinitionNames().add("Band1");
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/crosstab.pdf");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./test/smoketest/crosstab.xlsx", "./test/smoketest/crosstab.xlsx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
