@@ -41,7 +41,7 @@ public class Document {
     protected SpreadsheetMLPackage thePackage;
     protected List<SheetWrapper> worksheets = new ArrayList<SheetWrapper>();
 
-    protected Map<Range, ChartPair> chartSpaces = new HashMap<Range, ChartPair>();
+    protected Map<Range, ChartWrapper> chartSpaces = new HashMap<Range, ChartWrapper>();
     protected Workbook workbook;
     protected SharedStrings sharedStrings;
     protected HashSet<Part> handled = new HashSet<Part>();
@@ -60,7 +60,7 @@ public class Document {
         return thePackage;
     }
 
-    public Map<Range, ChartPair> getChartSpaces() {
+    public Map<Range, ChartWrapper> getChartSpaces() {
         return chartSpaces;
     }
 
@@ -166,15 +166,16 @@ public class Document {
                     Object anchorObj = ctDrawing.getEGAnchor().get(chartNum++);
 
                     Range range = null;
+                    CTTwoCellAnchor ctTwoCellAnchor = null;
                     if (anchorObj instanceof CTTwoCellAnchor) {
-                        CTTwoCellAnchor ctTwoCellAnchor = (CTTwoCellAnchor) anchorObj;
+                         ctTwoCellAnchor = (CTTwoCellAnchor) anchorObj;
                         CTMarker from = ctTwoCellAnchor.getFrom();
                         CTMarker to = ctTwoCellAnchor.getTo();
                         String sheetName = worksheets.get(worksheets.size() - 1).name;
                         range = new Range(sheetName, from.getCol() + 1, from.getRow() + 1, to.getCol() + 1, to.getRow() + 1);
                     }
 
-                    chartSpaces.put(range, new ChartPair((CTChartSpace) o, drawing));
+                    chartSpaces.put(range, new ChartWrapper((CTChartSpace) o, drawing, ctTwoCellAnchor));
                 }
 
                 if (o instanceof Workbook) {
@@ -213,6 +214,10 @@ public class Document {
             if (mergeCells != null && mergeCells.getMergeCell() != null) {
                 mergeCells.getMergeCell().clear();
             }
+            CTPageBreak rowBreaks = sheet.worksheet.getContents().getRowBreaks();
+            if (rowBreaks != null && rowBreaks.getBrk() != null) {
+                rowBreaks.getBrk().clear();
+            }
         }
         workbook.getDefinedNames().getDefinedName().clear();
     }
@@ -235,13 +240,15 @@ public class Document {
         }
     }
 
-    public static class ChartPair {
+    public static class ChartWrapper {
         private final CTChartSpace chartSpace;
         private final Drawing drawing;
+        private final CTTwoCellAnchor anchor;
 
-        public ChartPair(CTChartSpace chartSpace, Drawing drawing) {
+        public ChartWrapper(CTChartSpace chartSpace, Drawing drawing, CTTwoCellAnchor anchor) {
             this.chartSpace = chartSpace;
             this.drawing = drawing;
+            this.anchor = anchor;
         }
 
         public CTChartSpace getChartSpace() {
@@ -250,6 +257,10 @@ public class Document {
 
         public Drawing getDrawing() {
             return drawing;
+        }
+
+        public CTTwoCellAnchor getAnchor() {
+            return anchor;
         }
     }
 }

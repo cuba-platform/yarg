@@ -402,6 +402,105 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testXlsxCharts() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+
+        root.addChild(new BandData("Header", root, BandOrientation.HORIZONTAL));
+
+        Random random = new Random();
+        for (int i = 1; i <= 10; i++) {
+            BandData band = new BandData("Band", root, BandOrientation.HORIZONTAL);
+            band.addData("i", i);
+            double value1 = 15 + i + Math.abs(random.nextDouble()) * 30;
+            band.addData("value1", value1);
+            double value2 = 20 + i + Math.abs(random.nextDouble()) * 60;
+            band.addData("value2", value2);
+            double value3 = 25 + i + Math.abs(random.nextDouble()) * 90;
+            band.addData("value3", value3);
+            band.addData("value4", (value1 + value2 + value3) / 3);
+            root.addChild(band);
+        }
+
+        root.addChild(new BandData("Charts", root, BandOrientation.HORIZONTAL));
+
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Header");
+        root.getFirstLevelBandDefinitionNames().add("Band");
+        root.getFirstLevelBandDefinitionNames().add("Charts");
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/charts.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./test/smoketest/charts.xlsx", "./test/smoketest/charts.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testXlsxBreaks() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+
+        Random random = new Random();
+        for (int i = 1; i <= 10; i++) {
+            BandData band = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+            band.addData("i", i);
+            double value1 = 15 + i + Math.abs(random.nextDouble()) * 30;
+            band.addData("value1", value1);
+            double value2 = 20 + i + Math.abs(random.nextDouble()) * 60;
+            band.addData("value2", value2);
+            double value3 = 25 + i + Math.abs(random.nextDouble()) * 90;
+            band.addData("value3", value3);
+            band.addData("value4", (value1 + value2 + value3) / 3);
+            root.addChild(band);
+        }
+        root.addChild(new BandData("Split1", root));
+        for (int i = 1; i <= 10; i++) {
+            BandData band = new BandData("Band2", root, BandOrientation.HORIZONTAL);
+            band.addData("i", i);
+            double value1 = 15 + i + Math.abs(random.nextDouble()) * 30;
+            band.addData("value1", value1);
+            double value2 = 20 + i + Math.abs(random.nextDouble()) * 60;
+            band.addData("value2", value2);
+            double value3 = 25 + i + Math.abs(random.nextDouble()) * 90;
+            band.addData("value3", value3);
+            band.addData("value4", (value1 + value2 + value3) / 3);
+            root.addChild(band);
+        }
+        root.addChild(new BandData("Split2", root));
+        for (int i = 1; i <= 10; i++) {
+            BandData band = new BandData("Band3", root, BandOrientation.HORIZONTAL);
+            band.addData("i", i);
+            double value1 = 15 + i + Math.abs(random.nextDouble()) * 30;
+            band.addData("value1", value1);
+            double value2 = 20 + i + Math.abs(random.nextDouble()) * 60;
+            band.addData("value2", value2);
+            double value3 = 25 + i + Math.abs(random.nextDouble()) * 90;
+            band.addData("value3", value3);
+            band.addData("value4", (value1 + value2 + value3) / 3);
+            root.addChild(band);
+        }
+
+
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Band1");
+        root.getFirstLevelBandDefinitionNames().add("Band2");
+        root.getFirstLevelBandDefinitionNames().add("Band3");
+        root.getFirstLevelBandDefinitionNames().add("Split1");
+        root.getFirstLevelBandDefinitionNames().add("Split2");
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/breaks.pdf");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./test/smoketest/breaks.xlsx", "./test/smoketest/breaks.xlsx", ReportOutputType.pdf), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testHtml() throws Exception {
         BandData root = createRootBand();
 

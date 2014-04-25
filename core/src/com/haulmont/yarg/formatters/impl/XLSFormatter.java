@@ -363,16 +363,6 @@ public class XLSFormatter extends AbstractFormatter {
         rowsAddedByVerticalBand = 0;
     }
 
-    private void copyPageBreaks(HSSFSheet templateSheet, HSSFSheet resultSheet, int templateRowIndex, int resultRowIndex) {
-        int[] rowBreaks = templateSheet.getRowBreaks();
-        for (int rowBreak : rowBreaks) {
-            if (rowBreak == templateRowIndex) {
-                resultSheet.setRowBreak(resultRowIndex);
-                break;
-            }
-        }
-    }
-
     /**
      * Method writes vertical band
      * Note: no child support for vertical band ;)
@@ -845,6 +835,16 @@ public class XLSFormatter extends AbstractFormatter {
 
             cell.setCol(col);
             cell.setRow(row);
+        }
+    }
+
+    protected void copyPageBreaks(HSSFSheet templateSheet, HSSFSheet resultSheet, int templateRowIndex, int resultRowIndex) {
+        int[] rowBreaks = templateSheet.getRowBreaks();
+        for (int rowBreak : rowBreaks) {
+            if (rowBreak == templateRowIndex) {
+                resultSheet.setRowBreak(resultRowIndex);
+                break;
+            }
         }
     }
 
