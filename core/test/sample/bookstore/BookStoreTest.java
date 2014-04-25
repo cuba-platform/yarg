@@ -52,10 +52,10 @@ public class BookStoreTest {
         connection.createStatement().executeUpdate("insert into book values(2, 'Concurrency in practice', 'Brian Goetz', 10.0, 1);");
         connection.createStatement().executeUpdate("insert into book values(2, 'Concurrency in practice', 'Brian Goetz', 10.0, 1);");
         connection.createStatement().executeUpdate("insert into book values(3, 'Effective Java', 'Josh Bloch', 20.0, 2);");
-        connection.createStatement().executeUpdate("insert into book values(4, '2nd book', 'Josh Bloch', 20.0, 2);");
-        connection.createStatement().executeUpdate("insert into book values(4, '2nd book', 'Josh Bloch', 20.0, 2);");
-        connection.createStatement().executeUpdate("insert into book values(5, '2nd book', 'Josh Bloch', 20.0, 1);");
-        connection.createStatement().executeUpdate("insert into book values(5, '2nd book', 'Josh Bloch', 20.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(4, 'Effective Java', 'Josh Bloch', 20.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(4, 'Effective Java', 'Josh Bloch', 20.0, 2);");
+        connection.createStatement().executeUpdate("insert into book values(5, 'Effective Java', 'Josh Bloch', 20.0, 1);");
+        connection.createStatement().executeUpdate("insert into book values(5, 'Effective Java', 'Josh Bloch', 20.0, 1);");
         connection.createStatement().executeUpdate("insert into book values(6, 'Concurrency in practice', 'Brian Goetz', 10.0, 2);");
         connection.createStatement().executeUpdate("insert into book values(7, 'Refactoring', 'Martin Fowler', 15.0, 2);");
         connection.createStatement().executeUpdate("insert into book values(8, 'Refactoring', 'Martin Fowler', 15.0, 2);");
