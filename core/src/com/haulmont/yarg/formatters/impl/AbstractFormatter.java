@@ -185,7 +185,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
     protected String inlineParameterValue(String template, String parameterName, String value) {
         String parameterRegex = UNIVERSAL_ALIAS_REGEXP.replace(ALIAS_GROUP, parameterName);
-        return template.replaceAll(parameterRegex, value);
+        return template.replaceAll(parameterRegex, Matcher.quoteReplacement(value));
     }
 
     protected BandData findBandByPath(BandData rootBand, String path) {
