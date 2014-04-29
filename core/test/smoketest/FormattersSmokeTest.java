@@ -563,7 +563,8 @@ public class FormattersSmokeTest {
     @Test
     public void testHtml() throws Exception {
         BandData root = createRootBand();
-
+        root.addData("date", null);
+        root.addData("date2", new Date());
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.html");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,

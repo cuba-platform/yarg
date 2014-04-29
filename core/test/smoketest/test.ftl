@@ -6,6 +6,8 @@
     </head>
     <body>
         <#assign Table1 = Root.bands.Band1>
+        <#if Root.fields.date?has_content>${Root.fields.date?string("dd/MM/yyyy")}</#if>
+        <#if Root.fields.date2?has_content>${Root.fields.date2?string("dd/MM/yyyy")}</#if>
         <table border="1" cellpadding="5" cellspacing="0" width="200">
             <thead>
                 <tr>
