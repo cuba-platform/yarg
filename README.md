@@ -9,7 +9,7 @@ YARG is a mature and well-tested tool, already used in a number of Haulmont's so
 
 [Wiki] (https://github.com/Haulmont/yarg/wiki)
 
-[Our site] (https://www.cuba-platform.com/ru/YARG)
+[CUBA Platform] (https://www.cuba-platform.com/ru/YARG)
 
 ### Samples
 
