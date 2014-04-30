@@ -20,5 +20,5 @@
  * @version $Id$
  */
 
-public class DummyTest {
+public class DummyTest2 {
 }
