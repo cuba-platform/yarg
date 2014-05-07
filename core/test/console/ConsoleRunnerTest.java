@@ -30,7 +30,7 @@ public class ConsoleRunnerTest {
         ConsoleRunner.doExitWhenFinished = false;
         ConsoleRunner.main(new String[]{
                 "-" + ConsoleRunner.REPORT_PATH, "./test/console/console.xml",
-                "-" + ConsoleRunner.OUTPUT_PATH, "./result/console/console.pdf",
+                "-" + ConsoleRunner.OUTPUT_PATH, "./result/console/console.xls",
                 "-Pparam1=param1",
                 "-Pparam2=12/12/12 12:12",
                 "-Pparam3=10",

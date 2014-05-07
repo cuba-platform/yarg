@@ -109,6 +109,67 @@ public class XlsxIntegrationTest {
         compareFiles("./result/integration/result.xlsx", "./test/integration/etalon.xlsx");
     }
 
+    @Test
+    public void testAlignmentXlsx() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+
+        BandData band1_1 = createBand("Band1", 1, root, BandOrientation.HORIZONTAL);
+        BandData band1_2 = createBand("Band1", 2, root, BandOrientation.HORIZONTAL);
+        BandData band2_1 = createBand("Band2", 1, root, BandOrientation.HORIZONTAL);
+        BandData band2_2 = createBand("Band2", 2, root, BandOrientation.HORIZONTAL);
+        BandData band3_1 = createBand("Band3", 1, root, BandOrientation.VERTICAL);
+        BandData band3_2 = createBand("Band3", 2, root, BandOrientation.VERTICAL);
+        BandData band4_1 = createBand("Band4", 1, root, BandOrientation.VERTICAL);
+        BandData band4_2 = createBand("Band4", 2, root, BandOrientation.VERTICAL);
+
+        BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
+        BandData split2 = new BandData("Split2", root, BandOrientation.HORIZONTAL);
+        BandData split3 = new BandData("Split3", root, BandOrientation.HORIZONTAL);
+
+        root.addChild(band1_1);
+        root.addChild(band1_2);
+        root.addChild(split);
+        root.addChild(band2_1);
+        root.addChild(band2_2);
+        root.addChild(split2);
+        root.addChild(band3_1);
+        root.addChild(band3_2);
+        root.addChild(split3);
+        root.addChild(band4_1);
+        root.addChild(band4_2);
+
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Band1");
+        root.getFirstLevelBandDefinitionNames().add("Band2");
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-align.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./test/integration/test.xlsx", "./test/integration/test-align.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+
+        compareFiles("./result/integration/result-align.xlsx", "./test/integration/etalon-align.xlsx");
+    }
+
+    private BandData createBand(String name, int multiplier, BandData root, BandOrientation childOrient) {
+        BandData band1_1 = new BandData(name, root, BandOrientation.HORIZONTAL);
+        band1_1.addData("col1", 1 * multiplier);
+        band1_1.addData("col2", 2 * multiplier);
+
+        BandData band11_1 = new BandData(name + "1", band1_1, childOrient);
+        band11_1.addData("col1", 10 * multiplier);
+        band11_1.addData("col2", 20 * multiplier);
+
+        BandData band11_2 = new BandData(name + "1", band1_1, childOrient);
+        band11_2.addData("col1", 100 * multiplier);
+        band11_2.addData("col2", 200 * multiplier);
+
+        band1_1.addChild(band11_1);
+        band1_1.addChild(band11_2);
+        return band1_1;
+    }
+
     private void compareFiles(String resultPath, String etalonPath) throws Docx4JException {
         Document result = Document.create(SpreadsheetMLPackage.load(new File(resultPath)));
         Document etalon = Document.create(SpreadsheetMLPackage.load(new File(etalonPath)));

@@ -149,13 +149,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (!name1.equals(name2)) {
                     Range range1 = Range.fromFormula(name1.getValue());
                     Range range2 = Range.fromFormula(name2.getValue());
-                    if (range1.getSheet().equals(range2.getSheet()) && (
-                            range1.getFirstRow() >= range2.getFirstRow() && range1.getFirstRow() <= range2.getLastRow() ||
-                                    range1.getLastRow() >= range2.getFirstRow() && range1.getLastRow() <= range2.getLastRow() ||
-                                    range2.getFirstRow() >= range1.getFirstRow() && range2.getFirstRow() <= range1.getLastRow() ||
-                                    range2.getLastRow() >= range1.getFirstRow() && range2.getLastRow() <= range1.getLastRow()
-                    )
-                            ) {
+                    if (range1.intersectsByVertical(range2)) {
                         rangeVerticalIntersections.put(range1, range2);
                         rangeVerticalIntersections.put(range2, range1);
                     }
@@ -460,26 +454,14 @@ public class XlsxFormatter extends AbstractFormatter {
                 firstRow = resultSheetRows.get(bandVisitor.lastRow);
             }
         } else if (!isFirstLevelBand) {
-            LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
-            band.getParentBand().visit(bandVisitor);
-            if (resultSheetRows.size() > bandVisitor.lastRow) {//get next row
-                firstRow = resultSheetRows.get(bandVisitor.lastRow);
-            }
+            firstRow = findNextRowForChildBand(band, templateRange, resultSheetRows);
         } else {//this is the first render
-            Collection<Range> templateNeighbours = rangeVerticalIntersections.get(templateRange);
-            for (Range templateNeighbour : templateNeighbours) {
-                Collection<Range> resultRanges = rangeDependencies.get(templateNeighbour);
-                if (resultRanges.size() > 0) {
-                    Range firstResultRange = resultRanges.iterator().next();
-                    firstRow = resultSheetRows.get(firstResultRange.getFirstRow() - 1);//get current  row
-                    break;
-                }
-            }
+            firstRow = findNextRowForFirstRender(templateRange, resultSheetRows);
         }
         return firstRow;
     }
 
-    protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> thisSheetRows) {
+    protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
 
@@ -489,39 +471,48 @@ public class XlsxFormatter extends AbstractFormatter {
         if (CollectionUtils.isNotEmpty(alreadyRenderedRanges)) {//this band has been already rendered at least once
             Range previousRange = getLast(alreadyRenderedRanges);
             previousRangesRightOffset = previousRange.getFirstColumn() - templateRange.getFirstColumn() + 1;
-            if (thisSheetRows.size() > previousRange.getFirstRow() - 1) {//get current row
-                firstRow = thisSheetRows.get(previousRange.getFirstRow() - 1);
+            if (resultSheetRows.size() > previousRange.getFirstRow() - 1) {//get current row
+                firstRow = resultSheetRows.get(previousRange.getFirstRow() - 1);
             }
         } else if (!isFirstLevelBand) {
-            BandData parentBand = band.getParentBand();
-            Range resultParentRange = bandsToResultRanges.get(parentBand);
-            Range templateParentRange = bandsToTemplateRanges.get(parentBand);
-
-            if (resultParentRange != null && templateParentRange != null) {
-                if (templateParentRange.getFirstRow() == templateRange.getFirstRow()) {
-                    if (thisSheetRows.size() > resultParentRange.getFirstRow() - 1) {//get current row
-                        firstRow = thisSheetRows.get(resultParentRange.getFirstRow() - 1);
-                    }
-                } else {
-                    LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
-                    band.getParentBand().visit(bandVisitor);
-                    if (thisSheetRows.size() > bandVisitor.lastRow) {//get next row
-                        firstRow = thisSheetRows.get(bandVisitor.lastRow);
-                    }
-                }
-            }
+            firstRow = findNextRowForChildBand(band, templateRange, resultSheetRows);
         } else {//this is the first render
-            Collection<Range> templateNeighbours = rangeVerticalIntersections.get(templateRange);
-            for (Range templateNeighbour : templateNeighbours) {
-                Collection<Range> resultRanges = rangeDependencies.get(templateNeighbour);
-                if (resultRanges.size() > 0) {
-                    Range firstResultRange = resultRanges.iterator().next();
-                    firstRow = thisSheetRows.get(firstResultRange.getFirstRow() - 1);//get current  row
-                    break;
+            firstRow = findNextRowForFirstRender(templateRange, resultSheetRows);
+        }
+        return firstRow;
+    }
+
+    protected Row findNextRowForChildBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
+        BandData parentBand = band.getParentBand();
+        Range resultParentRange = bandsToResultRanges.get(parentBand);
+        Range templateParentRange = bandsToTemplateRanges.get(parentBand);
+
+        if (resultParentRange != null && templateParentRange != null) {
+            if (templateParentRange.getFirstRow() == templateRange.getFirstRow()) {
+                if (resultSheetRows.size() > resultParentRange.getFirstRow() - 1) {//get current row
+                    return resultSheetRows.get(resultParentRange.getFirstRow() - 1);
+                }
+            } else {
+                LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
+                band.getParentBand().visit(bandVisitor);
+                if (resultSheetRows.size() > bandVisitor.lastRow) {//get next row
+                    return resultSheetRows.get(bandVisitor.lastRow);
                 }
             }
         }
-        return firstRow;
+        return null;
+    }
+
+    protected Row findNextRowForFirstRender(Range templateRange, List<Row> resultSheetRows) {
+        Collection<Range> templateNeighbours = rangeVerticalIntersections.get(templateRange);
+        for (Range templateNeighbour : templateNeighbours) {
+            Collection<Range> resultRanges = rangeDependencies.get(templateNeighbour);
+            if (resultRanges.size() > 0) {
+                Range firstResultRange = resultRanges.iterator().next();
+                return resultSheetRows.get(firstResultRange.getFirstRow() - 1);//get current  row
+            }
+        }
+        return null;
     }
 
     protected Row ensureNecessaryRowsCreated(Range templateRange, Worksheet resultSheet, Row firstRow) {
