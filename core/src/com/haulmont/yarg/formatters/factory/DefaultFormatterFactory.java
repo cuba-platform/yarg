@@ -26,7 +26,7 @@ import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverterImpl;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 
@@ -97,7 +97,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
         this.officeIntegration = officeIntegrationAPI;
-        this.pdfConverter = new PdfConverter(officeIntegrationAPI);
+        this.pdfConverter = new PdfConverterImpl(officeIntegrationAPI);
     }
 
     public void setDefaultFormatProvider(DefaultFormatProvider defaultFormatProvider) {

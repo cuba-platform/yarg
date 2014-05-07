@@ -32,15 +32,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 
-public class PdfConverter implements PdfConverterAPI {
-    protected static final Logger log = LoggerFactory.getLogger(PdfConverter.class);
+public class PdfConverterImpl implements PdfConverterAPI {
+    protected static final Logger log = LoggerFactory.getLogger(PdfConverterImpl.class);
 
     private static final String XLS_TO_PDF_OUTPUT_FILE = "calc_pdf_Export";
     private static final String ODT_TO_PDF_OUTPUT_FILE = "writer_pdf_Export";
 
     protected OfficeIntegrationAPI officeIntegration;
 
-    public PdfConverter(OfficeIntegrationAPI officeIntegration) {
+    public PdfConverterImpl(OfficeIntegrationAPI officeIntegration) {
         this.officeIntegration = officeIntegration;
     }
 
