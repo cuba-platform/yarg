@@ -91,6 +91,9 @@ public class DocFormatter extends AbstractFormatter {
             try {
                 doCreateDocument(reportTemplate.getOutputType(), outputStream);
             } catch (NoFreePortsException e1) {
+                if (e instanceof NoFreePortsException) {
+                    throw (NoFreePortsException) e;
+                }
                 throw wrapWithReportingException("An error occurred while generating doc report.", e);
             }
         }

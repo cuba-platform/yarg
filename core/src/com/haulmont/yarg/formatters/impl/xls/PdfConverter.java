@@ -48,18 +48,21 @@ public class PdfConverter implements PdfConverterAPI {
     public void convertToPdf(FileType fileType, final byte[] documentBytes, final OutputStream outputStream) {
         String convertPattern = FileType.SPREADSHEET == fileType ? XLS_TO_PDF_OUTPUT_FILE : ODT_TO_PDF_OUTPUT_FILE;
         try {
-            doConvertXlsToPdf(convertPattern, documentBytes, outputStream);
+            doConvertToPdf(convertPattern, documentBytes, outputStream);
         } catch (Exception e) {
             log.warn("An error occurred while converting xls to pdf. System will retry to generate report once again.", e);
             try {
-                doConvertXlsToPdf(convertPattern, documentBytes, outputStream);
+                doConvertToPdf(convertPattern, documentBytes, outputStream);
             } catch (NoFreePortsException e1) {
+                if (e instanceof NoFreePortsException) {
+                    throw (NoFreePortsException) e;
+                }
                 throw new ReportingException("An error occurred while converting xls to pdf.", e);
             }
         }
     }
 
-    private void doConvertXlsToPdf(final String convertPattern, final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
+    private void doConvertToPdf(final String convertPattern, final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
         OfficeTask officeTask = new OfficeTask() {
             @Override
             public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {

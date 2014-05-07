@@ -15,7 +15,9 @@
  */
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
-public class NoFreePortsException extends Exception {
+import com.haulmont.yarg.exception.ReportingException;
+
+public class NoFreePortsException extends ReportingException {
     private static final long serialVersionUID = 727618681331262033L;
 
     public NoFreePortsException() {
