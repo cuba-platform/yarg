@@ -28,7 +28,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
@@ -59,7 +59,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
-    protected PdfConverterAPI pdfConverter;
+    protected PdfConverter pdfConverter;
     protected Document template;
     protected Document result;
 
@@ -79,7 +79,7 @@ public class XlsxFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.xlsx);
     }
 
-    public void setPdfConverter(PdfConverterAPI pdfConverter) {
+    public void setPdfConverter(PdfConverter pdfConverter) {
         this.pdfConverter = pdfConverter;
     }
 
@@ -111,7 +111,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (pdfConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(result.getPackage(), bos);
-                    pdfConverter.convertToPdf(PdfConverterAPI.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
+                    pdfConverter.convertToPdf(PdfConverter.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
                     outputStream.flush();
                 } else {
                     throw new UnsupportedOperationException(

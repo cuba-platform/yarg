@@ -25,7 +25,7 @@ import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.Area;
 import com.haulmont.yarg.formatters.impl.xls.AreaDependencyManager;
 import com.haulmont.yarg.formatters.impl.xls.Cell;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.yarg.formatters.impl.xls.hints.*;
@@ -91,7 +91,7 @@ public class XLSFormatter extends AbstractFormatter {
     protected Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<HSSFSheet, HSSFPatriarch>();
     protected List<XlsHint> hints = new ArrayList<XlsHint>();
 
-    protected PdfConverterAPI pdfConverter;
+    protected PdfConverter pdfConverter;
 
     protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
@@ -106,7 +106,7 @@ public class XLSFormatter extends AbstractFormatter {
         hints.add(new CustomWidthHint());
     }
 
-    public void setPdfConverter(PdfConverterAPI pdfConverter) {
+    public void setPdfConverter(PdfConverter pdfConverter) {
         this.pdfConverter = pdfConverter;
     }
 
@@ -172,7 +172,7 @@ public class XLSFormatter extends AbstractFormatter {
                 try {
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     resultWorkbook.write(stream);
-                    pdfConverter.convertToPdf(PdfConverterAPI.FileType.SPREADSHEET, stream.toByteArray(), outputStream);
+                    pdfConverter.convertToPdf(PdfConverter.FileType.SPREADSHEET, stream.toByteArray(), outputStream);
                 } catch (IOException e) {
                     throw wrapWithReportingException("An error occurred while converting xls to pdf.", e);
                 }

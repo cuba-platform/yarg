@@ -23,7 +23,7 @@ package com.haulmont.yarg.formatters.impl.xls;
 
 import java.io.OutputStream;
 
-public interface PdfConverterAPI {
+public interface PdfConverter {
     enum FileType {
         SPREADSHEET,
         DOCUMENT

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 
-public class PdfConverterImpl implements PdfConverterAPI {
+public class PdfConverterImpl implements PdfConverter {
     protected static final Logger log = LoggerFactory.getLogger(PdfConverterImpl.class);
 
     private static final String XLS_TO_PDF_OUTPUT_FILE = "calc_pdf_Export";

@@ -25,7 +25,7 @@ import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverterImpl;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected OfficeIntegrationAPI officeIntegration;
-    protected PdfConverterAPI pdfConverter;
+    protected PdfConverter pdfConverter;
     protected DefaultFormatProvider defaultFormatProvider;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();

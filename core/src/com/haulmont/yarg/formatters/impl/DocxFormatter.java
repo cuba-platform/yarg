@@ -18,7 +18,7 @@ package com.haulmont.yarg.formatters.impl;
 
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverterAPI;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -53,7 +53,7 @@ import static org.apache.commons.lang.StringUtils.*;
 public class DocxFormatter extends AbstractFormatter {
     protected WordprocessingMLPackage wordprocessingMLPackage;
     protected DocumentWrapper documentWrapper;
-    protected PdfConverterAPI pdfConverter;
+    protected PdfConverter pdfConverter;
 
     public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -61,7 +61,7 @@ public class DocxFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.pdf);
     }
 
-    public void setPdfConverter(PdfConverterAPI pdfConverter) {
+    public void setPdfConverter(PdfConverter pdfConverter) {
         this.pdfConverter = pdfConverter;
     }
 
@@ -96,7 +96,7 @@ public class DocxFormatter extends AbstractFormatter {
                 if (pdfConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(wordprocessingMLPackage, bos);
-                    pdfConverter.convertToPdf(PdfConverterAPI.FileType.DOCUMENT, bos.toByteArray(), outputStream);
+                    pdfConverter.convertToPdf(PdfConverter.FileType.DOCUMENT, bos.toByteArray(), outputStream);
                     outputStream.flush();
                 } else {
                     Docx4J.toPDF(wordprocessingMLPackage, outputStream);
