@@ -215,6 +215,7 @@ public class DocFormatter extends AbstractFormatter {
     protected void fillCell(BandData band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
         XText xText = asXText(xCell);
         String cellText = xText.getString();
+        cellText = cellText.replace("\r\n", "\n");//just a workaround for Windows \r\n break symbol
         List<String> parametersToInsert = new ArrayList<String>();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(cellText);
         while (matcher.find()) {
