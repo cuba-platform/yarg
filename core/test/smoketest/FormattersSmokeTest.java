@@ -423,7 +423,9 @@ public class FormattersSmokeTest {
         root.getFirstLevelBandDefinitionNames().add("Band1");
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result1.xlsx");
-        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test1.xlsx", "./test/smoketest/test1.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 

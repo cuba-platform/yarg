@@ -22,8 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Range {
-    public static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
-    public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("(.*)!\\$(.*)\\$(.*)");
+    public static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
+    public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
     public static Pattern RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
 
     private String sheet;
@@ -170,7 +170,7 @@ public class Range {
     }
 
     public String toFormula() {
-        return String.format("%s!$%s$%d:$%s$%d", getSheet(), XlsxUtils.getColumnReferenceFromNumber(getFirstColumn()), getFirstRow(), XlsxUtils.getColumnReferenceFromNumber(getLastColumn()), getLastRow());
+        return String.format("'%s'!$%s$%d:$%s$%d", getSheet(), XlsxUtils.getColumnReferenceFromNumber(getFirstColumn()), getFirstRow(), XlsxUtils.getColumnReferenceFromNumber(getLastColumn()), getLastRow());
     }
 
     public String toRange() {
