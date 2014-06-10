@@ -21,7 +21,7 @@ sourceSets {
 }
 
 def artifactVersion = '1.0-SNAPSHOT'
-//def artifactVersion = '1.0.17'
+//def artifactVersion = '1.0.24'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
