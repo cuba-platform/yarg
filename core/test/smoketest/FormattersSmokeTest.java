@@ -10,9 +10,9 @@ import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.BandOrientation;
 import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
-import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -20,7 +20,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * @author degtyarjov
@@ -28,7 +27,13 @@ import java.util.concurrent.CountDownLatch;
  */
 
 public class FormattersSmokeTest {
-    public static final String OPEN_OFFICE_PATH = "C:\\Program Files (x86)\\OpenOffice.org 3\\program";
+    public String openOfficePath = System.getProperty("YARG_OPEN_OFFICE_PATH");
+
+    public FormattersSmokeTest() {
+        if (StringUtils.isBlank(openOfficePath)) {
+            openOfficePath = "C:/Program Files (x86)/OpenOffice.org 3/program";
+        }
+    }
 
     @Test
     public void testXlsFormatter() throws Exception {
@@ -54,7 +59,7 @@ public class FormattersSmokeTest {
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.pdf");
 
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xls", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.xls", "./test/smoketest/test.xls", ReportOutputType.pdf), outputStream));
 
@@ -90,7 +95,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_docx.pdf");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("docx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.docx", "./test/smoketest/test.docx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
@@ -148,7 +153,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.odt", "./test/smoketest/test.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
@@ -171,7 +176,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/signature.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        OfficeIntegration officeIntegrationAPI = new OfficeIntegration(OPEN_OFFICE_PATH, 8100);
+        OfficeIntegration officeIntegrationAPI = new OfficeIntegration(openOfficePath, 8100);
         officeIntegrationAPI.setTimeoutInSeconds(180);
         defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
@@ -191,7 +196,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.doc", "./test/smoketest/test.doc", ReportOutputType.doc), outputStream));
         formatter.renderDocument();
@@ -203,7 +208,7 @@ public class FormattersSmokeTest {
 //    public void testParallelDoc() throws Exception {
 //        final CountDownLatch countDownLatch = new CountDownLatch(3);
 //        final DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-//        final OfficeIntegration officeIntegrationAPI = new OfficeIntegration(OPEN_OFFICE_PATH, 8100, 8101, 8102);
+//        final OfficeIntegration officeIntegrationAPI = new OfficeIntegration(openOfficePath, 8100, 8101, 8102);
 //        officeIntegrationAPI.setTimeoutInSeconds(10);
 //        defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
 //        new Thread() {
@@ -342,7 +347,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_xlsx.pdf");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test.xlsx", "./test/smoketest/test.xlsx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
@@ -424,7 +429,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result1.xlsx");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/test1.xlsx", "./test/smoketest/test1.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
@@ -461,7 +466,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/charts.xlsx");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/charts.xlsx", "./test/smoketest/charts.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
@@ -520,7 +525,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/crosstab.pdf");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/crosstab.xlsx", "./test/smoketest/crosstab.xlsx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
@@ -582,7 +587,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/breaks.pdf");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./test/smoketest/breaks.xlsx", "./test/smoketest/breaks.xlsx", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
@@ -595,10 +600,10 @@ public class FormattersSmokeTest {
         BandData root = createRootBand();
         root.addData("date", null);
         root.addData("date2", new Date());
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.html");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.pdf");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
-                new ReportTemplateImpl("", "test.ftl", "./test/smoketest/test.ftl", ReportOutputType.html), outputStream));
+                new ReportTemplateImpl("", "test.ftl", "./test/smoketest/test.ftl", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -774,7 +779,7 @@ public class FormattersSmokeTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/colontitules.doc");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(OPEN_OFFICE_PATH, 8100));
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
                 new ReportTemplateImpl("", "./test/smoketest/colontitules.odt", "./test/smoketest/colontitules.odt", ReportOutputType.doc), outputStream));
         formatter.renderDocument();

@@ -110,7 +110,8 @@ dependencies {
     compile(group: 'com.haulmont.thirdparty', name: 'poi', version: '3.9.20130515')
     compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9')
     compile(group: 'commons-codec', name: 'commons-codec', version: '1.6')
-    compile(group: 'com.haulmont.thirdparty', name: 'core-renderer', version: 'R8')
+    compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.0.6')
+    compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.0.6')
     compile(group: "org.docx4j", name: "docx4j", version: "3.1.0")
     compile(group: "com.jayway.jsonpath", name: "json-path", version: "0.9.1")
 
