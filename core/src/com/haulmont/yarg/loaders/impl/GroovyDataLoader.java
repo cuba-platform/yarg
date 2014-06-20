@@ -15,6 +15,7 @@
  */
 package com.haulmont.yarg.loaders.impl;
 
+import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.structure.ReportQuery;
 import com.haulmont.yarg.structure.BandData;
@@ -33,11 +34,15 @@ public class GroovyDataLoader implements ReportDataLoader {
 
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
-        String script = reportQuery.getScript();
-        Map<String, Object> scriptParams = new HashMap<String, Object>();
-        scriptParams.put("reportQuery", reportQuery);
-        scriptParams.put("parentBand", parentBand);
-        scriptParams.put("params", params);
-        return scripting.evaluateGroovy(script, scriptParams);
+        try {
+            String script = reportQuery.getScript();
+            Map<String, Object> scriptParams = new HashMap<String, Object>();
+            scriptParams.put("reportQuery", reportQuery);
+            scriptParams.put("parentBand", parentBand);
+            scriptParams.put("params", params);
+            return scripting.evaluateGroovy(script, scriptParams);
+        } catch (Throwable e) {
+            throw new DataLoadingException(String.format("An error occurred while loading data for data set [%s]", reportQuery.getName()), e);
+        }
     }
 }

@@ -66,7 +66,7 @@ public class JsonDataLoader implements ReportDataLoader {
                     parseScriptResult(result, script, scriptResult);
                 } catch (com.jayway.jsonpath.PathNotFoundException e) {
                     return Collections.emptyList();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     throw new DataLoadingException(
                             String.format("An error occurred while loading data with script [%s]", reportQuery.getScript()), e);
                 }

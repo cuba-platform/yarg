@@ -30,6 +30,7 @@ import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,6 +132,7 @@ public class Reporting implements ReportingAPI {
 
             return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
+            logReport("An error occurred while running report [%s] with parameters [%s]. Trace: \n" + ExceptionUtils.getStackTrace(e), report, params);
             e.setReportDetails(String.format(" Report name [%s]", report.getName()));
             throw e;
         }

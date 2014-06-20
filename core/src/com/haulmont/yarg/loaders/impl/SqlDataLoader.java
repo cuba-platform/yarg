@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author degtyarjov
- * @version $Id: SqlDataLoader.java 9930 2012-12-13 22:31:09Z artamonov $
+ * @version $Id$
  */
 public class SqlDataLoader extends AbstractDbDataLoader {
     private DataSource dataSource;
@@ -102,7 +102,7 @@ public class SqlDataLoader extends AbstractDbDataLoader {
                     }
                 }
             });
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             throw new DataLoadingException(String.format("An error occurred while loading data for data set [%s]", reportQuery.getName()), e);
         }
 

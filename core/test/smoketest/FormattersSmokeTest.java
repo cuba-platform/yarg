@@ -162,31 +162,6 @@ public class FormattersSmokeTest {
     }
 
     @Test
-    public void testSignature() throws Exception {
-        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        BandData main = new BandData("main", root, BandOrientation.HORIZONTAL);
-        root.addChild(main);
-
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("main.signature", "${bitmap:50x18}")));
-        try {
-            main.addData("signature", FileUtils.readFileToByteArray(new File("./test/yarg.png")));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/signature.doc");
-        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
-        OfficeIntegration officeIntegrationAPI = new OfficeIntegration(openOfficePath, 8100);
-        officeIntegrationAPI.setTimeoutInSeconds(180);
-        defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
-        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("doc", root,
-                new ReportTemplateImpl("", "./test/smoketest/signature.doc", "./test/smoketest/signature.doc", ReportOutputType.doc), outputStream));
-        formatter.renderDocument();
-
-        IOUtils.closeQuietly(outputStream);
-    }
-
-    @Test
     public void testDoc() throws Exception {
         BandData root = createRootBand();
         BandData footer = root.getChildByName("Footer");

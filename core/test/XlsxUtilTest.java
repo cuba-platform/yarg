@@ -32,7 +32,7 @@ public class XlsxUtilTest {
 
     @Test
     public void testRange() throws Exception {
-        String rangeStr = "Лист1!$A$1:$C$1";
+        String rangeStr = "'Лист1'!$A$1:$C$1";
         Range range = Range.fromFormula(rangeStr);
         Assert.assertEquals(rangeStr, range.toString());
     }

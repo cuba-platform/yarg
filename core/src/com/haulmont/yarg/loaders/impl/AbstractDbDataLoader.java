@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author degtyarjov
- * @version $Id: AbstractDbDataLoader.java 9328 2012-10-18 15:28:32Z artamonov $
+ * @version $Id$
  */
 public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
@@ -148,7 +148,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             query = insertParameterToQuery(query, parameter);
         }
 
-        return new QueryPack(query.trim().replaceAll("\\s+", " "), queryParameters.toArray(new QueryParameter[queryParameters.size()]));
+        return new QueryPack(query.trim().replaceAll(" +", " "), queryParameters.toArray(new QueryParameter[queryParameters.size()]));
     }
 
     protected void addParentBandDataToParameters(BandData parentBand, Map<String, Object> currentParams) {
