@@ -1,1 +1,6 @@
-rootProject.name = 'yarg'
+include(':yarg-api', ':yarg')
+
+rootProject.name = 'yarg-all'
+
+project(':yarg-api').projectDir = new File(settingsDir, './modules/api')
+project(':yarg').projectDir = new File(settingsDir, './modules/core')

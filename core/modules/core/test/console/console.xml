@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2014 Haulmont
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  ~ use this file except in compliance with the License. You may obtain a copy of
+  ~ the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~ License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+
+<report name="report">
+    <templates>
+        <template code="DEFAULT" documentName="test.xls" documentPath="./modules/core/test/console/console.xls" outputType="xls"
+                  outputNamePattern="outputNamePattern"/>
+    </templates>
+    <parameters>
+        <parameter name="param1" alias="param1" required="true" class="java.lang.String"/>
+        <parameter name="param2" alias="param2" required="true" class="java.util.Date"/>
+        <parameter name="param3" alias="param3" required="true" class="java.lang.Integer"/>
+        <parameter name="param4" alias="param4" required="true" class="java.lang.String"/>
+    </parameters>
+    <formats/>
+    <rootBand name="Root" orientation="H">
+        <bands>
+            <band name="Band1" orientation="H">
+                <bands/>
+                <queries>
+                    <query name="Data_set_1" type="groovy">
+                        <script>return [['col1':'groovy1', 'col2':'groovy2'], ['col1':'groovy3', 'col2':'groovy4']]</script>
+                    </query>
+                </queries>
+            </band>
+            <band name="Band2" orientation="H">
+                <bands/>
+                <queries>
+                    <query name="Data_set_1" type="json">
+                        <script>parameter=param4 $</script>
+                    </query>
+                </queries>
+            </band>
+        </bands>
+        <queries/>
+    </rootBand>
+</report>
