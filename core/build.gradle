@@ -1,5 +1,11 @@
 //todo mavenUploadPlugin
-def artifactVersion = '1.0-SNAPSHOT'//'1.0.26'
+
+def projectName="YARG (Yet another report generator)"
+def projectDescription="Open source library for report generation. Provided by Haulmont."
+def projectUrl="https://github.com/Haulmont/yarg"
+def projectDevelopers=Arrays.asList('tinhol')
+
+def artifactVersion = '1.0.26'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
@@ -31,25 +37,6 @@ configure([api, core]) {
     group = 'com.haulmont.yarg'
     version = artifactVersion
 
-    sourceSets {
-        main {
-            java {
-                srcDir 'src'
-            }
-        }
-
-        test {
-            java {
-                srcDir 'test'
-            }
-            resources { srcDir 'test' }
-        }
-    }
-
-    dependencies {
-        compile(group: 'com.google.guava', name: 'guava', version: '13.0.1')
-    }
-
     repositories {
         mavenCentral()
         maven {
@@ -61,9 +48,40 @@ configure([api, core]) {
         }
     }
 
+    sourceSets {
+        main {
+            java { srcDir 'src' }
+        }
+
+        test {
+            java {srcDir 'test' }
+            resources { srcDir 'test' }
+        }
+    }
+
     configurations {
         deployerJars
         sourceArchives
+    }
+
+    dependencies {
+        compile(group: 'com.google.guava', name: 'guava', version: '13.0.1')
+        deployerJars(group: 'org.apache.maven.wagon', name: 'wagon-http', version: '1.0-beta-2')
+    }
+
+    task sourceJar(type: Jar) {
+        from sourceSets.main.java
+        classifier = 'sources'
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourceJar
+        archives javadocJar
     }
 
     uploadArchives.configure {
@@ -73,10 +91,62 @@ configure([api, core]) {
             repository(url: "$repositoryUrl/repositories/" + (isSnapshot ? 'snapshots' : 'releases')) {
                 authentication(userName: repositoryUser, password: repositoryPassword)
             }
+
+            pom.project {
+                name="$projectName"
+                description="$projectDescription"
+                url="$projectUrl"
+                developers {
+                    developer {
+                        id 'tinhol'
+                        email 'tinhol@mail.ru'
+                        organization='Haulmont'
+                        organizationUrl 'http://www.haulmont.com/'
+                    }
+                }
+                scm {
+                    connection = "$projectUrl"
+                    url = "$projectUrl"
+                }
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+            }
         }
     }
 
-    install.configurations = configurations
+    install.configure {
+        repositories.mavenInstaller {
+            pom.project {
+                name="$projectName"
+                description="$projectDescription"
+                url="$projectUrl"
+                developers {
+                    developer {
+                        id 'tinhol'
+                        email 'tinhol@mail.ru'
+                        organization='Haulmont'
+                        organizationUrl 'http://www.haulmont.com/'
+                    }
+                }
+                scm {
+                   connection = "$projectUrl"
+                   url = "$projectUrl"
+                }
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }
+    }
 
     signing {
         sign configurations.archives
@@ -84,15 +154,7 @@ configure([api, core]) {
 }
 
 configure(api) {
-    task sourceJar(type: Jar) {
-        from sourceSets.main.java
-        classifier = 'sources'
-        baseName = 'yarg-api'
-    }
 
-    artifacts {
-        archives sourceJar
-    }
 }
 
 configure(core) {
@@ -153,8 +215,6 @@ configure(core) {
 
         testCompile(group: 'junit', name: 'junit', version: '4.5')
         testRuntime(group: 'hsqldb', name: 'hsqldb', version: '1.8.0.10')
-
-        deployerJars(group: 'org.apache.maven.wagon', name: 'wagon-http', version: '1.0-beta-2')
     }
 
     jar {
@@ -162,17 +222,8 @@ configure(core) {
         from "src/reporting.xsd"
     }
 
-    task sourceJar(type: Jar) {
-        from sourceSets.main.java
-        classifier = 'sources'
-        baseName = 'yarg'
-    }
-
-    artifacts {
-        archives sourceJar
-    }
-
     mainClassName = "com.haulmont.yarg.console.ConsoleRunner"
+
     startScripts << {
         copy {
             from "reporting.properties"
