@@ -3,9 +3,8 @@
 def projectName="YARG (Yet another report generator)"
 def projectDescription="Open source library for report generation. Provided by Haulmont."
 def projectUrl="https://github.com/Haulmont/yarg"
-def projectDevelopers=Arrays.asList('tinhol')
 
-def artifactVersion = '1.0.26'
+def artifactVersion = '1.0-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
