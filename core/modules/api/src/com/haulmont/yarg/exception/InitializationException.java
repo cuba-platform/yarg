@@ -16,6 +16,10 @@
 
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when initialization of internal parts of reporting fails
+ * Example: you have provided wrong database driver class name
+ */
 public class InitializationException extends ReportingException {
     public InitializationException() {
     }

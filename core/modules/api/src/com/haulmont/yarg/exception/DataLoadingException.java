@@ -15,6 +15,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when data loader catches internal exception during load
+ */
 public class DataLoadingException extends ReportingException {
     public DataLoadingException() {
     }

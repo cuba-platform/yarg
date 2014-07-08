@@ -15,6 +15,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when user provides template file not supported by any formatter declared in formatter factory
+ */
 public class UnsupportedFormatException extends ReportingException {
     public UnsupportedFormatException() {
     }

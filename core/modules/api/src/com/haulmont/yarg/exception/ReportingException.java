@@ -15,6 +15,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Base YARG exception
+ */
 public class ReportingException extends RuntimeException {
     protected String reportDetails;
 

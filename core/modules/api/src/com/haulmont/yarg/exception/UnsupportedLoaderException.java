@@ -15,6 +15,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when user choose data loader not supported in data loader factory
+ */
 public class UnsupportedLoaderException extends ReportingException {
     public UnsupportedLoaderException() {
     }

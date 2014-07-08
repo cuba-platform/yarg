@@ -39,7 +39,9 @@ public class FormattersSmokeTest {
     public void testXlsFormatter() throws Exception {
         BandData root = createRootBand();
         BandData date = new BandData("Date", root);
+        BandData dateHeader = new BandData("DateHeader", root);
         date.addData("date", new Date());
+        root.addChild(dateHeader);
         root.addChild(date);
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xls");

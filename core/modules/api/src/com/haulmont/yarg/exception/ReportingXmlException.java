@@ -15,6 +15,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when report unmarshalling from xml or report validation by xsd fails
+ */
 public class ReportingXmlException extends ReportingException {
     public ReportingXmlException() {
     }

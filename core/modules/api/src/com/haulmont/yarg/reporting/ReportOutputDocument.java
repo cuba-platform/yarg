@@ -26,6 +26,10 @@ import com.haulmont.yarg.structure.ReportOutputType;
 
 import java.io.Serializable;
 
+/**
+ * This interface describes reporting result object.
+ * Generally returned by com.haulmont.yarg.reporting.ReportingAPI
+ */
 public interface ReportOutputDocument extends Serializable {
     Report getReport();
 

@@ -26,6 +26,10 @@ import com.haulmont.yarg.structure.ReportTemplate;
 
 import java.io.OutputStream;
 
+/**
+ * The object is single input parameter for formatter constructor
+ * If you need you formatter be created by factory - it should accept this object as constructor parameter
+ */
 public class FormatterFactoryInput {
 
     protected final String templateExtension;

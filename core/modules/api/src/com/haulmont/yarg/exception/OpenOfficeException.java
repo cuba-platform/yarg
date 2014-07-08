@@ -15,6 +15,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when formatter catches Open/Libre Office internal errors
+ */
 public class OpenOfficeException extends ReportingException {
     public OpenOfficeException() {
     }

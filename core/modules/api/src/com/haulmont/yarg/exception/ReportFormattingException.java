@@ -21,6 +21,9 @@
  */
 package com.haulmont.yarg.exception;
 
+/**
+ * Thrown when formatter's logic fails
+ */
 public class ReportFormattingException extends ReportingException {
     public ReportFormattingException() {
     }

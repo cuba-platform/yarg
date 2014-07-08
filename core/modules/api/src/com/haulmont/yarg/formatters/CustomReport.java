@@ -21,6 +21,10 @@ import com.haulmont.yarg.structure.BandData;
 
 import java.util.Map;
 
+/**
+ * This interface may be implemented if you need custom formatting logic, not covered by and provided formatter
+ * Example: you need to merge pdfs created by another reports
+ */
 public interface CustomReport {
     byte[] createReport(Report report, BandData rootBand, Map<String, Object> params);
 }
