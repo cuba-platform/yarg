@@ -23,6 +23,7 @@ package com.haulmont.yarg.reporting;
 
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.exception.ValidationException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
@@ -133,7 +134,10 @@ public class Reporting implements ReportingAPI {
             return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
             logReport("An error occurred while running report [%s] with parameters [%s]. Trace: \n" + ExceptionUtils.getStackTrace(e), report, params);
-            e.setReportDetails(String.format(" Report name [%s]", report.getName()));
+            //validation exception is usually shown to clients, so probably there is no need to add report name there (to keep the original message)
+            if (!(e instanceof ValidationException)) {
+                e.setReportDetails(String.format(" Report name [%s]", report.getName()));
+            }
             throw e;
         }
     }

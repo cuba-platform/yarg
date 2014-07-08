@@ -23,6 +23,7 @@ package com.haulmont.yarg.reporting;
 
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.DataLoadingException;
+import com.haulmont.yarg.exception.ValidationException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.BandData;
@@ -123,7 +124,8 @@ public class DataExtractorImpl implements DataExtractor {
     }
 
     protected List<Map<String, Object>> getQueriesResult(ReportBand band, BandData parentBand, Map<String, Object> params, Collection<ReportQuery> reportQueries) {
-        List<Map<String, Object>> result;Iterator<ReportQuery> queryIterator = reportQueries.iterator();
+        List<Map<String, Object>> result;
+        Iterator<ReportQuery> queryIterator = reportQueries.iterator();
         ReportQuery firstReportQuery = queryIterator.next();
 
         //gets data from first dataset
@@ -173,6 +175,8 @@ public class DataExtractorImpl implements DataExtractor {
         try {
             ReportDataLoader dataLoader = loaderFactory.createDataLoader(reportQuery.getLoaderType());
             return dataLoader.loadData(reportQuery, parentBand, paramsMap);
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
             throw new DataLoadingException(String.format("An error occurred while loading data for band [%s] and query [%s].", band.getName(), reportQuery.getName()), e);
         }
