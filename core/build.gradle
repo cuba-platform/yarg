@@ -208,6 +208,8 @@ configure(core) {
         compile(group: "com.lowagie", name: "itext", version: "2.1.0") {
             exclude(group: 'org.bouncycastle', module: 'bcmail-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcprov-jdk14')
+            exclude(group: 'bouncycastle', module: 'bcmail-jdk14')
+            exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
         }
         compile(group: 'com.haulmont.thirdparty', name: 'poi', version: '3.9.20130515')
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9') {
@@ -218,6 +220,8 @@ configure(core) {
         compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.0.6') {
             exclude(group: 'org.bouncycastle', module: 'bcmail-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcprov-jdk14')
+            exclude(group: 'bouncycastle', module: 'bcmail-jdk14')
+            exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
         }
         compile(group: "org.docx4j", name: "docx4j", version: "3.1.0") {
             exclude(group: 'org.apache.poi', module: 'poi')
