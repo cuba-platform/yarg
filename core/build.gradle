@@ -1,8 +1,8 @@
 //todo mavenUploadPlugin
 
-def projectName="YARG (Yet another report generator)"
-def projectDescription="Open source library for report generation. Provided by Haulmont."
-def projectUrl="https://github.com/Haulmont/yarg"
+def projectName = "YARG (Yet another report generator)"
+def projectDescription = "Open source library for report generation. Provided by Haulmont."
+def projectUrl = "https://github.com/Haulmont/yarg"
 
 def artifactVersion = '1.0-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
@@ -56,7 +56,7 @@ configure([api, core]) {
         }
 
         test {
-            java {srcDir 'test' }
+            java { srcDir 'test' }
             resources { srcDir 'test' }
         }
     }
@@ -95,14 +95,14 @@ configure([api, core]) {
             }
 
             pom.project {
-                name="$projectName"
-                description="$projectDescription"
-                url="$projectUrl"
+                name = "$projectName"
+                description = "$projectDescription"
+                url = "$projectUrl"
                 developers {
                     developer {
                         id 'tinhol'
                         email 'tinhol@mail.ru'
-                        organization='Haulmont'
+                        organization = 'Haulmont'
                         organizationUrl 'http://www.haulmont.com/'
                     }
                 }
@@ -124,20 +124,20 @@ configure([api, core]) {
     install.configure {
         repositories.mavenInstaller {
             pom.project {
-                name="$projectName"
-                description="$projectDescription"
-                url="$projectUrl"
+                name = "$projectName"
+                description = "$projectDescription"
+                url = "$projectUrl"
                 developers {
                     developer {
                         id 'tinhol'
                         email 'tinhol@mail.ru'
-                        organization='Haulmont'
+                        organization = 'Haulmont'
                         organizationUrl 'http://www.haulmont.com/'
                     }
                 }
                 scm {
-                   connection = "$projectUrl"
-                   url = "$projectUrl"
+                    connection = "$projectUrl"
+                    url = "$projectUrl"
                 }
                 licenses {
                     license {
@@ -150,8 +150,10 @@ configure([api, core]) {
         }
     }
 
-    signing {
-        sign configurations.archives
+    if (signing.hasProperty('keyId')) {
+        signing {
+            sign configurations.archives
+        }
     }
 }
 
@@ -209,7 +211,7 @@ configure(core) {
         }
         compile(group: 'com.haulmont.thirdparty', name: 'poi', version: '3.9.20130515')
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9') {
-            exclude (group:'org.apache.poi', module:'poi')
+            exclude(group: 'org.apache.poi', module: 'poi')
         }
         compile(group: 'commons-codec', name: 'commons-codec', version: '1.6')
         compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.0.6')
@@ -218,7 +220,7 @@ configure(core) {
             exclude(group: 'org.bouncycastle', module: 'bcprov-jdk14')
         }
         compile(group: "org.docx4j", name: "docx4j", version: "3.1.0") {
-            exclude (group:'org.apache.poi', module:'poi')
+            exclude(group: 'org.apache.poi', module: 'poi')
         }
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "0.9.1")
 
