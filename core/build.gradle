@@ -56,6 +56,7 @@ configure([api, core]) {
     sourceSets {
         main {
             java { srcDir 'src' }
+            resources { srcDir 'src' }
         }
 
         test {
@@ -255,10 +256,5 @@ configure(core) {
 
     test {
         workingDir = new File('../..')
-        //todo replace with gradle task
-        Files.copy(
-                Paths.get("./modules/core/src/reporting.xsd"),
-                Paths.get(testClassesDir.absolutePath + "/reporting.xsd")
-        )
     }
 }
