@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 //todo mavenUploadPlugin
 
 def projectName = "YARG (Yet another report generator)"
@@ -225,7 +228,7 @@ configure(core) {
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "0.9.1")
 
         testCompile(group: 'junit', name: 'junit', version: '4.5')
-        testRuntime(group: 'hsqldb', name: 'hsqldb', version: '1.8.0.10')
+        testCompile(group: 'hsqldb', name: 'hsqldb', version: '1.8.0.10')
     }
 
     jar {
@@ -248,5 +251,14 @@ configure(core) {
             from "reporting.properties"
             into "$outputDir/bin"
         }
+    }
+
+    test {
+        workingDir = new File('../..')
+        //todo replace with gradle task
+        Files.copy(
+                Paths.get("./modules/core/src/reporting.xsd"),
+                Paths.get(testClassesDir.absolutePath + "/reporting.xsd")
+        )
     }
 }
