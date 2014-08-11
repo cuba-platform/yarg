@@ -250,6 +250,8 @@ configure(core) {
     }
 
     test {
+        maxHeapSize = "512m"
+        jvmArgs '-XX:MaxPermSize=256m'
         workingDir = new File('../..')
     }
 }
