@@ -27,7 +27,7 @@ import java.util.*;
  */
 
 public class FormattersSmokeTest {
-    public String openOfficePath = System.getenv("YARG_OPEN_OFFICE_PATH");
+    public String openOfficePath = System.getProperty("YARG_OPEN_OFFICE_PATH");
 
     public FormattersSmokeTest() {
         if (StringUtils.isBlank(openOfficePath)) {
