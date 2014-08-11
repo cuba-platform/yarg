@@ -232,11 +232,6 @@ configure(core) {
         testCompile(group: 'hsqldb', name: 'hsqldb', version: '1.8.0.10')
     }
 
-    jar {
-        from "src/log4j.xml"
-        from "src/reporting.xsd"
-    }
-
     mainClassName = "com.haulmont.yarg.console.ConsoleRunner"
 
     startScripts << {
