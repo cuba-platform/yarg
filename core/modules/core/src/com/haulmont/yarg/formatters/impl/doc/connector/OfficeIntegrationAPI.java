@@ -17,6 +17,8 @@
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
 public interface OfficeIntegrationAPI {
+    String getTemporaryDirPath();
+
     Integer getTimeoutInSeconds();
 
     Boolean isDisplayDeviceAvailable();

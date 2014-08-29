@@ -65,8 +65,7 @@ import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.asXPropertySet;
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 
 public abstract class AbstractInliner implements ContentInliner {
     private static final String TEXT_GRAPHIC_OBJECT = "com.sun.star.text.TextGraphicObject";
@@ -249,17 +248,17 @@ public abstract class AbstractInliner implements ContentInliner {
 
     protected void insertImage(XComponent document, OfficeResourceProvider officeResourceProvider, XText destination, XTextRange textRange,
                                Image image) throws Exception {
-        XMultiServiceFactory xFactory = asXMultiServiceFactory(document);
+        XMultiServiceFactory xFactory = as(XMultiServiceFactory.class, document);
         XComponentContext xComponentContext = officeResourceProvider.getXComponentContext();
         XMultiComponentFactory serviceManager = xComponentContext.getServiceManager();
 
         Object oImage = xFactory.createInstance(TEXT_GRAPHIC_OBJECT);
         Object oGraphicProvider = serviceManager.createInstanceWithContext(GRAPHIC_PROVIDER_OBJECT, xComponentContext);
 
-        XGraphicProvider xGraphicProvider = asXGraphicProvider(oGraphicProvider);
+        XGraphicProvider xGraphicProvider = as(XGraphicProvider.class, oGraphicProvider);
 
         XPropertySet imageProperties = buildImageProperties(xGraphicProvider, oImage, image.imageContent);
-        XTextContent xTextContent = asXTextContent(oImage);
+        XTextContent xTextContent = as(XTextContent.class, oImage);
         destination.insertTextContent(textRange, xTextContent, true);
         setImageSize(image.width, image.height, oImage, imageProperties);
     }
@@ -269,13 +268,13 @@ public abstract class AbstractInliner implements ContentInliner {
         Size aActualSize = (Size) imageProperties.getPropertyValue("ActualSize");
         aActualSize.Height = height * IMAGE_FACTOR;
         aActualSize.Width = width * IMAGE_FACTOR;
-        XShape xShape = asXShape(oImage);
+        XShape xShape = as(XShape.class, oImage);
         xShape.setSize(aActualSize);
     }
 
     protected XPropertySet buildImageProperties(XGraphicProvider xGraphicProvider, Object oImage, byte[] imageContent)
             throws Exception {
-        XPropertySet imageProperties = asXPropertySet(oImage);
+        XPropertySet imageProperties = as(XPropertySet.class, oImage);
 
         PropertyValue[] propValues = new PropertyValue[]{new PropertyValue()};
         propValues[0].Name = "InputStream";

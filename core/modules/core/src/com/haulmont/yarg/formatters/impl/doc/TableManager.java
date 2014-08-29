@@ -17,6 +17,7 @@ package com.haulmont.yarg.formatters.impl.doc;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.formatters.impl.AbstractFormatter;
+import com.sun.star.beans.PropertyValue;
 import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XNameAccess;
 import com.sun.star.frame.XController;
@@ -31,17 +32,17 @@ import com.sun.star.table.XTableRows;
 import com.sun.star.text.XText;
 import com.sun.star.text.XTextTable;
 import com.sun.star.text.XTextTableCursor;
+import com.sun.star.text.XTextTablesSupplier;
 import com.sun.star.uno.Any;
 import com.sun.star.uno.Type;
+import com.sun.star.view.XSelectionSupplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
-import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.copy;
-import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.paste;
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 
 public class TableManager {
     protected XTextTable xTextTable;
@@ -61,12 +62,12 @@ public class TableManager {
     }
 
     public static List<String> getTablesNames(XComponent xComponent) {
-        XNameAccess tables = asXTextTablesSupplier(xComponent).getTextTables();
+        XNameAccess tables = as(XTextTablesSupplier.class, xComponent).getTextTables();
         return new ArrayList<String>(Arrays.asList(tables.getElementNames()));
     }
 
     public static XTextTable getTableByName(XComponent xComponent, String tableName) throws NoSuchElementException, WrappedTargetException {
-        XNameAccess tables = asXTextTablesSupplier(xComponent).getTextTables();
+        XNameAccess tables = as(XTextTablesSupplier.class, xComponent).getTextTables();
         return (XTextTable) ((Any) tables.getByName(tableName)).getObject();
     }
 
@@ -82,7 +83,7 @@ public class TableManager {
                         //stop loop - this row has less columns than first one
                         break;
                     }
-                    String templateText = asXText(xCell).getString();
+                    String templateText = as(XText.class, xCell).getString();
                     if (AbstractFormatter.UNIVERSAL_ALIAS_PATTERN.matcher(templateText).find()) {
                         return currentRow;
                     }
@@ -98,7 +99,7 @@ public class TableManager {
     public XText findFirstEntryInRow(Pattern pattern, int row) {
         try {
             for (int i = 0; i < xTextTable.getColumns().getCount(); i++) {
-                XText xText = asXText(getXCell(i, row));
+                XText xText = as(XText.class, getXCell(i, row));
                 String templateText = xText.getString();
 
                 if (pattern.matcher(templateText).find()) {
@@ -112,7 +113,7 @@ public class TableManager {
     }
 
     public XCell getXCell(int col, int row) throws IndexOutOfBoundsException {
-        return asXCellRange(xTextTable).getCellByPosition(col, row);
+        return as(XCellRange.class, xTextTable).getCellByPosition(col, row);
     }
 
     public void selectRow(XController xController, int row) throws com.sun.star.uno.Exception {
@@ -124,12 +125,12 @@ public class TableManager {
         xTextTableCursor.gotoCellByName(lastCellName, true);
         // It works only if XCellRange was created via cursor. why????
         if (firstCellName.equalsIgnoreCase(lastCellName)) {
-            XCell cell = asXCellRange(xTextTable).getCellByPosition(0, row);
-            asXSelectionSupplier(xController).select(new Any(new Type(XCell.class), cell));
+            XCell cell = as(XCellRange.class, xTextTable).getCellByPosition(0, row);
+            as(XSelectionSupplier.class, xController).select(new Any(new Type(XCell.class), cell));
         } else {
-            XCellRange xCellRange = asXCellRange(xTextTable).getCellRangeByName(xTextTableCursor.getRangeName());
+            XCellRange xCellRange = as(XCellRange.class, xTextTable).getCellRangeByName(xTextTableCursor.getRangeName());
             // and why do we need Any here?
-            asXSelectionSupplier(xController).select(new Any(new Type(XCellRange.class), xCellRange));
+            as(XSelectionSupplier.class, xController).select(new Any(new Type(XCellRange.class), xCellRange));
         }
     }
 
@@ -145,10 +146,18 @@ public class TableManager {
 
     public void copyRow(XDispatchHelper xDispatchHelper, XController xController, int row) throws com.sun.star.uno.Exception {
         selectRow(xController, row);
-        XDispatchProvider xDispatchProvider = asXDispatchProvider(xController.getFrame());
+        XDispatchProvider xDispatchProvider = as(XDispatchProvider.class, xController.getFrame());
         copy(xDispatchHelper, xDispatchProvider);
         insertEmptyRow(row);
         selectRow(xController, row + 1);
         paste(xDispatchHelper, xDispatchProvider);
+    }
+
+    public void copy(XDispatchHelper xDispatchHelper, XDispatchProvider xDispatchProvider) {
+        xDispatchHelper.executeDispatch(xDispatchProvider, ".uno:Copy", "", 0, new PropertyValue[]{new PropertyValue()});
+    }
+
+    public void paste(XDispatchHelper xDispatchHelper, XDispatchProvider xDispatchProvider) {
+        xDispatchHelper.executeDispatch(xDispatchProvider, ".uno:Paste", "", 0, new PropertyValue[]{new PropertyValue()});
     }
 }

@@ -17,15 +17,11 @@
 package com.haulmont.yarg.formatters.impl.xls;
 
 import com.haulmont.yarg.exception.ReportingException;
-import com.haulmont.yarg.formatters.impl.doc.UnoHelper;
-import com.haulmont.yarg.formatters.impl.doc.OfficeInputStream;
 import com.haulmont.yarg.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.yarg.formatters.impl.doc.connector.NoFreePortsException;
-import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeTask;
-import com.sun.star.frame.XComponentLoader;
-import com.sun.star.io.XInputStream;
 import com.sun.star.lang.XComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +63,8 @@ public class PdfConverterImpl implements PdfConverter {
             @Override
             public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
                 try {
-                    XInputStream xis = new OfficeInputStream(documentBytes);
-                    XComponentLoader xComponentLoader = ooResourceProvider.getXComponentLoader();
-                    XComponent xComponent = UnoHelper.loadXComponent(xComponentLoader, xis);
-                    saveAndClose(xComponent, outputStream, convertPattern);
+                    XComponent xComponent = ooResourceProvider.loadXComponent(documentBytes);
+                    saveAndClose(ooResourceProvider, xComponent, outputStream, convertPattern);
                 } catch (Exception e) {
                     throw new ReportingException("An error occurred while running task in Open Office server", e);
                 }
@@ -79,9 +73,9 @@ public class PdfConverterImpl implements PdfConverter {
         officeIntegration.runTaskWithTimeout(officeTask, officeIntegration.getTimeoutInSeconds());
     }
 
-    private void saveAndClose(XComponent xComponent, OutputStream outputStream, String filterName) throws com.sun.star.io.IOException {
+    private void saveAndClose(OfficeResourceProvider ooResourceProvider, XComponent xComponent, OutputStream outputStream, String filterName) throws com.sun.star.io.IOException {
         OfficeOutputStream officeOutputStream = new OfficeOutputStream(outputStream);
-        UnoHelper.saveXComponent(xComponent, officeOutputStream, filterName);
-        UnoHelper.closeXComponent(xComponent);
+        ooResourceProvider.saveXComponent(xComponent, officeOutputStream, filterName);
+        ooResourceProvider.closeXComponent(xComponent);
     }
 }

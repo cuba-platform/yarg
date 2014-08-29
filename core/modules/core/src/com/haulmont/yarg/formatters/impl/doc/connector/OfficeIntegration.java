@@ -18,23 +18,31 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.sun.star.comp.helper.BootstrapException;
 
-import java.util.Collections;
+import java.lang.RuntimeException;
+import java.util.Set;
 import java.util.concurrent.*;
 
 public class OfficeIntegration implements OfficeIntegrationAPI {
     protected volatile boolean platformDependProcessManagement = true;
     protected final ExecutorService executor;
-    protected final BlockingQueue<Integer> freePorts = new LinkedBlockingDeque<Integer>();
-    protected Integer[] openOfficePorts;
+    protected final BlockingQueue<OfficeConnection> connectionsQueue = new LinkedBlockingDeque<>();
+    protected final Set<OfficeConnection> connections = new CopyOnWriteArraySet<>();
+
     protected String openOfficePath;
+    protected String temporaryDirPath;
+    protected Integer[] openOfficePorts;
     protected Integer timeoutInSeconds = 60;
     protected Boolean displayDeviceAvailable = false;
 
     public OfficeIntegration(String openOfficePath, Integer... ports) {
         this.openOfficePath = openOfficePath;
         this.openOfficePorts = ports;
-        Collections.addAll(freePorts, ports);
-        executor = Executors.newFixedThreadPool(freePorts.size());
+        initConnections(ports);
+        executor = Executors.newFixedThreadPool(connections.size());
+    }
+
+    public void setTemporaryDirPath(String temporaryDirPath) {
+        this.temporaryDirPath = temporaryDirPath;
     }
 
     public void setTimeoutInSeconds(Integer timeoutInSeconds) {
@@ -43,6 +51,10 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     public void setDisplayDeviceAvailable(Boolean displayDeviceAvailable) {
         this.displayDeviceAvailable = displayDeviceAvailable;
+    }
+
+    public String getTemporaryDirPath() {
+        return temporaryDirPath;
     }
 
     public Integer getTimeoutInSeconds() {
@@ -55,7 +67,7 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     @Override
     public void runTaskWithTimeout(final OfficeTask officeTask, int timeoutInSeconds) throws NoFreePortsException {
-        final OfficeConnection connection = createConnection();
+        final OfficeConnection connection = acquireConnection();
         Future future = null;
         try {
             Callable<Void> task = new Callable<Void>() {
@@ -63,24 +75,28 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
                 public Void call() throws java.lang.Exception {
                     connection.open();
                     officeTask.processTaskInOpenOffice(connection.getOOResourceProvider());
-                    connection.close();
                     return null;
                 }
             };
             future = executor.submit(task);
             future.get(timeoutInSeconds, TimeUnit.SECONDS);
         } catch (ExecutionException ex) {
+            connection.close();
             if (ex.getCause() instanceof BootstrapException) {
                 throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
             }
             throw new RuntimeException(ex.getCause());
-        } catch (java.lang.Exception ex) {
+        } catch (Throwable ex) {
+            connection.close();
+            if (ex.getCause() instanceof BootstrapException) {
+                throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
+            }
             throw new OpenOfficeException(ex);
         } finally {
             if (future != null) {
                 future.cancel(true);
             }
-            connection.releaseResources();
+            releaseConnection(connection);
         }
     }
 
@@ -91,7 +107,12 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
     public String getAvailablePorts() {
         StringBuilder builder = new StringBuilder();
 
-        Integer[] ports = freePorts.toArray(new Integer[freePorts.size()]);
+        Integer[] ports = new Integer[connections.size()];
+        int i = 0;
+        for (OfficeConnection officeConnection : connectionsQueue) {
+            ports[i] = officeConnection.port;
+        }
+
 
         if ((ports.length > 0)) {
             for (Integer port : ports) {
@@ -106,8 +127,12 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
     }
 
     public void hardReloadAccessPorts() {
-        freePorts.clear();
-        Collections.addAll(this.freePorts, openOfficePorts);
+        for (OfficeConnection connection : connections) {
+            connection.close();
+        }
+
+        connectionsQueue.clear();
+        connectionsQueue.addAll(connections);
     }
 
     public boolean getPlatformDependProcessManagement() {
@@ -118,13 +143,29 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
         this.platformDependProcessManagement = platformDependProcessManagement;
     }
 
-    protected OfficeConnection createConnection() throws NoFreePortsException {
-        final Integer port = freePorts.poll();
-        if (port != null) {
-            return new OfficeConnection(openOfficePath, port, resolveProcessManager(), this);
+    protected OfficeConnection acquireConnection() throws NoFreePortsException {
+        final OfficeConnection connection = connectionsQueue.poll();
+        if (connection != null) {
+            return connection;
         } else {
             throw new NoFreePortsException("Couldn't get free port from pool");
         }
+    }
+
+    protected void releaseConnection(OfficeConnection officeConnection) {
+        connectionsQueue.add(officeConnection);
+    }
+
+    protected void initConnections(Integer[] ports) {
+        for (Integer port : ports) {
+            connections.add(createConnection(port));
+        }
+
+        connectionsQueue.addAll(connections);
+    }
+
+    protected OfficeConnection createConnection(Integer port) {
+        return new OfficeConnection(openOfficePath, port, resolveProcessManager(), this);
     }
 
     protected ProcessManager resolveProcessManager() {
@@ -136,9 +177,5 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
                 return new LinuxProcessManager();
         }
         return new JavaProcessManager();
-    }
-
-    void putPortBack(Integer port) {
-        freePorts.add(port);
     }
 }

@@ -45,7 +45,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.asXDocumentInsertable;
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 
 /**
  * Handle HTML with format string: ${html}
@@ -132,7 +132,7 @@ public class HtmlContentContentInliner implements ContentInliner {
             String fileUrl = "file:///" + tempFile.getCanonicalPath().replace("\\", "/");
 
             XTextCursor textCursor = destination.createTextCursorByRange(textRange);
-            XDocumentInsertable insertable = asXDocumentInsertable(textCursor);
+            XDocumentInsertable insertable = as(XDocumentInsertable.class, textCursor);
 
             insertable.insertDocumentFromURL(fileUrl, new PropertyValue[0]);
         } finally {

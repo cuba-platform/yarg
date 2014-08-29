@@ -16,22 +16,35 @@
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
 import com.haulmont.yarg.exception.OpenOfficeException;
-import com.sun.star.comp.helper.BootstrapException;
-import com.sun.star.uno.Exception;
+import com.sun.star.beans.XPropertySet;
+import com.sun.star.bridge.XBridge;
+import com.sun.star.bridge.XBridgeFactory;
+import com.sun.star.connection.XConnection;
+import com.sun.star.connection.XConnector;
+import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.XComponentContext;
 
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
+
 public class OfficeConnection {
-    protected XComponentContext xComponentContext;
+    protected static AtomicLong bridgeIndex = new AtomicLong();
+
     protected String openOfficePath;
     protected OOServer oooServer;
     protected Integer port;
-    protected OfficeIntegration connector;
+    protected OfficeIntegration officeIntegration;
     protected BootstrapSocketConnector bsc;
-    protected OfficeResourceProvider officeResourceProvider;
 
-    public OfficeConnection(String openOfficePath, Integer port, ProcessManager processManager, OfficeIntegration connector) {
+    protected volatile XComponentContext xComponentContext;
+    protected volatile OfficeResourceProvider officeResourceProvider;
+    protected volatile boolean closed = true;
+
+
+    public OfficeConnection(String openOfficePath, Integer port, ProcessManager processManager, OfficeIntegration officeIntegration) {
         this.port = port;
-        this.connector = connector;
+        this.officeIntegration = officeIntegration;
         this.oooServer = new OOServer(openOfficePath, OOServer.getDefaultOOoOptions(), "localhost", port, processManager);
         this.bsc = new BootstrapSocketConnector(oooServer);
         this.openOfficePath = openOfficePath;
@@ -42,22 +55,33 @@ public class OfficeConnection {
     }
 
     public void open() throws OpenOfficeException {
-        try {
-            this.xComponentContext = bsc.connect("localhost", port);
-            this.officeResourceProvider = new OfficeResourceProvider(xComponentContext);
-        } catch (Exception e) {
-            throw new OpenOfficeException("Unable to create Open office components.", e);
-        } catch (BootstrapException e) {
-            throw new OpenOfficeException("Unable to start Open office instance.", e);
+        if (this.closed) {
+            try {
+                XComponentContext localContext = bsc.connect("127.0.0.1", port);
+                String connectionString = "socket,host=127.0.0.1,port=" + port;
+                XMultiComponentFactory localServiceManager = localContext.getServiceManager();
+                XConnector connector = as(XConnector.class,
+                        localServiceManager.createInstanceWithContext("com.sun.star.connection.Connector", localContext));
+                XConnection connection = connector.connect(connectionString);
+                XBridgeFactory bridgeFactory = as(XBridgeFactory.class,
+                        localServiceManager.createInstanceWithContext("com.sun.star.bridge.BridgeFactory", localContext));
+                String bridgeName = "yarg_" + bridgeIndex.incrementAndGet();
+                XBridge bridge = bridgeFactory.createBridge(bridgeName, "urp", connection, null);
+                XMultiComponentFactory serviceManager = as(XMultiComponentFactory.class, bridge.getInstance("StarOffice.ServiceManager"));
+                XPropertySet properties = as(XPropertySet.class, serviceManager);
+                xComponentContext = as(XComponentContext.class, properties.getPropertyValue("DefaultContext"));
+
+                officeResourceProvider = new OfficeResourceProvider(xComponentContext, officeIntegration);
+                closed = false;
+            } catch (Exception e) {
+                close();
+                throw new OpenOfficeException("Unable to create Open office components.", e);
+            }
         }
     }
 
     public void close() {
         bsc.disconnect();
-    }
-
-    public void releaseResources() {
-        oooServer.kill();
-        connector.putPortBack(port);
+        closed = true;
     }
 }

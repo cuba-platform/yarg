@@ -21,56 +21,166 @@
  */
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
+import com.haulmont.yarg.exception.OpenOfficeException;
+import com.haulmont.yarg.exception.ReportFormattingException;
+import com.haulmont.yarg.formatters.impl.doc.OfficeInputStream;
+import com.haulmont.yarg.structure.ReportTemplate;
+import com.sun.star.beans.PropertyValue;
 import com.sun.star.frame.XComponentLoader;
 import com.sun.star.frame.XDesktop;
 import com.sun.star.frame.XDispatchHelper;
-import com.sun.star.uno.*;
+import com.sun.star.frame.XStorable;
+import com.sun.star.io.IOException;
+import com.sun.star.io.XInputStream;
+import com.sun.star.io.XOutputStream;
+import com.sun.star.lang.XComponent;
 import com.sun.star.uno.Exception;
+import com.sun.star.uno.XComponentContext;
+import com.sun.star.util.XCloseable;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.asXComponentLoader;
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.asXDesktop;
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.asXDispatchHelper;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 
 public class OfficeResourceProvider {
-    protected XComponentContext xComponentContext;
-    protected XDesktop xDesktop;
-    protected XDispatchHelper xDispatchHelper;
-    protected XComponentLoader xComponentLoader;
+    private static AtomicLong counter = new AtomicLong();
 
-    public OfficeResourceProvider(XComponentContext xComponentContext) throws Exception {
+    protected XComponentContext xComponentContext;
+    protected OfficeIntegration officeIntegration;
+
+    public OfficeResourceProvider(XComponentContext xComponentContext, OfficeIntegration officeIntegration) throws Exception {
         this.xComponentContext = xComponentContext;
-        xDesktop = createDesktop();
-        xDispatchHelper = createXDispatchHelper();
-        xComponentLoader = asXComponentLoader(xDesktop);
+        this.officeIntegration = officeIntegration;
     }
 
     public XComponentContext getXComponentContext() {
         return xComponentContext;
     }
 
-    public XDesktop getXDesktop() {
-        return xDesktop;
-    }
-
     public XDispatchHelper getXDispatchHelper() {
-        return xDispatchHelper;
+        try {
+            return createXDispatchHelper();
+        } catch (Exception e) {
+            throw new OpenOfficeException("Unable to create Open office components.", e);
+        }
     }
 
     public XComponentLoader getXComponentLoader() {
-        return xComponentLoader;
+        try {
+            return as(XComponentLoader.class, createDesktop());
+        } catch (Exception e) {
+            throw new OpenOfficeException("Unable to create Open office components.", e);
+        }
     }
+
+    public XComponent loadXComponent(InputStream inputStream) throws com.sun.star.lang.IllegalArgumentException, IOException {
+        try {
+            return loadXComponent(IOUtils.toByteArray(inputStream));
+        } catch (java.io.IOException e) {
+            throw new ReportFormattingException("An error occurred while reading bytes", e);
+        }
+    }
+
+    public XComponent loadXComponent(byte[] bytes) throws com.sun.star.lang.IllegalArgumentException, IOException {
+        XComponentLoader xComponentLoader = getXComponentLoader();
+
+        PropertyValue[] props = new PropertyValue[1];
+        props[0] = new PropertyValue();
+        props[0].Name = "Hidden";
+        props[0].Value = Boolean.TRUE;
+
+        File tempFile = createTempFile(bytes);
+
+        return xComponentLoader.loadComponentFromURL(toURL(tempFile), "_blank", 0, props);
+    }
+
+    public XComponent loadXComponent(XInputStream inputStream) throws com.sun.star.lang.IllegalArgumentException, IOException {
+        XComponentLoader xComponentLoader = getXComponentLoader();
+
+        PropertyValue[] props = new PropertyValue[2];
+        props[0] = new PropertyValue();
+        props[1] = new PropertyValue();
+        props[0].Name = "InputStream";
+        props[0].Value = inputStream;
+        props[1].Name = "Hidden";
+        props[1].Value = true;
+        return xComponentLoader.loadComponentFromURL("private:stream", "_blank", 0, props);
+    }
+
+    public XInputStream getXInputStream(ReportTemplate reportTemplate) {
+        try {
+            return new OfficeInputStream(IOUtils.toByteArray(reportTemplate.getDocumentContent()));
+        } catch (java.io.IOException e) {
+            throw new OpenOfficeException("An error occurred while converting template to XInputStream", e);
+        }
+    }
+
+    public void closeXComponent(XComponent xComponent) {
+        XCloseable xCloseable = as(XCloseable.class, xComponent);
+        try {
+            xCloseable.close(false);
+        } catch (com.sun.star.util.CloseVetoException e) {
+            xComponent.dispose();
+        }
+    }
+
+    public void saveXComponent(XComponent xComponent, XOutputStream xOutputStream, String filterName) throws IOException {
+        PropertyValue[] props = new PropertyValue[2];
+        props[0] = new PropertyValue();
+        props[1] = new PropertyValue();
+        props[0].Name = "OutputStream";
+        props[0].Value = xOutputStream;
+        props[1].Name = "FilterName";
+        props[1].Value = filterName;
+        XStorable xStorable = as(XStorable.class, xComponent);
+        xStorable.storeToURL("private:stream", props);
+    }
+
 
     protected XDispatchHelper createXDispatchHelper() throws Exception {
         Object o = xComponentContext.getServiceManager().createInstanceWithContext(
                 "com.sun.star.frame.DispatchHelper", xComponentContext);
-        return asXDispatchHelper(o);
+        return as(XDispatchHelper.class, o);
     }
 
     protected XDesktop createDesktop() throws com.sun.star.uno.Exception {
         Object o = xComponentContext.getServiceManager().createInstanceWithContext(
                 "com.sun.star.frame.Desktop", xComponentContext);
-        return asXDesktop(o);
+        return as(XDesktop.class, o);
     }
 
 
+    protected File createTempFile(byte[] bytes) {
+        try {
+            File tempFile = null;
+            String tempFileName = String.format("document%d", counter.incrementAndGet());
+            String tempFileExt = ".tmp";
+            if (StringUtils.isNotBlank(officeIntegration.getTemporaryDirPath())) {
+                tempFile = Files.createTempFile(
+                        Paths.get(officeIntegration.getTemporaryDirPath()),
+                        tempFileName,
+                        tempFileExt)
+                        .toFile();
+            } else {
+                tempFile = File.createTempFile(tempFileName, tempFileExt);
+            }
+            tempFile.deleteOnExit();
+
+            FileUtils.writeByteArrayToFile(tempFile, bytes);
+            return tempFile;
+        } catch (java.io.IOException e) {
+            throw new ReportFormattingException("Could not create temporary file for pdf conversion", e);
+        }
+    }
+
+    protected String toURL(File file) {
+        return "file://" + file.toURI().getRawPath();
+    }
 }

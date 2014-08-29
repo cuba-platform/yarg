@@ -34,7 +34,6 @@ import com.sun.star.container.NoSuchElementException;
 import com.sun.star.container.XIndexAccess;
 import com.sun.star.frame.XDispatchHelper;
 import com.sun.star.io.IOException;
-import com.sun.star.io.XInputStream;
 import com.sun.star.lang.WrappedTargetException;
 import com.sun.star.lang.XComponent;
 import com.sun.star.table.XCell;
@@ -54,8 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.*;
-import static com.haulmont.yarg.formatters.impl.doc.UnoHelper.*;
+import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 
 /**
  * Document formatter for '.doc' and '.odt' file types
@@ -112,7 +110,7 @@ public class DocFormatter extends AbstractFormatter {
                     replaceAllAliasesInDocument();
                     replaceAllAliasesInDocument();//we do it second time to handle several open office bugs (page breaks in html, etc). Do not remove.
                     // Saving document to output stream and closing
-                    saveAndClose(xComponent, outputType, outputStream);
+                    saveAndClose(ooResourceProvider, xComponent, outputType, outputStream);
                 } catch (Exception e) {
                     throw wrapWithReportingException("An error occurred while running task in Open Office server", e);
                 }
@@ -123,12 +121,11 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     protected void loadDocument(OfficeResourceProvider ooResourceProvider) throws com.sun.star.lang.IllegalArgumentException, IOException {
-        XInputStream xis = getXInputStream(reportTemplate);
-        xComponent = loadXComponent(ooResourceProvider.getXComponentLoader(), xis);
+        xComponent = ooResourceProvider.loadXComponent(reportTemplate.getDocumentContent());
         officeComponent = new OfficeComponent(ooResourceProvider, xComponent);
     }
 
-    protected void saveAndClose(XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
+    protected void saveAndClose(OfficeResourceProvider ooResourceProvider, XComponent xComponent, ReportOutputType outputType, OutputStream outputStream)
             throws IOException {
         OfficeOutputStream ooos = new OfficeOutputStream(outputStream);
         String filterName;
@@ -137,8 +134,8 @@ public class DocFormatter extends AbstractFormatter {
         } else {
             filterName = MS_WORD_OUTPUT_FILE;
         }
-        saveXComponent(xComponent, ooos, filterName);
-        closeXComponent(xComponent);
+        ooResourceProvider.saveXComponent(xComponent, ooos, filterName);
+        ooResourceProvider.closeXComponent(xComponent);
     }
 
     protected void fillTables(XDispatchHelper xDispatchHelper) throws com.sun.star.uno.Exception {
@@ -188,7 +185,7 @@ public class DocFormatter extends AbstractFormatter {
             List<BandData> childrenBands = parentBand.getChildrenList();
             for (BandData child : childrenBands) {
                 if (name.equals(child.getName())) {
-                    tableManager.copyRow(xDispatchHelper, asXTextDocument(xComponent).getCurrentController(), numberOfRowWithAliases);
+                    tableManager.copyRow(xDispatchHelper, as(XTextDocument.class, xComponent).getCurrentController(), numberOfRowWithAliases);
                 }
             }
 
@@ -213,7 +210,7 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     protected void fillCell(BandData band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
-        XText xText = asXText(xCell);
+        XText xText = as(XText.class, xCell);
         String cellText = xText.getString();
         cellText = cellText.replace("\r\n", "\n");//just a workaround for Windows \r\n break symbol
         List<String> parametersToInsert = new ArrayList<String>();
@@ -245,8 +242,8 @@ public class DocFormatter extends AbstractFormatter {
      * @throws com.haulmont.yarg.exception.ReportingException If there is not appropriate band or alias is bad
      */
     protected void replaceAllAliasesInDocument() {
-        XTextDocument xTextDocument = asXTextDocument(xComponent);
-        XReplaceable xReplaceable = asXReplaceable(xTextDocument);
+        XTextDocument xTextDocument = as(XTextDocument.class, xComponent);
+        XReplaceable xReplaceable = as(XReplaceable.class, xTextDocument);
         XSearchDescriptor searchDescriptor = xReplaceable.createSearchDescriptor();
         searchDescriptor.setSearchString(ALIAS_WITH_BAND_NAME_REGEXP);
         try {
@@ -258,7 +255,7 @@ public class DocFormatter extends AbstractFormatter {
         XIndexAccess indexAccess = xReplaceable.findAll(searchDescriptor);
         for (int i = 0; i < indexAccess.getCount(); i++) {
             try {
-                XTextRange textRange = asXTextRange(indexAccess.getByIndex(i));
+                XTextRange textRange = as(XTextRange.class, indexAccess.getByIndex(i));
                 String alias = unwrapParameterName(textRange.getString());
 
                 BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
