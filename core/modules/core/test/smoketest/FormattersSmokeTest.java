@@ -189,6 +189,8 @@ public class FormattersSmokeTest {
         final DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         final OfficeIntegration officeIntegrationAPI = new OfficeIntegration(openOfficePath, 8100, 8101, 8102);
         officeIntegrationAPI.setTimeoutInSeconds(10);
+        officeIntegrationAPI.setTemporaryDirPath("./result/temp/");
+
         defaultFormatterFactory.setOfficeIntegration(officeIntegrationAPI);
         new Thread() {
             @Override
@@ -261,6 +263,7 @@ public class FormattersSmokeTest {
             }
         }.start();
         countDownLatch.await();
+        System.out.println();
     }
 
 

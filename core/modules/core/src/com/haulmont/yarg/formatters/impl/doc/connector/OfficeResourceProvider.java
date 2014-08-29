@@ -44,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -163,8 +164,11 @@ public class OfficeResourceProvider {
             String tempFileName = String.format("document%d", counter.incrementAndGet());
             String tempFileExt = ".tmp";
             if (StringUtils.isNotBlank(officeIntegration.getTemporaryDirPath())) {
+                Path tempDir = Paths.get(officeIntegration.getTemporaryDirPath());
+                tempDir.toFile().mkdirs();
+
                 tempFile = Files.createTempFile(
-                        Paths.get(officeIntegration.getTemporaryDirPath()),
+                        tempDir,
                         tempFileName,
                         tempFileExt)
                         .toFile();
