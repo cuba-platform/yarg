@@ -96,7 +96,25 @@ public class Document {
     public String getCellValue(Cell cell) {
         if (cell.getV() == null) return null;
         if (cell.getT().equals(STCellType.S)) {
-            return sharedStrings.getJaxbElement().getSi().get(Integer.parseInt(cell.getV())).getT().getValue();
+            CTRst ctRst = sharedStrings.getJaxbElement().getSi().get(Integer.parseInt(cell.getV()));
+            String value = null;
+
+            if (ctRst.getT() != null) {
+               value = ctRst.getT().getValue();
+            } else {
+                if (ctRst.getR() != null) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    for (CTRElt ctrElt : ctRst.getR()) {
+                        if (ctrElt.getT() != null) {
+                            stringBuilder.append(ctrElt.getT().getValue());
+                        }
+                    }
+
+                    value = stringBuilder.toString();
+                }
+            }
+
+            return value;
         } else {
             return cell.getV();
         }

@@ -302,6 +302,27 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testXlsx2() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData header = new BandData("Header", root, BandOrientation.VERTICAL);
+        BandData invoices = new BandData("Invoices", root, BandOrientation.VERTICAL);
+
+
+        root.addChild(header);
+        root.addChild(invoices);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/invoicingReport.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/invoicingReport.xlsx", "./modules/core/test/smoketest/invoicingReport.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testXlsxToPdf() throws Exception {
         BandData root = createRootBand();
 
