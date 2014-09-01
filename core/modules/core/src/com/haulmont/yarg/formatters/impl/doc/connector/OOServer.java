@@ -178,6 +178,7 @@ public class OOServer {
         options.add("-nocrashreport");
         options.add("-nolockcheck");
         options.add("-nofirststartwizard");
+        options.add("-headless");
 
         return options;
     }
