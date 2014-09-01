@@ -99,7 +99,7 @@ public class OOServer {
         // find office executable relative to this class's class loader
         String sOffice = System.getProperty("os.name").startsWith("Windows") ? "soffice.exe" : "soffice";
         //accept option
-        String oooAcceptOption = "--accept=socket,host=" + host + ",port=" + port + ",tcpNoDelay=1;urp;";
+        String oooAcceptOption = "--accept=socket,host=" + host + ",port=" + port + ";urp;";
 
         URL[] oooExecFolderURL = new URL[]{new File(oooExecFolder).toURI().toURL()};
         URLClassLoader loader = new URLClassLoader(oooExecFolderURL);
