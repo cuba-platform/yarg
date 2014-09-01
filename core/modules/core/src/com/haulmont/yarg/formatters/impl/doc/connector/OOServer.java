@@ -180,7 +180,6 @@ public class OOServer {
         options.add("-nolockcheck");
         options.add("-nofirststartwizard");
         options.add("-headless");
-        options.add("-server");
 
         return options;
     }
