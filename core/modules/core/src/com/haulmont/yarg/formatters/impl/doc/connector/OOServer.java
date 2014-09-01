@@ -98,7 +98,7 @@ public class OOServer {
     public void start() throws BootstrapException, IOException {
         // find office executable relative to this class's class loader
         String sOffice = System.getProperty("os.name").startsWith("Windows") ? "soffice.exe" : "soffice";
-        //accept option
+        //accept option !Note! we are using old version notation (- instead of --) to support old version of office
         String oooAcceptOption = "-accept=socket,host=" + host + ",port=" + port + ",tcpNoDelay=1;urp;";
 
         URL[] oooExecFolderURL = new URL[]{new File(oooExecFolder).toURI().toURL()};
@@ -165,6 +165,7 @@ public class OOServer {
 
     /**
      * Returns the list of default options.
+     * !Note! we are using old version notation (- instead of --) to support old version of office
      *
      * @return The list of default options
      */
