@@ -99,7 +99,7 @@ public class OOServer {
         // find office executable relative to this class's class loader
         String sOffice = System.getProperty("os.name").startsWith("Windows") ? "soffice.exe" : "soffice";
         //accept option
-        String oooAcceptOption = "--accept=socket,host=" + host + ",port=" + port + ";urp;";
+        String oooAcceptOption = "-accept=socket,host=" + host + ",port=" + port + ",tcpNoDelay=1;urp;";
 
         URL[] oooExecFolderURL = new URL[]{new File(oooExecFolder).toURI().toURL()};
         URLClassLoader loader = new URLClassLoader(oooExecFolderURL);
@@ -172,12 +172,12 @@ public class OOServer {
 
         ArrayList<String> options = new ArrayList<String>();
 
-        options.add("--nologo");
-        options.add("--nodefault");
-        options.add("--norestore");
-        options.add("--nocrashreport");
-        options.add("--nolockcheck");
-        options.add("--nofirststartwizard");
+        options.add("-nologo");
+        options.add("-nodefault");
+        options.add("-norestore");
+        options.add("-nocrashreport");
+        options.add("-nolockcheck");
+        options.add("-nofirststartwizard");
 
         return options;
     }
