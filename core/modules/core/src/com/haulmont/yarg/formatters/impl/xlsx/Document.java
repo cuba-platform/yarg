@@ -21,10 +21,12 @@
  */
 package com.haulmont.yarg.formatters.impl.xlsx;
 
+import com.haulmont.yarg.exception.ReportFormattingException;
 import org.docx4j.dml.chart.CTChartSpace;
 import org.docx4j.dml.spreadsheetdrawing.CTDrawing;
 import org.docx4j.dml.spreadsheetdrawing.CTMarker;
 import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -232,9 +234,13 @@ public class Document {
             if (mergeCells != null && mergeCells.getMergeCell() != null) {
                 mergeCells.getMergeCell().clear();
             }
-            CTPageBreak rowBreaks = sheet.worksheet.getContents().getRowBreaks();
-            if (rowBreaks != null && rowBreaks.getBrk() != null) {
-                rowBreaks.getBrk().clear();
+            try {
+                CTPageBreak rowBreaks = sheet.worksheet.getContents().getRowBreaks();
+                if (rowBreaks != null && rowBreaks.getBrk() != null) {
+                    rowBreaks.getBrk().clear();
+                }
+            } catch (Docx4JException e) {
+                throw new ReportFormattingException("An error occurred while clearing docx4j workbook", e);
             }
         }
         workbook.getDefinedNames().getDefinedName().clear();
