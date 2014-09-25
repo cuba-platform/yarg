@@ -102,7 +102,7 @@ public class Document {
             String value = null;
 
             if (ctRst.getT() != null) {
-               value = ctRst.getT().getValue();
+                value = ctRst.getT().getValue();
             } else {
                 if (ctRst.getR() != null) {
                     StringBuilder stringBuilder = new StringBuilder();
@@ -188,7 +188,7 @@ public class Document {
                     Range range = null;
                     CTTwoCellAnchor ctTwoCellAnchor = null;
                     if (anchorObj instanceof CTTwoCellAnchor) {
-                         ctTwoCellAnchor = (CTTwoCellAnchor) anchorObj;
+                        ctTwoCellAnchor = (CTTwoCellAnchor) anchorObj;
                         CTMarker from = ctTwoCellAnchor.getFrom();
                         CTMarker to = ctTwoCellAnchor.getTo();
                         String sheetName = worksheets.get(worksheets.size() - 1).name;

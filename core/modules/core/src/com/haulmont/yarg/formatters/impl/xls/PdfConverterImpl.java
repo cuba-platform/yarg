@@ -46,15 +46,19 @@ public class PdfConverterImpl implements PdfConverter {
         try {
             doConvertToPdf(convertPattern, documentBytes, outputStream);
         } catch (Exception e) {
-            log.warn("An error occurred while converting xls to pdf. System will retry to generate report once again.", e);
-            try {
-                doConvertToPdf(convertPattern, documentBytes, outputStream);
-            } catch (NoFreePortsException e1) {
-                if (e instanceof NoFreePortsException) {
-                    throw (NoFreePortsException) e;
+            log.warn("An error occurred while converting xls to pdf. System will retry to generate report again.", e);
+            for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
+                try {
+                    doConvertToPdf(convertPattern, documentBytes, outputStream);
+                    return;
+                } catch (NoFreePortsException e1) {
+                    if (e instanceof NoFreePortsException) {
+                        throw (NoFreePortsException) e;
+                    }
                 }
-                throw new ReportingException("An error occurred while converting xls to pdf.", e);
             }
+
+            throw new ReportingException("An error occurred while converting xls to pdf.", e);
         }
     }
 

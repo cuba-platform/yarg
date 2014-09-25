@@ -85,15 +85,20 @@ public class DocFormatter extends AbstractFormatter {
         try {
             doCreateDocument(reportTemplate.getOutputType(), outputStream);
         } catch (Exception e) {//just try again if any exceptions occurred
-            log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report once again.", reportTemplate.getDocumentName()), e);
-            try {
-                doCreateDocument(reportTemplate.getOutputType(), outputStream);
-            } catch (NoFreePortsException e1) {
-                if (e instanceof NoFreePortsException) {
-                    throw (NoFreePortsException) e;
+            log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report again.", reportTemplate.getDocumentName()), e);
+
+            for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
+                try {
+                    doCreateDocument(reportTemplate.getOutputType(), outputStream);
+                    return;
+                } catch (NoFreePortsException e1) {
+                    if (e instanceof NoFreePortsException) {
+                        throw (NoFreePortsException) e;
+                    }
                 }
-                throw wrapWithReportingException("An error occurred while generating doc report.", e);
             }
+
+            throw wrapWithReportingException("An error occurred while generating doc report.", e);
         }
     }
 

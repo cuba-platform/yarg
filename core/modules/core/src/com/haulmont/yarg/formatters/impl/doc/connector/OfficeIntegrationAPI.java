@@ -21,6 +21,8 @@ public interface OfficeIntegrationAPI {
 
     Integer getTimeoutInSeconds();
 
+    int getCountOfRetry();
+
     Boolean isDisplayDeviceAvailable();
 
     void runTaskWithTimeout(OfficeTask officeTask, int timeoutInSeconds) throws NoFreePortsException;

@@ -32,6 +32,7 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
     protected String temporaryDirPath;
     protected Integer[] openOfficePorts;
     protected Integer timeoutInSeconds = 60;
+    protected int countOfRetry = 2;
     protected Boolean displayDeviceAvailable = false;
 
     public OfficeIntegration(String openOfficePath, Integer... ports) {
@@ -51,6 +52,10 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     public void setDisplayDeviceAvailable(Boolean displayDeviceAvailable) {
         this.displayDeviceAvailable = displayDeviceAvailable;
+    }
+
+    public void setCountOfRetry(int countOfRetry) {
+        this.countOfRetry = countOfRetry;
     }
 
     public String getTemporaryDirPath() {
@@ -98,6 +103,10 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
             }
             releaseConnection(connection);
         }
+    }
+
+    public int getCountOfRetry() {
+        return countOfRetry;
     }
 
     public ExecutorService getExecutor() {
