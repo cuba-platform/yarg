@@ -143,15 +143,18 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void findVerticalDependencies() {
-        List<CTDefinedName> definedName = template.getWorkbook().getDefinedNames().getDefinedName();
-        for (CTDefinedName name1 : definedName) {
-            for (CTDefinedName name2 : definedName) {
-                if (!name1.equals(name2)) {
-                    Range range1 = Range.fromFormula(name1.getValue());
-                    Range range2 = Range.fromFormula(name2.getValue());
-                    if (range1.intersectsByVertical(range2)) {
-                        rangeVerticalIntersections.put(range1, range2);
-                        rangeVerticalIntersections.put(range2, range1);
+        DefinedNames definedNames = template.getWorkbook().getDefinedNames();
+        if (definedNames != null) {
+            List<CTDefinedName> definedName = definedNames.getDefinedName();
+            for (CTDefinedName name1 : definedName) {
+                for (CTDefinedName name2 : definedName) {
+                    if (!name1.equals(name2)) {
+                        Range range1 = Range.fromFormula(name1.getValue());
+                        Range range2 = Range.fromFormula(name2.getValue());
+                        if (range1.intersectsByVertical(range2)) {
+                            rangeVerticalIntersections.put(range1, range2);
+                            rangeVerticalIntersections.put(range2, range1);
+                        }
                     }
                 }
             }
