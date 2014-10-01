@@ -15,3 +15,7 @@ YARG is a mature and well-tested tool, already used in a number of Haulmont's so
   * [Incomes](/core/modules/core/test/sample/incomes)
   * [Invoice](/core/modules/core/test/sample/invoice)
   * [Breakdown](/core/modules/core/test/sample/financedetails)
+
+
+### Forums
+* [Russian language: Cuba platform](https://www.cuba-platform.com/support/)
