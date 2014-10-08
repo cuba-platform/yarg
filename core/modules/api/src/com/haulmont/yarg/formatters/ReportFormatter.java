@@ -26,7 +26,7 @@ public interface ReportFormatter {
     byte[] createDocument();
 
     /**
-     * Creates document and serialize it to predefined stream or smth like this
+     * Creates document and serializes it to predefined stream (or something like this)
      */
     void renderDocument();
 }
