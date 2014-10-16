@@ -138,6 +138,19 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
+    protected String getElementText(Object element) {
+        StringWriter w = new StringWriter();
+        try {
+            TextUtils.extractText(element, w);
+        } catch (Exception e) {
+            throw wrapWithReportingException(
+                    String.format("An error occurred while rendering docx template. File name [%s]",
+                            reportTemplate.getDocumentName()), e);
+        }
+
+        return w.toString();
+    }
+
     protected class DocumentWrapper {
         protected MainDocumentPart mainDocumentPart;
         protected Set<TableManager> tables;
@@ -266,33 +279,16 @@ public class DocxFormatter extends AbstractFormatter {
     }
 
     protected abstract class AliasVisitor extends TraversalUtil.CallbackImpl {
-        protected R mergeRun = null;
-        protected boolean doMerge = false;
-        protected List<Text> textsToRemove = new ArrayList<Text>();
-
-
         @Override
         public List<Object> apply(Object o) {
-            if (o instanceof Text && doMerge) {
-                Text text = (Text) o;
-                String textValue = text.getValue();
-                R currentRun = (R) text.getParent();
-                if (mergeRun != null) {//merge started - need to merge current fragment
-                    Text mergeRunText = getFirstText(mergeRun);
-                    mergeRunText.setValue(mergeRunText.getValue() + textValue);
-                    textsToRemove.add(text);
+            if (o instanceof P) {
+                String paragraphText = getElementText(o);
 
-                    if (textValue.contains("}") && !textValue.contains("${")) {
-                        //textWrappers.add(new TextWrapper(mergeRunText));
-                        handle(mergeRunText);
-                        mergeRun = null;
+                if (UNIVERSAL_ALIAS_PATTERN.matcher(paragraphText).find()) {
+                    Set<Text> mergedTexts = new TextMerger((P) o, UNIVERSAL_ALIAS_REGEXP).mergeMatchedTexts();
+                    for (Text text : mergedTexts) {
+                        handle(text);
                     }
-                } else if (UNIVERSAL_ALIAS_PATTERN.matcher(textValue).find()
-                        && countMatches(textValue, "${") == countMatches(textValue, "}")) {//no need to merge - fragment is appropriate text to inline band data
-                    //textWrappers.add(new TextWrapper(text));
-                    handle(text);
-                } else if (textValue.contains("${") && mergeRun == null) {//need to start merge
-                    mergeRun = currentRun;
                 }
             }
 
@@ -301,68 +297,24 @@ public class DocxFormatter extends AbstractFormatter {
 
         protected abstract void handle(Text text);
 
-        protected Text getFirstText(R run) {
-            for (Object object : run.getContent()) {
-                Object currentRunElement = XmlUtils.unwrap(object);
-                if (currentRunElement instanceof Text) {
-                    return (Text) currentRunElement;
-                }
-            }
-
-            throw new IllegalStateException("Merge run doesn't contain text element");//should never be thrown
-        }
-
         public void walkJAXBElements(Object parent) {
             List children = getChildren(parent);
             if (children != null) {
 
-                for (Object o : children) {
-                    o = XmlUtils.unwrap(o);
+                for (Object object : children) {
+                    object = XmlUtils.unwrap(object);
 
-                    if (o instanceof Child) {
-                        ((Child) o).setParent(parent);
+                    if (object instanceof Child) {
+                        ((Child) object).setParent(parent);
                     }
 
-                    if (o instanceof P) {
-                        initParagraph((P) o);
-                    }
+                    this.apply(object);
 
-                    this.apply(o);
-
-                    if (this.shouldTraverse(o)) {
-                        walkJAXBElements(o);
+                    if (this.shouldTraverse(object)) {
+                        walkJAXBElements(object);
                     }
                 }
             }
-        }
-
-        protected void initParagraph(P paragraph) {
-            mergeRun = null;
-            String paragraphText = getParagraphText(paragraph);
-            Matcher matcher = ALIAS_WITH_BAND_NAME_PATTERN.matcher(paragraphText);
-            doMerge = matcher.find();
-
-            for (Text textToRemove : textsToRemove) {
-                R run = (R) textToRemove.getParent();
-                for (Iterator iterator = run.getContent().iterator(); iterator.hasNext(); ) {
-                    Object element = XmlUtils.unwrap(iterator.next());
-                    if (element instanceof Text && element == textToRemove) {
-                        iterator.remove();
-                    }
-                }
-            }
-            textsToRemove.clear();
-        }
-
-        protected String getParagraphText(P paragraph) {
-            StringWriter w = new StringWriter();
-            try {
-                TextUtils.extractText(paragraph, w);
-            } catch (Exception e) {
-                throw wrapWithReportingException(String.format("An error occurred while rendering docx template. File name [%s]", reportTemplate.getDocumentName()), e);
-            }
-
-            return w.toString();
         }
     }
 
@@ -371,13 +323,13 @@ public class DocxFormatter extends AbstractFormatter {
         protected Set<TableManager> tableManagers = new HashSet<TableManager>();
         protected boolean skipCurrentTable = false;
 
-        public List<Object> apply(Object o) {
+        public List<Object> apply(Object object) {
             if (skipCurrentTable) return null;
 
-            if (o instanceof Tr) {
+            if (object instanceof Tr) {
+                Tr currentRow = (Tr) object;
                 final TableManager currentTable = currentTables.peek();
 
-                Tr currentRow = (Tr) o;
                 if (currentTable.firstRow == null) {
                     currentTable.firstRow = currentRow;
 
@@ -391,10 +343,10 @@ public class DocxFormatter extends AbstractFormatter {
                 }
 
                 if (currentTable.rowWithAliases == null) {
-                    RegexpFinder callback = new RegexpFinder(UNIVERSAL_ALIAS_PATTERN);
-                    new TraversalUtil(currentRow, callback);
+                    RegexpFinder aliasFinder = new RegexpFinder<P>(UNIVERSAL_ALIAS_PATTERN, P.class);
+                    new TraversalUtil(currentRow, aliasFinder);
 
-                    if (callback.getValue() != null) {
+                    if (aliasFinder.getValue() != null) {
                         currentTable.rowWithAliases = currentRow;
                     }
                 }
@@ -405,12 +357,16 @@ public class DocxFormatter extends AbstractFormatter {
 
         protected void findNameForCurrentTable(final TableManager currentTable) {
             new TraversalUtil(currentTable.firstRow,
-                    new RegexpFinder(BAND_NAME_DECLARATION_PATTERN) {
+                    new RegexpFinder<P>(BAND_NAME_DECLARATION_PATTERN, P.class) {
                         @Override
-                        protected void onFind(Text o, Matcher matcher) {
-                            super.onFind(o, matcher);
+                        protected void onFind(P paragraph, Matcher matcher) {
+                            super.onFind(paragraph, matcher);
                             currentTable.bandName = matcher.group(1);
-                            o.setValue(matcher.replaceFirst(""));
+                            String bandNameDeclaration = matcher.group();
+                            Set<Text> mergedTexts = new TextMerger(paragraph, bandNameDeclaration).mergeMatchedTexts();
+                            for (Text text : mergedTexts) {
+                                text.setValue(text.getValue().replace(bandNameDeclaration, ""));
+                            }
                         }
                     });
         }
@@ -447,22 +403,26 @@ public class DocxFormatter extends AbstractFormatter {
         }
     }
 
-    protected class RegexpFinder extends TraversalUtil.CallbackImpl {
+    protected class RegexpFinder<T> extends TraversalUtil.CallbackImpl {
+        protected Class<T> classToHandle;
         protected Pattern regularExpression;
         protected String value;
 
-        public RegexpFinder(Pattern regularExpression) {
+        public RegexpFinder(Pattern regularExpression, Class<T> classToHandle) {
             this.regularExpression = regularExpression;
+            this.classToHandle = classToHandle;
         }
 
         @Override
         public List<Object> apply(Object o) {
-            if (o instanceof Text) {
-                String text = ((Text) o).getValue();
-                if (isNotBlank(text)) {
-                    Matcher matcher = regularExpression.matcher(text);
+            if (classToHandle.isAssignableFrom(o.getClass())) {
+                @SuppressWarnings("unchecked")
+                T currentElement = (T) o;
+                String currentElementText = getElementText(currentElement);
+                if (isNotBlank(currentElementText)) {
+                    Matcher matcher = regularExpression.matcher(currentElementText);
                     if (matcher.find()) {
-                        onFind((Text) o, matcher);
+                        onFind(currentElement, matcher);
                     }
                 }
             }
@@ -470,7 +430,7 @@ public class DocxFormatter extends AbstractFormatter {
             return null;
         }
 
-        protected void onFind(Text o, Matcher matcher) {
+        protected void onFind(T o, Matcher matcher) {
             value = matcher.group(0);
         }
 
@@ -478,6 +438,108 @@ public class DocxFormatter extends AbstractFormatter {
             return value;
         }
     }
+
+    protected class TextMerger {
+        protected Set<Text> resultingTexts = new HashSet<Text>();
+        protected Set<Text> textsToRemove = new HashSet<Text>();
+
+        protected Text startText = null;
+        protected Set<Text> mergedTexts = null;
+        protected StringBuilder mergedTextsString = null;
+        protected Pattern regexpPattern;
+        protected P paragraph;
+        protected String regexp;
+        protected String first2SymbolsOfRegexp;
+
+        public TextMerger(P paragraph, String regexp) {
+            this.paragraph = paragraph;
+            this.regexp = regexp;
+            this.regexpPattern = Pattern.compile(regexp);
+            this.first2SymbolsOfRegexp = regexp.replaceAll("\\\\", "").substring(0, 2);
+        }
+
+        public Set<Text> mergeMatchedTexts() {
+            for (Object paragraphContentObject : paragraph.getContent()) {
+                if (paragraphContentObject instanceof R) {
+                    R currentRun = (R) paragraphContentObject;
+                    for (Object runContentObject : currentRun.getContent()) {
+                        Object unwrappedRunContenObject = XmlUtils.unwrap(runContentObject);
+                        if (unwrappedRunContenObject instanceof Text) {
+                            handleText((Text) unwrappedRunContenObject);
+                        }
+                    }
+                }
+            }
+
+            removeUnnecessaryTexts();
+
+            return resultingTexts;
+        }
+
+        protected void removeUnnecessaryTexts() {
+            for (Text text : textsToRemove) {
+                Object parent = XmlUtils.unwrap(text.getParent());
+                if (parent instanceof R) {
+                    ((R) parent).getContent().remove(text);
+                }
+            }
+        }
+
+        protected void handleText(Text currentText) {
+            if (startText == null && containsStartOfRegexp(currentText.getValue())) {
+                initMergeQueue(currentText);
+            }
+
+            if (startText != null) {
+                addToMergeQueue(currentText);
+
+                if (mergeQueueMatchesRegexp()) {
+                    handleMatchedText();
+                }
+            }
+        }
+
+        private void initMergeQueue(Text currentText) {
+            startText = currentText;
+            mergedTexts = new HashSet<Text>();
+            mergedTextsString = new StringBuilder();
+        }
+
+        private boolean containsStartOfRegexp(String text) {
+            return text.contains(first2SymbolsOfRegexp);
+        }
+
+        protected void addToMergeQueue(Text currentText) {
+            mergedTexts.add(currentText);
+            mergedTextsString.append(currentText.getValue());
+        }
+
+        protected boolean mergeQueueMatchesRegexp() {
+            return regexpPattern.matcher(mergedTextsString).find();
+        }
+
+        protected void handleMatchedText() {
+            resultingTexts.add(startText);
+            startText.setValue(mergedTextsString.toString());
+            for (Text mergedText : mergedTexts) {
+                if (mergedText != startText) {
+                    mergedText.setValue("");
+                    textsToRemove.add(mergedText);
+                }
+            }
+
+            if (!containsStartOfRegexp(startText.getValue().replace(regexp, ""))) {
+                startText = null;
+                mergedTexts = null;
+                mergedTextsString = null;
+            } else {
+                mergedTexts = new HashSet<Text>();
+                mergedTexts.add(startText);
+                mergedTextsString = new StringBuilder(startText.getValue());
+            }
+        }
+    }
+
 
     protected void writeToOutputStream(WordprocessingMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
         SaveToZipFile saver = new SaveToZipFile(mlPackage);

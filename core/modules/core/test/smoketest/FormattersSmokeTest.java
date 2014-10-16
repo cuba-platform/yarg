@@ -73,6 +73,24 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testDocxTableWithSplittedBandAlias() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+        BandData ride = new BandData("ride", root, BandOrientation.HORIZONTAL);
+        ride.setData(new HashMap<String, Object>());
+        root.addChild(ride);
+
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/waybill_car.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/waybill_car.docx", "./modules/core/test/smoketest/waybill_car.docx", ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDocx() throws Exception {
         BandData root = createRootBand();
         BandData footer = root.getChildByName("Footer");

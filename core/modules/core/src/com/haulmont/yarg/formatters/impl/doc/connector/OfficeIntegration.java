@@ -25,8 +25,8 @@ import java.util.concurrent.*;
 public class OfficeIntegration implements OfficeIntegrationAPI {
     protected volatile boolean platformDependProcessManagement = true;
     protected final ExecutorService executor;
-    protected final BlockingQueue<OfficeConnection> connectionsQueue = new LinkedBlockingDeque<>();
-    protected final Set<OfficeConnection> connections = new CopyOnWriteArraySet<>();
+    protected final BlockingQueue<OfficeConnection> connectionsQueue = new LinkedBlockingDeque<OfficeConnection>();
+    protected final Set<OfficeConnection> connections = new CopyOnWriteArraySet<OfficeConnection>();
 
     protected String openOfficePath;
     protected String temporaryDirPath;
