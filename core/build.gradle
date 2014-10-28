@@ -1,5 +1,3 @@
-//todo mavenUploadPlugin
-
 def projectName = "YARG (Yet another report generator)"
 def projectDescription = "Open source library for report generation. Provided by Haulmont."
 def projectUrl = "https://github.com/Haulmont/yarg"
@@ -91,6 +89,13 @@ configure([api, core]) {
         repositories.mavenDeployer {
             name = 'httpDeployer'
             configuration = configurations.deployerJars
+
+//            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+//            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//                authentication(userName: 'tinhol', password:  "$signing.password")
+//            }
+
             repository(url: "$repositoryUrl/repositories/" + (isSnapshot ? 'snapshots' : 'releases')) {
                 authentication(userName: repositoryUser, password: repositoryPassword)
             }
