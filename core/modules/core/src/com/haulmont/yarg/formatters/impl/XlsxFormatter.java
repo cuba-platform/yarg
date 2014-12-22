@@ -71,8 +71,10 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Set<Cell> innerFormulas = new HashSet<Cell>();
     protected Set<Cell> outerFormulas = new HashSet<Cell>();
 
-    private Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
-    private int previousRangesRightOffset;
+    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<String, Range>();
+    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
+
+    protected int previousRangesRightOffset;
 
     public XlsxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -437,18 +439,16 @@ public class XlsxFormatter extends AbstractFormatter {
             rangeDependencies.put(templateRange, resultRange);
             bandsToTemplateRanges.forcePut(band, templateRange);
             bandsToResultRanges.forcePut(band, resultRange);
+            lastRenderedRangeForBandName.put(band.getName(), resultRange);
         }
     }
 
     protected Row findNextRowForHBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
-
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
 
-        List<Range> alreadyRenderedRanges = findAlreadyRenderedRanges(band);
-
-        if (CollectionUtils.isNotEmpty(alreadyRenderedRanges)) {//this band has been already rendered at least once
-            Range lastRenderedRange = alreadyRenderedRanges.get(alreadyRenderedRanges.size() - 1);
+        Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
+        if (lastRenderedRange != null) {//this band has been already rendered at least once
             BandData lastRenderedBand = bandsToResultRanges.inverse().get(lastRenderedRange);
             LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
             lastRenderedBand.visit(bandVisitor);
@@ -467,15 +467,13 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
-
-        List<Range> alreadyRenderedRanges = findAlreadyRenderedRanges(band);
-
         previousRangesRightOffset = 0;
-        if (CollectionUtils.isNotEmpty(alreadyRenderedRanges)) {//this band has been already rendered at least once
-            Range previousRange = getLast(alreadyRenderedRanges);
-            previousRangesRightOffset = previousRange.getFirstColumn() - templateRange.getFirstColumn() + 1;
-            if (resultSheetRows.size() > previousRange.getFirstRow() - 1) {//get current row
-                firstRow = resultSheetRows.get(previousRange.getFirstRow() - 1);
+
+        Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
+        if (lastRenderedRange != null) {//this band has been already rendered at least once
+            previousRangesRightOffset = lastRenderedRange.getFirstColumn() - templateRange.getFirstColumn() + 1;
+            if (resultSheetRows.size() > lastRenderedRange.getFirstRow() - 1) {//get current row
+                firstRow = resultSheetRows.get(lastRenderedRange.getFirstRow() - 1);
             }
         } else if (!isFirstLevelBand) {
             firstRow = findNextRowForChildBand(band, templateRange, resultSheetRows);
@@ -551,17 +549,16 @@ public class XlsxFormatter extends AbstractFormatter {
         return resultCells;
     }
 
-    protected List<Range> findAlreadyRenderedRanges(BandData band) {
-        List<Range> alreadyRenderedRanges = new ArrayList<Range>();
+    protected Range getLastRenderedBandForThisLevel(BandData band) {
         List<BandData> sameLevelBands = band.getParentBand().getChildrenByName(band.getName());
         for (BandData sameLevelBand : sameLevelBands) {
             Range range = bandsToResultRanges.get(sameLevelBand);
             if (range != null) {
-                alreadyRenderedRanges.add(range);
+                return lastRenderedRangeForBandName.get(band.getName());
             }
         }
 
-        return alreadyRenderedRanges;
+        return null;
     }
 
     protected Range getBandRange(BandData band) {

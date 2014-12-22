@@ -458,6 +458,29 @@ public class FormattersSmokeTest {
         IOUtils.closeQuietly(outputStream);
     }
 
+    /*@Test
+    public void testBigXlsx() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+
+        for (int i = 0; i < 100000; i++) {
+            BandData band1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+            band1.addData("name", "Name#" + i);
+            root.addChild(band1);
+        }
+
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Band1");
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result3.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/test3.xlsx", "./modules/core/test/smoketest/test3.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }*/
+
     @Test
     public void testXlsxCharts() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);

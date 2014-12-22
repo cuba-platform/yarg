@@ -148,14 +148,9 @@ public class BandData {
         if (bandName == null) {
             throw new NullPointerException("Parameter bandName can not be null.");
         }
-        if (getChildrenList() != null) {
-            for (BandData child : getChildrenList()) {
-                if (bandName.equals(child.getName())) {
-                    return child;
-                }
-            }
-        }
-        return null;
+
+        List<BandData> childrenByName = getChildrenByName(bandName);
+        return childrenByName.isEmpty() ? null : childrenByName.get(0);
     }
 
     public boolean visit(BandVisitor bandVisitor) {
@@ -194,13 +189,8 @@ public class BandData {
             throw new NullPointerException("Parameter bandName can not be null.");
         }
 
-        List<BandData> children = new ArrayList<BandData>();
-        for (BandData child : getChildrenList()) {
-            if (bandName.equals(child.getName())) {
-                children.add(child);
-            }
-        }
-        return children;
+        List<BandData> children = childrenBands.get(bandName);
+        return children != null ? children : new ArrayList<BandData>();
     }
 
     public Set<String> getFirstLevelBandDefinitionNames() {
