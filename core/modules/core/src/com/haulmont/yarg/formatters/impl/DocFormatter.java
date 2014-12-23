@@ -187,15 +187,14 @@ public class DocFormatter extends AbstractFormatter {
             if (officeIntegration.isDisplayDeviceAvailable()) {
                 clearClipboard();
             }
-            List<BandData> childrenBands = parentBand.getChildrenList();
-            for (BandData child : childrenBands) {
-                if (name.equals(child.getName())) {
-                    tableManager.copyRow(xDispatchHelper, as(XTextDocument.class, xComponent).getCurrentController(), numberOfRowWithAliases);
-                }
+
+            List<BandData> childrenByName = parentBand.getChildrenByName(name);
+            for (BandData ignored : childrenByName) {
+                tableManager.copyRow(xDispatchHelper, as(XTextDocument.class, xComponent).getCurrentController(), numberOfRowWithAliases);
             }
 
             int i = numberOfRowWithAliases;
-            for (BandData child : childrenBands) {
+            for (BandData child : childrenByName) {
                 if (name.equals(child.getName())) {
                     fillRow(child, tableManager, i);
                     i++;

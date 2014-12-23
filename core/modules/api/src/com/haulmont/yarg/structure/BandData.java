@@ -42,15 +42,11 @@ public class BandData {
 
 
     public BandData(String name) {
-        this.name = name;
-        this.parentBand = null;
-        this.orientation = BandOrientation.HORIZONTAL;
+        this(name, null, BandOrientation.HORIZONTAL);
     }
 
     public BandData(String name, BandData parentBand) {
-        this.name = name;
-        this.parentBand = parentBand;
-        this.orientation = BandOrientation.HORIZONTAL;
+        this(name, parentBand, BandOrientation.HORIZONTAL);
     }
 
     public BandData(String name, BandData parentBand, BandOrientation orientation) {
@@ -126,9 +122,29 @@ public class BandData {
 
     public List<BandData> getChildrenList() {
         List<BandData> bandList = new ArrayList<BandData>();
-        for (List<BandData> bands : childrenBands.values())
+        for (List<BandData> bands : childrenBands.values()) {
             bandList.addAll(bands);
+        }
+
         return bandList;
+    }
+
+    public List<BandData> getChildrenByName(String bandName) {
+        if (bandName == null) {
+            throw new NullPointerException("Parameter bandName can not be null.");
+        }
+
+        List<BandData> children = childrenBands.get(bandName);
+        return children != null ? children : new ArrayList<BandData>();
+    }
+
+    public BandData getChildByName(String bandName) {
+        if (bandName == null) {
+            throw new NullPointerException("Parameter bandName can not be null.");
+        }
+
+        List<BandData> childrenByName = getChildrenByName(bandName);
+        return childrenByName.isEmpty() ? null : childrenByName.get(0);
     }
 
     public void addChild(BandData band) {
@@ -142,15 +158,6 @@ public class BandData {
     public void addChildren(List<BandData> bands) {
         for (BandData band : bands)
             addChild(band);
-    }
-
-    public BandData getChildByName(String bandName) {
-        if (bandName == null) {
-            throw new NullPointerException("Parameter bandName can not be null.");
-        }
-
-        List<BandData> childrenByName = getChildrenByName(bandName);
-        return childrenByName.isEmpty() ? null : childrenByName.get(0);
     }
 
     public boolean visit(BandVisitor bandVisitor) {
@@ -182,15 +189,6 @@ public class BandData {
 
         List<BandData> allBand = firstBand.getParentBand().getChildrenByName(name);
         return allBand;
-    }
-
-    public List<BandData> getChildrenByName(String bandName) {
-        if (bandName == null) {
-            throw new NullPointerException("Parameter bandName can not be null.");
-        }
-
-        List<BandData> children = childrenBands.get(bandName);
-        return children != null ? children : new ArrayList<BandData>();
     }
 
     public Set<String> getFirstLevelBandDefinitionNames() {

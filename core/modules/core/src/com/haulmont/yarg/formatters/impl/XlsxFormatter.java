@@ -32,11 +32,7 @@ import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
-import com.haulmont.yarg.structure.BandData;
-import com.haulmont.yarg.structure.BandVisitor;
-import com.haulmont.yarg.structure.ReportFieldFormat;
-import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.BandOrientation;
+import com.haulmont.yarg.structure.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
@@ -178,64 +174,67 @@ public class XlsxFormatter extends AbstractFormatter {
                         List<Object> areaChartOrArea3DChartOrLineChart = plotArea.getAreaChartOrArea3DChartOrLineChart();
                         for (Object o : areaChartOrArea3DChartOrLineChart) {
                             if (o instanceof ListSer) {
-                                ListSer series = (ListSer) o;
-                                List<SerContent> ser = series.getSer();
-                                for (SerContent ctBarSer : ser) {
-                                    CTAxDataSource captions = ctBarSer.getCat();
-                                    if (captions != null && captions.getStrRef() != null) {
-                                        Range temlpateCaptionsRange = Range.fromFormula(captions.getStrRef().getF());
-                                        for (Range bandRange : rangeDependencies.keySet()) {
-                                            if (bandRange.contains(temlpateCaptionsRange)) {
-                                                List<Range> seriesResultRanges = rangeDependencies.get(bandRange);
-
-                                                Range seriesFirstRange = getFirst(seriesResultRanges);
-                                                Range seriesLastRange = getLast(seriesResultRanges);
-
-                                                Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
-                                                Offset initialOffset = calculateOffset(temlpateCaptionsRange, bandRange);
-                                                temlpateCaptionsRange = temlpateCaptionsRange.shift(
-                                                        offset.downOffset - initialOffset.downOffset,
-                                                        offset.rightOffset - initialOffset.rightOffset);
-
-                                                Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
-                                                temlpateCaptionsRange.grow(grow.downOffset, grow.rightOffset);
-
-                                                captions.getStrRef().setF(temlpateCaptionsRange.toFormula());
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    CTNumDataSource data = ctBarSer.getVal();
-                                    if (data != null && data.getNumRef() != null) {
-                                        Range templateDataRange = Range.fromFormula(data.getNumRef().getF());
-                                        for (Range bandRange : rangeDependencies.keySet()) {
-                                            if (bandRange.contains(templateDataRange)) {
-                                                List<Range> seriesResultRanges = rangeDependencies.get(bandRange);
-
-                                                Range seriesFirstRange = getFirst(seriesResultRanges);
-                                                Range seriesLastRange = getLast(seriesResultRanges);
-
-                                                Offset offset = calculateOffset(templateDataRange, seriesFirstRange);
-                                                Offset initialOffset = calculateOffset(templateDataRange, bandRange);
-                                                templateDataRange = templateDataRange.shift(
-                                                        offset.downOffset - initialOffset.downOffset,
-                                                        offset.rightOffset - initialOffset.rightOffset);
-
-                                                Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
-                                                templateDataRange.grow(grow.downOffset, grow.rightOffset);
-
-                                                data.getNumRef().setF(templateDataRange.toFormula());
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
+                                processSeries((ListSer) o);
                             }
                         }
                     }
                 }
 
+            }
+        }
+    }
+
+    private void processSeries(ListSer o) {
+        List<SerContent> ser = o.getSer();
+        for (SerContent ctBarSer : ser) {
+            CTAxDataSource captions = ctBarSer.getCat();
+            if (captions != null && captions.getStrRef() != null) {
+                Range temlpateCaptionsRange = Range.fromFormula(captions.getStrRef().getF());
+                for (Range bandRange : rangeDependencies.keySet()) {
+                    if (bandRange.contains(temlpateCaptionsRange)) {
+                        List<Range> seriesResultRanges = rangeDependencies.get(bandRange);
+
+                        Range seriesFirstRange = getFirst(seriesResultRanges);
+                        Range seriesLastRange = getLast(seriesResultRanges);
+
+                        Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
+                        Offset initialOffset = calculateOffset(temlpateCaptionsRange, bandRange);
+                        temlpateCaptionsRange = temlpateCaptionsRange.shift(
+                                offset.downOffset - initialOffset.downOffset,
+                                offset.rightOffset - initialOffset.rightOffset);
+
+                        Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
+                        temlpateCaptionsRange.grow(grow.downOffset, grow.rightOffset);
+
+                        captions.getStrRef().setF(temlpateCaptionsRange.toFormula());
+                        break;
+                    }
+                }
+            }
+
+            CTNumDataSource data = ctBarSer.getVal();
+            if (data != null && data.getNumRef() != null) {
+                Range templateDataRange = Range.fromFormula(data.getNumRef().getF());
+                for (Range bandRange : rangeDependencies.keySet()) {
+                    if (bandRange.contains(templateDataRange)) {
+                        List<Range> seriesResultRanges = rangeDependencies.get(bandRange);
+
+                        Range seriesFirstRange = getFirst(seriesResultRanges);
+                        Range seriesLastRange = getLast(seriesResultRanges);
+
+                        Offset offset = calculateOffset(templateDataRange, seriesFirstRange);
+                        Offset initialOffset = calculateOffset(templateDataRange, bandRange);
+                        templateDataRange = templateDataRange.shift(
+                                offset.downOffset - initialOffset.downOffset,
+                                offset.rightOffset - initialOffset.rightOffset);
+
+                        Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
+                        templateDataRange.grow(grow.downOffset, grow.rightOffset);
+
+                        data.getNumRef().setF(templateDataRange.toFormula());
+                        break;
+                    }
+                }
             }
         }
     }
@@ -252,30 +251,11 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void updateFormulas() {
         int formulaCount = 1;
         CTCalcChain calculationChain = getCalculationChain();
+        formulaCount = processInnerFormulas(formulaCount, calculationChain);
+        processOuterFormulas(formulaCount, calculationChain);
+    }
 
-        for (Cell cellWithFormula : innerFormulas) {
-            Row row = (Row) cellWithFormula.getParent();
-            Worksheet worksheet = getWorksheet(row);
-            Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
-            Range originalFormulaRange = formulaRange.copy();
-            for (Range templateRange : rangeDependencies.keySet()) {
-                if (templateRange.contains(formulaRange)) {
-                    List<Range> resultRanges = rangeDependencies.get(templateRange);
-
-                    CellReference cellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
-                    for (Range resultRange : resultRanges) {
-                        if (resultRange.contains(cellReference)) {
-                            Offset offset = calculateOffset(templateRange, resultRange);
-
-                            formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
-                            updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
+    protected void processOuterFormulas(int formulaCount, CTCalcChain calculationChain) {
         for (Cell cellWithFormula : outerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
             Worksheet worksheet = getWorksheet(row);
@@ -321,6 +301,32 @@ public class XlsxFormatter extends AbstractFormatter {
                 }
             }
         }
+    }
+
+    protected int processInnerFormulas(int formulaCount, CTCalcChain calculationChain) {
+        for (Cell cellWithFormula : innerFormulas) {
+            Row row = (Row) cellWithFormula.getParent();
+            Worksheet worksheet = getWorksheet(row);
+            Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
+            Range originalFormulaRange = formulaRange.copy();
+            for (Range templateRange : rangeDependencies.keySet()) {
+                if (templateRange.contains(formulaRange)) {
+                    List<Range> resultRanges = rangeDependencies.get(templateRange);
+
+                    CellReference cellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
+                    for (Range resultRange : resultRanges) {
+                        if (resultRange.contains(cellReference)) {
+                            Offset offset = calculateOffset(templateRange, resultRange);
+
+                            formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
+                            updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return formulaCount;
     }
 
     protected CTCalcChain getCalculationChain() {
