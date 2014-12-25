@@ -187,8 +187,10 @@ public class BandData {
             return Collections.emptyList();
         }
 
-        List<BandData> allBand = firstBand.getParentBand().getChildrenByName(name);
-        return allBand;
+        List<BandData> allBands = firstBand.getParentBand() != null ?
+                firstBand.getParentBand().getChildrenByName(name) :
+                Collections.singletonList(firstBand);
+        return allBands;
     }
 
     public Set<String> getFirstLevelBandDefinitionNames() {

@@ -39,6 +39,9 @@ public class BandDataTest {
     public void testFindBandsRecursively() throws Exception {
         BandData root = createData();
 
+        BandData foundRoot = root.findBandRecursively(BandData.ROOT_BAND_NAME);
+        Assert.assertTrue(root == foundRoot);
+
         BandData band1 = root.findBandRecursively("Band1");
         BandData band2 = root.findBandRecursively("Band2");
         BandData band3 = root.findBandRecursively("Band3");
@@ -64,7 +67,7 @@ public class BandDataTest {
 
 
     private BandData createData() {
-        BandData root = new BandData("Root");
+        BandData root = new BandData(BandData.ROOT_BAND_NAME);
 
         BandData band1 = new BandData("Band1", root);
         BandData band2 = new BandData("Band2", root);
