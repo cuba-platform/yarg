@@ -21,12 +21,11 @@
  */
 package com.haulmont.yarg.structure.xml.impl;
 
-import com.haulmont.yarg.structure.*;
-import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.exception.ReportingXmlException;
-import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.*;
 import com.haulmont.yarg.structure.impl.*;
 import com.haulmont.yarg.structure.xml.XmlReader;
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -43,7 +42,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class DefaultXmlReader implements XmlReader {
@@ -137,8 +139,13 @@ public class DefaultXmlReader implements XmlReader {
                 String alias = parameter.attribute("alias").getText();
                 Boolean required = Boolean.valueOf(parameter.attribute("required").getText());
                 Class type = Class.forName(parameter.attribute("class").getText());
+                Attribute defaultValueAttr = parameter.attribute("defaultValue");
+                String defaultValue = null;
+                if (defaultValueAttr != null) {
+                    defaultValue = defaultValueAttr.getText();
+                }
 
-                ReportParameterImpl reportParameter = new ReportParameterImpl(name, alias, required, type);
+                ReportParameterImpl reportParameter = new ReportParameterImpl(name, alias, required, type, defaultValue);
                 reportParameters.add(reportParameter);
             }
         }

@@ -21,7 +21,6 @@
  */
 package com.haulmont.yarg.console;
 
-import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
@@ -35,23 +34,22 @@ import com.haulmont.yarg.structure.ReportParameter;
 import com.haulmont.yarg.structure.ReportTemplate;
 import com.haulmont.yarg.structure.xml.XmlReader;
 import com.haulmont.yarg.structure.xml.impl.DefaultXmlReader;
+import com.haulmont.yarg.util.converter.ParametersConverter;
+import com.haulmont.yarg.util.converter.ParametersConverterImpl;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.reflect.ConstructorUtils;
-import org.apache.commons.lang.reflect.MethodUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class ConsoleRunner {
     public static final String PROPERTIES_PATH = "prop";
@@ -59,9 +57,9 @@ public class ConsoleRunner {
     public static final String OUTPUT_PATH = "op";
     public static final String TEMPLATE_CODE = "tc";
     public static final String REPORT_PARAMETER = "P";
-    public static final String DEFAULT_DATE_FORMAT_STR = "dd/MM/yyyy hh:mm";
-    public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat(DEFAULT_DATE_FORMAT_STR);
     public static volatile boolean doExitWhenFinished = true;
+
+    protected static ParametersConverter converter = new ParametersConverterImpl();
 
     public static void main(String[] args) {
         Options options = createOptions();
@@ -110,7 +108,8 @@ public class ConsoleRunner {
             for (ReportParameter reportParameter : report.getReportParameters()) {
                 String paramValueStr = optionProperties.getProperty(reportParameter.getAlias());
                 if (paramValueStr != null) {
-                    params.put(reportParameter.getAlias(), convertFromString(reportParameter.getParameterClass(), paramValueStr));
+                    params.put(reportParameter.getAlias(),
+                            converter.convertFromString(reportParameter.getParameterClass(), paramValueStr));
                 }
             }
 
@@ -118,53 +117,6 @@ public class ConsoleRunner {
         } else {
             return Collections.emptyMap();
         }
-    }
-
-    private static Object convertFromString(Class parameterClass, String paramValueStr) {
-        if (String.class.isAssignableFrom(parameterClass)) {
-            return paramValueStr;
-        } else if (Date.class.isAssignableFrom(parameterClass)) {
-            try {
-                Date date = DEFAULT_DATE_FORMAT.parse(paramValueStr);
-                return date;
-            } catch (java.text.ParseException e) {
-                throw new ReportingException(
-                        String.format("Couldn't read date from value [%s]. Date format should be [%s].",
-                                paramValueStr,
-                                DEFAULT_DATE_FORMAT_STR));
-            }
-        } else {
-            try {
-                Constructor constructor = ConstructorUtils.getAccessibleConstructor(parameterClass, String.class);
-                if (constructor != null) {
-                    Object value = constructor.newInstance(paramValueStr);
-                    return value;
-                } else {
-                    Method valueOf = MethodUtils.getAccessibleMethod(parameterClass, "valueOf", String.class);
-                    if (valueOf != null) {
-                        Object value = valueOf.invoke(null, paramValueStr);
-                        return value;
-                    }
-                }
-            } catch (InstantiationException e) {
-                throw new ReportingException(
-                        String.format("Could not instantiate object with class [%s] from [%s] string.",
-                                parameterClass.getCanonicalName(),
-                                paramValueStr));
-            } catch (IllegalAccessException e) {
-                throw new ReportingException(
-                        String.format("Could not instantiate object with class [%s] from [%s] string.",
-                                parameterClass.getCanonicalName(),
-                                paramValueStr));
-            } catch (InvocationTargetException e) {
-                throw new ReportingException(
-                        String.format("Could not instantiate object with class [%s] from [%s] string.",
-                                parameterClass.getCanonicalName(),
-                                paramValueStr));
-            }
-        }
-
-        return paramValueStr;
     }
 
     private static Reporting createReportingEngine(PropertiesLoader propertiesLoader) throws IOException {

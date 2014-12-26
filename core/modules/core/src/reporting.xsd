@@ -89,6 +89,7 @@
         <xs:attribute name="alias" type="xs:string" use="required"/>
         <xs:attribute name="class" type="xs:string" use="required"/>
         <xs:attribute name="required" type="xs:boolean"/>
+        <xs:attribute name="defaultValue" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="format">

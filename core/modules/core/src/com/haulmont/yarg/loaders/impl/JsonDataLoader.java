@@ -38,6 +38,40 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Loads data from json string
+ * Uses JsonPath to access necessary parts of json object
+ *
+ * Example:
+ *
+ * JSON:
+ * { "store": {
+ * "book": [
+ * { "category": "reference",
+ * "author": "Nigel Rees",
+ * "title": "Sayings of the Century",
+ * "price": 8.95
+ * },
+ * { "category": "fiction",
+ * "author": "Evelyn Waugh",
+ * "title": "Sword of Honour",
+ * "price": 12.99,
+ * "isbn": "0-553-21311-3"
+ * }
+ * ],
+ * "bicycle": {
+ * "color": "red",
+ * "price": 19.95
+ * }
+ * }
+ * }
+ *
+ * Query string:
+ * parameter=param1 $.store.book[*]
+ *
+ * We get json string from parameter param1 and select all "book" objects from the "store" object
+ *
+ */
 public class JsonDataLoader implements ReportDataLoader {
     protected Pattern parameterPattern = Pattern.compile("parameter=([A-z0-9_]+)");
 

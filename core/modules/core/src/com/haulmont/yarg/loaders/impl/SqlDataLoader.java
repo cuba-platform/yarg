@@ -35,8 +35,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author degtyarjov
- * @version $Id$
+ * Loads data from database using sql
+ * You can use aliases for output values
+ *
+ * Example:
+ * select login as "Login", password as "Password" from user where create_ts > ${startDate}
+ *
+ * ${startDate} is alias of the input parameter, which will be passed to the query
  */
 public class SqlDataLoader extends AbstractDbDataLoader {
     private DataSource dataSource;

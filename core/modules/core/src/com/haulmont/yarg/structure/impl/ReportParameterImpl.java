@@ -22,14 +22,14 @@
 package com.haulmont.yarg.structure.impl;
 
 import com.google.common.base.Preconditions;
-import com.haulmont.yarg.structure.ReportParameter;
+import com.haulmont.yarg.structure.ReportParameterWithDefaultValue;
 
-public class ReportParameterImpl implements ReportParameter {
-
+public class ReportParameterImpl implements ReportParameterWithDefaultValue {
     protected String name;
     protected String alias;
     protected Boolean required;
     protected Class paramClass;
+    protected String defaultValue = null;
 
     public ReportParameterImpl(String name, String alias, Boolean required, Class paramClass) {
         Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
@@ -41,19 +41,33 @@ public class ReportParameterImpl implements ReportParameter {
         this.paramClass = paramClass;
     }
 
+    public ReportParameterImpl(String name, String alias, Boolean required, Class paramClass, String defaultValue) {
+        this(name, alias, required, paramClass);
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getAlias() {
         return alias;
     }
 
+    @Override
     public Boolean getRequired() {
         return required;
     }
 
+    @Override
     public Class getParameterClass() {
         return paramClass;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return defaultValue;
     }
 }

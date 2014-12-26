@@ -29,6 +29,8 @@ import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
+import com.haulmont.yarg.util.converter.ParametersConverter;
+import com.haulmont.yarg.util.converter.ParametersConverterImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -41,9 +43,10 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.lang.String.format;
 
 public class Reporting implements ReportingAPI {
     protected ReportFormatterFactory formatterFactory;
@@ -51,6 +54,8 @@ public class Reporting implements ReportingAPI {
     protected ReportLoaderFactory loaderFactory;
 
     protected DataExtractor dataExtractor;
+
+    protected ParametersConverter parametersConverter = new ParametersConverterImpl();
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -67,6 +72,10 @@ public class Reporting implements ReportingAPI {
 
     public void setDataExtractor(DataExtractorImpl dataExtractor) {
         this.dataExtractor = dataExtractor;
+    }
+
+    public void setParametersConverter(ParametersConverter parametersConverter) {
+        this.parametersConverter = parametersConverter;
     }
 
     @Override
@@ -89,57 +98,76 @@ public class Reporting implements ReportingAPI {
             Preconditions.checkNotNull(params, "\"params\" can not be null");
             Preconditions.checkNotNull(outputStream, "\"outputStream\" can not be null");
 
-            logReport("Started report [%s] with parameters [%s]", report, params);
+            Map<String, Object> handledParams = handleParameters(report, params);
+            logReport("Started report [%s] with parameters [%s]", report, handledParams);
 
-            if (!(params instanceof HashMap) && !(params instanceof TreeMap)) {//just a workaround to check if map is mutable
-                params = new HashMap<String, Object>(params);//make sure map is mutable
-            }
+            BandData rootBand = loadBandData(report, handledParams);
+            generateReport(report, reportTemplate, outputStream, handledParams, rootBand);
 
-            String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
-            BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
-            rootBand.setData(params);
-            rootBand.setReportFieldFormats(report.getReportFieldFormats());
-            rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
+            logReport("Finished report [%s] with parameters [%s]", report, handledParams);
 
-            for (ReportParameter reportParameter : report.getReportParameters()) {
-                String paramName = reportParameter.getAlias();
-
-                if (Boolean.TRUE.equals(reportParameter.getRequired()) && params.get(paramName) == null) {
-                    throw new IllegalArgumentException(String.format("Required report parameter \"%s\" not found", paramName));
-                }
-
-                if (!params.containsKey(paramName)) {//make sure map contains all user parameters, even if value == null
-                    params.put(paramName, null);
-                }
-            }
-
-            dataExtractor.extractData(report, params, rootBand);
-
-            if (reportTemplate.isCustom()) {
-                try {
-                    byte[] bytes = reportTemplate.getCustomReport().createReport(report, rootBand, params);
-                    IOUtils.write(bytes, outputStream);
-                } catch (IOException e) {
-                    throw new ReportingException(String.format("An error occurred while processing custom template [%s].", reportTemplate.getDocumentName()), e);
-                }
-            } else {
-                FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputStream);
-                ReportFormatter formatter = formatterFactory.createFormatter(factoryInput);
-                formatter.renderDocument();
-            }
             String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
-
-            logReport("Finished report [%s] with parameters [%s]", report, params);
-
             return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
             logReport("An error occurred while running report [%s] with parameters [%s]. Trace: \n" + ExceptionUtils.getStackTrace(e), report, params);
             //validation exception is usually shown to clients, so probably there is no need to add report name there (to keep the original message)
             if (!(e instanceof ValidationException)) {
-                e.setReportDetails(String.format(" Report name [%s]", report.getName()));
+                e.setReportDetails(format(" Report name [%s]", report.getName()));
             }
             throw e;
         }
+    }
+
+    protected void generateReport(Report report, ReportTemplate reportTemplate, OutputStream outputStream, Map<String, Object> handledParams, BandData rootBand) {
+        String extension = StringUtils.substringAfterLast(reportTemplate.getDocumentName(), ".");
+        if (reportTemplate.isCustom()) {
+            try {
+                byte[] bytes = reportTemplate.getCustomReport().createReport(report, rootBand, handledParams);
+                IOUtils.write(bytes, outputStream);
+            } catch (IOException e) {
+                throw new ReportingException(format("An error occurred while processing custom template [%s].", reportTemplate.getDocumentName()), e);
+            }
+        } else {
+            FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputStream);
+            ReportFormatter formatter = formatterFactory.createFormatter(factoryInput);
+            formatter.renderDocument();
+        }
+    }
+
+    protected BandData loadBandData(Report report, Map<String, Object> handledParams) {
+        BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
+        rootBand.setData(handledParams);
+        rootBand.setReportFieldFormats(report.getReportFieldFormats());
+        rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
+
+        dataExtractor.extractData(report, handledParams, rootBand);
+        return rootBand;
+    }
+
+    protected Map<String, Object> handleParameters(Report report, Map<String, Object> params) {
+        Map<String, Object> handledParams = new HashMap<>(params);
+        for (ReportParameter reportParameter : report.getReportParameters()) {
+            String paramName = reportParameter.getAlias();
+
+            Object parameterValue = handledParams.get(paramName);
+            if (reportParameter instanceof ReportParameterWithDefaultValue) {
+                String parameterDefaultValue = ((ReportParameterWithDefaultValue) reportParameter).getDefaultValue();
+                if (parameterValue == null && parameterDefaultValue != null) {
+                    parameterValue = parametersConverter.convertFromString(reportParameter.getParameterClass(), parameterDefaultValue);
+                    handledParams.put(paramName, parameterValue);
+                }
+            }
+
+            if (Boolean.TRUE.equals(reportParameter.getRequired()) && parameterValue == null) {
+                throw new IllegalArgumentException(format("Required report parameter \"%s\" not found", paramName));
+            }
+
+            if (!handledParams.containsKey(paramName)) {//make sure map contains all user parameters, even if value == null
+                handledParams.put(paramName, null);
+            }
+        }
+
+        return handledParams;
     }
 
     protected void logReport(String caption, Report report, Map<String, Object> params) {
@@ -147,7 +175,7 @@ public class Reporting implements ReportingAPI {
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             parametersString.append("\n").append(entry.getKey()).append(":").append(entry.getValue());
         }
-        logger.info(String.format(caption, report.getName(), parametersString));
+        logger.info(format(caption, report.getName(), parametersString));
     }
 
     protected ReportOutputDocument createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName) {
@@ -175,12 +203,14 @@ public class Reporting implements ReportingAPI {
                     Object fileName = bandWithFileName.getData().get(paramName);
 
                     if (fileName == null) {
-                        throw new ReportingException(String.format("No data in band [%s] parameter [%s] found.This band and parameter is used for output file name generation.", bandWithFileName, paramName));
+                        throw new ReportingException(
+                                format("No data in band [%s] parameter [%s] found. " +
+                                        "This band and parameter is used for output file name generation.", bandWithFileName, paramName));
                     } else {
                         outputName = fileName.toString();
                     }
                 } else {
-                    throw new ReportingException(String.format("No data in band [%s] found.This band is used for output file name generation.", bandName));
+                    throw new ReportingException(format("No data in band [%s] found.This band is used for output file name generation.", bandName));
                 }
             } else {
                 outputName = outputNamePattern;
@@ -188,7 +218,7 @@ public class Reporting implements ReportingAPI {
         }
 
         if (ReportOutputType.custom != reportTemplate.getOutputType()) {
-            outputName = String.format("%s.%s", StringUtils.substringBeforeLast(outputName, "."), reportTemplate.getOutputType().getId());
+            outputName = format("%s.%s", StringUtils.substringBeforeLast(outputName, "."), reportTemplate.getOutputType().getId());
         }
 
         return outputName;

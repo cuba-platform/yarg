@@ -71,6 +71,11 @@ public class DefaultXmlWriter implements XmlWriter {
                 reportTemplateElement.addAttribute("alias", reportParameter.getAlias());
                 reportTemplateElement.addAttribute("required", String.valueOf(reportParameter.getRequired()));
                 reportTemplateElement.addAttribute("class", reportParameter.getParameterClass().getCanonicalName());
+                if (reportParameter instanceof ReportParameterWithDefaultValue &&
+                        ((ReportParameterWithDefaultValue) reportParameter).getDefaultValue() != null) {
+                    reportTemplateElement.addAttribute("defaultValue",
+                            ((ReportParameterWithDefaultValue) reportParameter).getDefaultValue());
+                }
             }
         }
     }

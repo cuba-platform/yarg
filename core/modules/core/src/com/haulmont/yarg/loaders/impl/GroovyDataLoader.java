@@ -17,14 +17,21 @@ package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
-import com.haulmont.yarg.structure.ReportQuery;
 import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.ReportQuery;
 import com.haulmont.yarg.util.groovy.Scripting;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Loads data using groovy script
+ * Script should return list of maps
+ *
+ * Example:
+ * return [['a':123, 'b':321], ['a':456, 'b':params['param1']]]
+ */
 public class GroovyDataLoader implements ReportDataLoader {
     private Scripting scripting;
 
