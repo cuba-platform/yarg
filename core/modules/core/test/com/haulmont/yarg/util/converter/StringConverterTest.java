@@ -12,8 +12,8 @@ import java.util.Date;
  * @author degtyarjov
  * @version $Id$
  */
-public class ParametersConverterTest {
-    ParametersConverter parametersConverter = new ParametersConverterImpl();
+public class StringConverterTest {
+    StringConverter stringConverter = new StringConverterImpl();
 
     @Test
     public void testNumeric() throws Exception {
@@ -41,12 +41,12 @@ public class ParametersConverterTest {
 
     @Test
     public void testDate() throws Exception {
-        Date date = ParametersConverterImpl.DEFAULT_DATE_FORMAT.parse("01/01/2014 00:00");
+        Date date = StringConverterImpl.DEFAULT_DATE_FORMAT.parse("01/01/2014 00:00");
         Object converted = convertFromString(Date.class, convertToString(Date.class, date));
         Assert.assertEquals(date, converted);
     }
 
-    private String convertToString(Class aClass, Object value) {return parametersConverter.convertToString(aClass, value);}
+    private String convertToString(Class aClass, Object value) {return stringConverter.convertToString(aClass, value);}
 
-    private Object convertFromString(Class aClass, String value) {return parametersConverter.convertFromString(aClass, value);}
+    private Object convertFromString(Class aClass, String value) {return stringConverter.convertFromString(aClass, value);}
 }

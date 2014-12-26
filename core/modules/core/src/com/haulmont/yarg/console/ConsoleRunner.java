@@ -34,8 +34,8 @@ import com.haulmont.yarg.structure.ReportParameter;
 import com.haulmont.yarg.structure.ReportTemplate;
 import com.haulmont.yarg.structure.xml.XmlReader;
 import com.haulmont.yarg.structure.xml.impl.DefaultXmlReader;
-import com.haulmont.yarg.util.converter.ParametersConverter;
-import com.haulmont.yarg.util.converter.ParametersConverterImpl;
+import com.haulmont.yarg.util.converter.StringConverter;
+import com.haulmont.yarg.util.converter.StringConverterImpl;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
@@ -59,7 +59,7 @@ public class ConsoleRunner {
     public static final String REPORT_PARAMETER = "P";
     public static volatile boolean doExitWhenFinished = true;
 
-    protected static ParametersConverter converter = new ParametersConverterImpl();
+    protected static StringConverter converter = new StringConverterImpl();
 
     public static void main(String[] args) {
         Options options = createOptions();

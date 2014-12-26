@@ -29,8 +29,8 @@ import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
-import com.haulmont.yarg.util.converter.ParametersConverter;
-import com.haulmont.yarg.util.converter.ParametersConverterImpl;
+import com.haulmont.yarg.util.converter.StringConverter;
+import com.haulmont.yarg.util.converter.StringConverterImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -55,7 +55,7 @@ public class Reporting implements ReportingAPI {
 
     protected DataExtractor dataExtractor;
 
-    protected ParametersConverter parametersConverter = new ParametersConverterImpl();
+    protected StringConverter stringConverter = new StringConverterImpl();
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -74,8 +74,8 @@ public class Reporting implements ReportingAPI {
         this.dataExtractor = dataExtractor;
     }
 
-    public void setParametersConverter(ParametersConverter parametersConverter) {
-        this.parametersConverter = parametersConverter;
+    public void setStringConverter(StringConverter stringConverter) {
+        this.stringConverter = stringConverter;
     }
 
     @Override
@@ -153,7 +153,7 @@ public class Reporting implements ReportingAPI {
             if (reportParameter instanceof ReportParameterWithDefaultValue) {
                 String parameterDefaultValue = ((ReportParameterWithDefaultValue) reportParameter).getDefaultValue();
                 if (parameterValue == null && parameterDefaultValue != null) {
-                    parameterValue = parametersConverter.convertFromString(reportParameter.getParameterClass(), parameterDefaultValue);
+                    parameterValue = stringConverter.convertFromString(reportParameter.getParameterClass(), parameterDefaultValue);
                     handledParams.put(paramName, parameterValue);
                 }
             }

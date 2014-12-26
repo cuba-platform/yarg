@@ -10,7 +10,7 @@ import java.util.Date;
  * @author degtyarjov
  * @version $Id$
  */
-public class ParametersConverterImpl extends AbstractParametersConverter {
+public class StringConverterImpl extends AbstractStringConverter {
     public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     protected SimpleDateFormat dateFormat = DEFAULT_DATE_FORMAT;
 
