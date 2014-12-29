@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  * @author degtyarjov
  * @version $Id$
  */
-public abstract class AbstractStringConverter implements StringConverter {
+public abstract class AbstractObjectToStringConverter implements ObjectToStringConverter {
     protected Object convertFromStringUnresolved(Class parameterClass, String paramValueStr) {
         try {
             Constructor constructor = ConstructorUtils.getAccessibleConstructor(parameterClass, String.class);

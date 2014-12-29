@@ -10,7 +10,7 @@ import java.util.Date;
  * @author degtyarjov
  * @version $Id$
  */
-public class StringConverterImpl extends AbstractStringConverter {
+public class ObjectToStringConverterImpl extends AbstractObjectToStringConverter {
     public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     protected SimpleDateFormat dateFormat = DEFAULT_DATE_FORMAT;
 
@@ -29,7 +29,9 @@ public class StringConverterImpl extends AbstractStringConverter {
 
     @Override
     public Object convertFromString(Class parameterClass, String paramValueStr) {
-        if (String.class.isAssignableFrom(parameterClass)) {
+        if (paramValueStr == null) {
+            return null;
+        } else if (String.class.isAssignableFrom(parameterClass)) {
             return paramValueStr;
         } else if (Date.class.isAssignableFrom(parameterClass)) {
             try {

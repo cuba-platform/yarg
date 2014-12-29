@@ -29,8 +29,8 @@ import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
-import com.haulmont.yarg.util.converter.StringConverter;
-import com.haulmont.yarg.util.converter.StringConverterImpl;
+import com.haulmont.yarg.util.converter.ObjectToStringConverter;
+import com.haulmont.yarg.util.converter.ObjectToStringConverterImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -55,7 +55,7 @@ public class Reporting implements ReportingAPI {
 
     protected DataExtractor dataExtractor;
 
-    protected StringConverter stringConverter = new StringConverterImpl();
+    protected ObjectToStringConverter objectToStringConverter = new ObjectToStringConverterImpl();
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -74,8 +74,8 @@ public class Reporting implements ReportingAPI {
         this.dataExtractor = dataExtractor;
     }
 
-    public void setStringConverter(StringConverter stringConverter) {
-        this.stringConverter = stringConverter;
+    public void setObjectToStringConverter(ObjectToStringConverter objectToStringConverter) {
+        this.objectToStringConverter = objectToStringConverter;
     }
 
     @Override
@@ -153,7 +153,7 @@ public class Reporting implements ReportingAPI {
             if (reportParameter instanceof ReportParameterWithDefaultValue) {
                 String parameterDefaultValue = ((ReportParameterWithDefaultValue) reportParameter).getDefaultValue();
                 if (parameterValue == null && parameterDefaultValue != null) {
-                    parameterValue = stringConverter.convertFromString(reportParameter.getParameterClass(), parameterDefaultValue);
+                    parameterValue = objectToStringConverter.convertFromString(reportParameter.getParameterClass(), parameterDefaultValue);
                     handledParams.put(paramName, parameterValue);
                 }
             }
