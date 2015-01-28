@@ -477,7 +477,9 @@ public class XlsxFormatter extends AbstractFormatter {
 
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
         if (lastRenderedRange != null) {//this band has been already rendered at least once
-            previousRangesRightOffset = lastRenderedRange.getFirstColumn() - templateRange.getFirstColumn() + 1;
+            int shiftBetweenTemplateRangeAndLastRenderedRange = lastRenderedRange.getFirstColumn() - templateRange.getFirstColumn();
+            int widthOfTheRange = templateRange.getLastColumn() - templateRange.getFirstColumn() + 1;
+            previousRangesRightOffset = shiftBetweenTemplateRangeAndLastRenderedRange + widthOfTheRange;
             if (resultSheetRows.size() > lastRenderedRange.getFirstRow() - 1) {//get current row
                 firstRow = resultSheetRows.get(lastRenderedRange.getFirstRow() - 1);
             }
