@@ -81,21 +81,22 @@ public class HtmlFormatter extends AbstractFormatter {
 
     protected void renderPdfDocument(String htmlContent, OutputStream outputStream) {
         ITextRenderer renderer = new ITextRenderer();
+        File temporaryFile = null;
         try {
-            File tmpFile = File.createTempFile("htmlReport", ".htm");
-            DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(tmpFile));
+            temporaryFile = File.createTempFile("htmlReport", ".htm");
+            DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(temporaryFile));
             dataOutputStream.write(htmlContent.getBytes(Charset.forName("UTF-8")));
             dataOutputStream.close();
 
-            String url = tmpFile.toURI().toURL().toString();
+            String url = temporaryFile.toURI().toURL().toString();
             renderer.setDocument(url);
 
             renderer.layout();
             renderer.createPDF(outputStream);
-
-            FileUtils.deleteQuietly(tmpFile);
         } catch (Exception e) {
             throw wrapWithReportingException("", e);
+        } finally {
+            FileUtils.deleteQuietly(temporaryFile);
         }
     }
 

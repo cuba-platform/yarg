@@ -5,9 +5,9 @@ import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
 import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
 import junit.framework.Assert;
@@ -754,7 +754,9 @@ public class FormattersSmokeTest {
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
-            html += "<tr><td>1234567</td></tr>";
+            html += "<tr><td>123456712345671234567123456712345671234567123456712345" +
+                    "67123456712345671234567123456712345671234567123456712345671234" +
+                    "5671234567123456712345671234567123456712345671234567</td></tr>";
         }
         html += "</table>";
         html += "<br style=\"page-break-after: always\">";
@@ -798,7 +800,9 @@ public class FormattersSmokeTest {
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
-            html += "<tr><td>1234567</td></tr>";
+            html += "<tr><td>123456712345671234567123456712345671234567123456712345" +
+                    "67123456712345671234567123456712345671234567123456712345671234" +
+                    "5671234567123456712345671234567123456712345671234567</td></tr>";
         }
         html += "</table>";
         html += "<br style=\"page-break-after: always\">";

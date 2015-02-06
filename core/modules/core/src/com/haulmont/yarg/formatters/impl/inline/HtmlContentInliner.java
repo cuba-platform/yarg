@@ -16,7 +16,6 @@
 package com.haulmont.yarg.formatters.impl.inline;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
-import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.sun.star.beans.PropertyValue;
 import com.sun.star.document.XDocumentInsertable;
@@ -50,7 +49,7 @@ import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 /**
  * Handle HTML with format string: ${html}
  */
-public class HtmlContentContentInliner implements ContentInliner {
+public class HtmlContentInliner implements ContentInliner {
 
     public final static String REGULAR_EXPRESSION = "\\$\\{html\\}";
 
@@ -61,7 +60,7 @@ public class HtmlContentContentInliner implements ContentInliner {
 
     private Pattern tagPattern;
 
-    public HtmlContentContentInliner() {
+    public HtmlContentInliner() {
         tagPattern = Pattern.compile(REGULAR_EXPRESSION, Pattern.CASE_INSENSITIVE);
     }
 

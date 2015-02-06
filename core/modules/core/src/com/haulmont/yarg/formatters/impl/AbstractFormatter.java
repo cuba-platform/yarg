@@ -21,7 +21,7 @@ import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.inline.HtmlContentContentInliner;
+import com.haulmont.yarg.formatters.impl.inline.HtmlContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ImageContentInliner;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
@@ -69,7 +69,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
         this.outputStream = formatterFactoryInput.getOutputStream();
 
         this.contentInliners.add(new BitmapContentInliner());
-        this.contentInliners.add(new HtmlContentContentInliner());
+        this.contentInliners.add(new HtmlContentInliner());
         this.contentInliners.add(new ImageContentInliner());
     }
 
