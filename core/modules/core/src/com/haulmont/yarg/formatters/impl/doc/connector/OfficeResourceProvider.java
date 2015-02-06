@@ -131,10 +131,7 @@ public class OfficeResourceProvider {
         } catch (com.sun.star.util.CloseVetoException e) {
             xComponent.dispose();
         }
-
-        if (temporaryFile != null) {
-            temporaryFile.delete();
-        }
+        FileUtils.deleteQuietly(temporaryFile);
     }
 
     public void saveXComponent(XComponent xComponent, XOutputStream xOutputStream, String filterName) throws IOException {
