@@ -55,6 +55,7 @@ public class OfficeResourceProvider {
 
     protected XComponentContext xComponentContext;
     protected OfficeIntegration officeIntegration;
+    private File temporaryFile;
 
     public OfficeResourceProvider(XComponentContext xComponentContext, OfficeIntegration officeIntegration) throws Exception {
         this.xComponentContext = xComponentContext;
@@ -130,6 +131,10 @@ public class OfficeResourceProvider {
         } catch (com.sun.star.util.CloseVetoException e) {
             xComponent.dispose();
         }
+
+        if (temporaryFile != null) {
+            temporaryFile.delete();
+        }
     }
 
     public void saveXComponent(XComponent xComponent, XOutputStream xOutputStream, String filterName) throws IOException {
@@ -160,25 +165,22 @@ public class OfficeResourceProvider {
 
     protected File createTempFile(byte[] bytes) {
         try {
-            File tempFile = null;
             String tempFileName = String.format("document%d", counter.incrementAndGet());
             String tempFileExt = ".tmp";
             if (StringUtils.isNotBlank(officeIntegration.getTemporaryDirPath())) {
                 Path tempDir = Paths.get(officeIntegration.getTemporaryDirPath());
                 tempDir.toFile().mkdirs();
 
-                tempFile = Files.createTempFile(
+                temporaryFile = Files.createTempFile(
                         tempDir,
                         tempFileName,
                         tempFileExt)
                         .toFile();
             } else {
-                tempFile = File.createTempFile(tempFileName, tempFileExt);
+                temporaryFile = File.createTempFile(tempFileName, tempFileExt);
             }
-            tempFile.deleteOnExit();
-
-            FileUtils.writeByteArrayToFile(tempFile, bytes);
-            return tempFile;
+            FileUtils.writeByteArrayToFile(temporaryFile, bytes);
+            return temporaryFile;
         } catch (java.io.IOException e) {
             throw new ReportFormattingException("Could not create temporary file for pdf conversion", e);
         }
