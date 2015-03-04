@@ -31,9 +31,9 @@ import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
 import com.haulmont.yarg.formatters.impl.xls.hints.*;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
-import com.haulmont.yarg.structure.BandOrientation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
@@ -141,6 +141,17 @@ public class XLSFormatter extends AbstractFormatter {
         }
 
         copyPicturesToResultWorkbook();
+
+        initNamedStyleCache();
+    }
+
+    protected void initNamedStyleCache() {
+        for (short i = 0; i < resultWorkbook.getNumCellStyles(); i++) {
+            HSSFCellStyle cellStyle = resultWorkbook.getCellStyleAt(i);
+            if (StringUtils.isNotBlank(cellStyle.getUserStyleName())) {
+                styleCache.addNamedStyle(cellStyle);
+            }
+        }
     }
 
     protected void processDocument() {

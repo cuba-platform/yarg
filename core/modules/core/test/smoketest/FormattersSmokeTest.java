@@ -928,6 +928,7 @@ public class FormattersSmokeTest {
             root.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("date", new Date());
+            split.addData("theStyle", "red");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
