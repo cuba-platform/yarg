@@ -21,7 +21,6 @@ import com.google.common.collect.HashBiMap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
-import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.Area;
 import com.haulmont.yarg.formatters.impl.xls.AreaDependencyManager;
 import com.haulmont.yarg.formatters.impl.xls.Cell;
@@ -32,7 +31,6 @@ import com.haulmont.yarg.formatters.impl.xls.hints.*;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
-import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -50,7 +48,6 @@ import org.apache.poi.ss.util.CellReference;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
 
 import static com.haulmont.yarg.formatters.impl.xls.HSSFCellHelper.getCellFromReference;
 import static com.haulmont.yarg.formatters.impl.xls.HSSFCellHelper.isOneValueCell;
@@ -644,6 +641,18 @@ public class XLSFormatter extends AbstractFormatter {
 
         if (value == null) {
             resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            return;
+        }
+
+        String formatString = getFormatString(parameterName, fullParameterName);
+        InlinerAndMatcher inlinerAndMatcher = getContentInlinerForFormat(formatString);
+        if (inlinerAndMatcher != null) {
+            inlinerAndMatcher.contentInliner.inlineToXls(patriarch, resultCell, value, inlinerAndMatcher.matcher);
+            return;
+        }
+
+        if (formatString != null) {
+            resultCell.setCellValue(new HSSFRichTextString(formatValue(value, parameterName, fullParameterName)));
         } else if (value instanceof Number) {
             resultCell.setCellValue(((Number) value).doubleValue());
         } else if (value instanceof Boolean) {
@@ -651,27 +660,6 @@ public class XLSFormatter extends AbstractFormatter {
         } else if (value instanceof Date) {
             resultCell.setCellValue((Date) value);
         } else {
-            Map<String, ReportFieldFormat> valuesFormats = rootBand.getReportFieldFormats();
-
-            if (valuesFormats != null) {
-                String formatString = null;
-                if (valuesFormats.containsKey(fullParameterName)) {
-                    formatString = valuesFormats.get(fullParameterName).getFormat();
-                } else if (valuesFormats.containsKey(parameterName)) {
-                    formatString = valuesFormats.get(parameterName).getFormat();
-                }
-
-                if (formatString != null) {
-                    for (ContentInliner contentInliner : contentInliners) {
-                        Matcher matcher = contentInliner.getTagPattern().matcher(formatString);
-                        if (matcher.find()) {
-                            contentInliner.inlineToXls(patriarch, resultCell, value, matcher);
-                            return;
-                        }
-                    }
-                }
-            }
-
             resultCell.setCellValue(new HSSFRichTextString(formatValue(value, parameterName, fullParameterName)));
         }
     }

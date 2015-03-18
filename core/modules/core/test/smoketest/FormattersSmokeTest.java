@@ -45,6 +45,14 @@ public class FormattersSmokeTest {
         date.addData("date", new Date());
         root.addChild(dateHeader);
         root.addChild(date);
+        List<BandData> band1objects = root.getChildrenByName("Band1");
+        for (int i = 0; i < band1objects.size(); i++) {
+            BandData bandData = band1objects.get(i);
+            if (i % 2 == 0) {
+                bandData.addData("theStyle", "red");
+            }
+        }
+
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xls");
 
@@ -326,15 +334,18 @@ public class FormattersSmokeTest {
         root.setData(rootData);
 
         BandData header = new BandData("Header", root, BandOrientation.VERTICAL);
-        BandData invoices = new BandData("Invoices", root, BandOrientation.VERTICAL);
-
+        BandData band = new BandData("Band", root, BandOrientation.VERTICAL);
+        band.addData("number", BigDecimal.valueOf(-200015));
+        band.addData("date", new Date());
+        band.addData("money", -113123d);
+        band.addData("text", "someText");
 
         root.addChild(header);
-        root.addChild(invoices);
+        root.addChild(band);
 
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/invoicingReport.xlsx");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result2.xlsx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/invoicingReport.xlsx", "./modules/core/test/smoketest/invoicingReport.xlsx", ReportOutputType.xlsx), outputStream));
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/test2.xlsx", "./modules/core/test/smoketest/test2.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -928,7 +939,7 @@ public class FormattersSmokeTest {
             root.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("date", new Date());
-            split.addData("theStyle", "red");
+            split.addData("theStyle", "redDate");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

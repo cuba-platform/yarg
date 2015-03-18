@@ -27,14 +27,17 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
-import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
-import com.haulmont.yarg.structure.*;
+import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.BandOrientation;
+import com.haulmont.yarg.structure.BandVisitor;
+import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.*;
 import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
@@ -52,7 +55,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
     protected PdfConverter pdfConverter;
@@ -707,35 +709,31 @@ public class XlsxFormatter extends AbstractFormatter {
             if (value == null) {
                 newCell.setV("");
                 return;
+            }
+
+            String formatString = getFormatString(parameterName, fullParameterName);
+            InlinerAndMatcher inlinerAndMatcher = getContentInlinerForFormat(formatString);
+            if (inlinerAndMatcher != null) {
+                inlinerAndMatcher.contentInliner.inlineToXlsx(result.getPackage(), worksheetPart, newCell, value, inlinerAndMatcher.matcher);
+                return;
+            }
+
+            if (formatString != null) {
+                newCell.setT(STCellType.STR);
+                newCell.setV(formatValue(value, parameterName, fullParameterName));
             } else if (value instanceof Boolean) {
                 newCell.setT(STCellType.B);
+                newCell.setV(String.valueOf(value));
             } else if (value instanceof Number) {
                 newCell.setT(STCellType.N);
+                newCell.setV(String.valueOf(value));
+            } else if (value instanceof Date) {
+                 newCell.setT(STCellType.N);
+                newCell.setV(String.valueOf(HSSFDateUtil.getExcelDate((Date) value)));
             } else {
                 newCell.setT(STCellType.STR);
+                newCell.setV(formatValue(value, parameterName, fullParameterName));
             }
-
-            Map<String, ReportFieldFormat> fieldFormats = rootBand.getReportFieldFormats();
-            if (fieldFormats != null) {
-                String formatString = null;
-                if (fieldFormats.containsKey(fullParameterName)) {
-                    formatString = fieldFormats.get(fullParameterName).getFormat();
-                } else if (fieldFormats.containsKey(parameterName)) {
-                    formatString = fieldFormats.get(parameterName).getFormat();
-                }
-
-                if (formatString != null) {
-                    for (ContentInliner contentInliner : contentInliners) {
-                        Matcher matcher = contentInliner.getTagPattern().matcher(formatString);
-                        if (matcher.find()) {
-                            contentInliner.inlineToXlsx(result.getPackage(), worksheetPart, newCell, value, matcher);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            newCell.setV(formatValue(value, parameterName, fullParameterName));
         } else {
             String value = insertBandDataToString(bandData, cellValue);
             newCell.setV(value);

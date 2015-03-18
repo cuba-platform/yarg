@@ -112,30 +112,18 @@ public abstract class AbstractFormatter implements ReportFormatter {
         }
 
         String valueString;
-
-        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
-        if (formats != null) {
-            String formatString = null;
-            if (formats.containsKey(fullParameterName)) {
-                formatString = formats.get(fullParameterName).getFormat();
-            } else if (formats.containsKey(parameterName)) {
-                formatString = formats.get(parameterName).getFormat();
-            }
-
-            if (formatString != null) {
-                if (value instanceof Number) {
-                    DecimalFormat decimalFormat = new DecimalFormat(formatString);
-                    valueString = decimalFormat.format(value);
-                } else if (value instanceof Date) {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
-                    valueString = dateFormat.format(value);
-                } else if (value instanceof String) {
-                    valueString = String.format(formatString, value);
-                } else {
-                    valueString = value.toString();
-                }
+        String formatString = getFormatString(parameterName, fullParameterName);
+        if (formatString != null) {
+            if (value instanceof Number) {
+                DecimalFormat decimalFormat = new DecimalFormat(formatString);
+                valueString = decimalFormat.format(value);
+            } else if (value instanceof Date) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
+                valueString = dateFormat.format(value);
+            } else if (value instanceof String) {
+                valueString = String.format(formatString, value);
             } else {
-                valueString = defaultFormat(value);
+                valueString = value.toString();
             }
         } else {
             valueString = defaultFormat(value);
@@ -146,6 +134,19 @@ public abstract class AbstractFormatter implements ReportFormatter {
         }
 
         return valueString;
+    }
+
+    protected String getFormatString(String parameterName, String fullParameterName) {
+        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
+        String formatString = null;
+        if (formats != null) {
+            if (formats.containsKey(fullParameterName)) {
+                formatString = formats.get(fullParameterName).getFormat();
+            } else if (formats.containsKey(parameterName)) {
+                formatString = formats.get(parameterName).getFormat();
+            }
+        }
+        return formatString;
     }
 
     protected String applyStringFunction(String valueString, String stringFunction) {
@@ -239,5 +240,27 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
     protected ReportFormattingException wrapWithReportingException(String message) {
         return new ReportFormattingException(message + ". Template name [" + reportTemplate.getDocumentName() + "]");
+    }
+
+    protected static class InlinerAndMatcher {
+        final ContentInliner contentInliner;
+        final Matcher matcher;
+
+        public InlinerAndMatcher(ContentInliner contentInliner, Matcher matcher) {
+            this.contentInliner = contentInliner;
+            this.matcher = matcher;
+        }
+    }
+
+    protected InlinerAndMatcher getContentInlinerForFormat(String formatString) {
+        if (formatString != null) {
+            for (ContentInliner contentInliner : contentInliners) {
+                Matcher matcher = contentInliner.getTagPattern().matcher(formatString);
+                if (matcher.find()) {
+                    return new InlinerAndMatcher(contentInliner, matcher);
+                }
+            }
+        }
+        return null;
     }
 }

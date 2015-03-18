@@ -60,10 +60,10 @@ public class CustomCellStyleHint extends AbstractHint {
             if (matcher.find()) {
                 String paramName = matcher.group(1);
                 String styleName = (String) bandData.getParameterValue(paramName);
-                if (styleName == null) return;
+                if (styleName == null) continue;
 
                 HSSFCellStyle cellStyle = styleCache.getStyleByName(styleName);
-                if (cellStyle == null) return;
+                if (cellStyle == null) continue;
 
                 HSSFCellStyle resultStyle = styleCache.getNamedCachedStyle(cellStyle);
 
