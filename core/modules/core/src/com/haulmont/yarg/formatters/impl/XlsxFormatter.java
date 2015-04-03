@@ -416,7 +416,7 @@ public class XlsxFormatter extends AbstractFormatter {
         Row firstRow = findNextRowForHBand(band, templateRange, resultSheetRows);
         firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
 
-        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow);
+        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow, resultSheet);
 
         updateRangeMappings(band, templateRange, resultCells);
 
@@ -436,7 +436,7 @@ public class XlsxFormatter extends AbstractFormatter {
         Row firstRow = findNextRowForVBand(band, templateRange, resultSheetRows);
         firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
 
-        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow);
+        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow, resultSheet);
 
         updateRangeMappings(band, templateRange, resultCells);
     }
@@ -539,22 +539,25 @@ public class XlsxFormatter extends AbstractFormatter {
         return firstRow;
     }
 
-    protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow) {
+    protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow, Worksheet resultSheet) {
         List<Cell> resultCells = new ArrayList<Cell>();
         for (int i = 0; i <= templateRange.getLastRow() - templateRange.getFirstRow(); i++) {
-            Range oneRowRange = new Range(templateRange.getSheet(), templateRange.getFirstColumn(), templateRange.getFirstRow() + i, templateRange.getLastColumn(), templateRange.getFirstRow() + i);
+            Range oneRowRange = new Range(templateRange.getSheet(),
+                    templateRange.getFirstColumn(), templateRange.getFirstRow() + i,
+                    templateRange.getLastColumn(), templateRange.getFirstRow() + i);
             List<Cell> templateCells = template.getCellsByRange(oneRowRange);
 
-            if (CollectionUtils.isNotEmpty(templateCells)) {
-                Row templateRow = (Row) templateCells.get(0).getParent();
-                Row resultRow = resultSheetRows.get((int) (firstRow.getR() + i - 1));
+            Row templateRow = CollectionUtils.isNotEmpty(templateCells) ?
+                    (Row) templateCells.get(0).getParent() :
+                    resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow());
+            Row resultRow = resultSheetRows.get((int) (firstRow.getR() + i - 1));
 
-                List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
+            List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
 
-                resultCells.addAll(currentRowResultCells);
+            resultCells.addAll(currentRowResultCells);
 
-                copyRowSettings(templateRow, resultRow, getWorksheet(templateRow), getWorksheet(resultRow));
-            }
+            copyRowSettings(templateRow, resultRow, getWorksheet(templateRow), getWorksheet(resultRow));
+            //todo copy conditional formatting
         }
         return resultCells;
     }
@@ -728,7 +731,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 newCell.setT(STCellType.N);
                 newCell.setV(String.valueOf(value));
             } else if (value instanceof Date) {
-                 newCell.setT(STCellType.N);
+                newCell.setT(STCellType.N);
                 newCell.setV(String.valueOf(HSSFDateUtil.getExcelDate((Date) value)));
             } else {
                 newCell.setT(STCellType.STR);
