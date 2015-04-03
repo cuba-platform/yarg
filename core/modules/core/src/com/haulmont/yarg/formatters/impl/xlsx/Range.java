@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
 public class Range {
     public static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
     public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
-    public static Pattern RANGE_PATTERN = Pattern.compile("([A-z0-9]*):?([A-z0-9]*)?");
+    public static Pattern NOT_STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):?([A-z0-9]*)?");
+    public static Pattern STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
 
     private String sheet;
     private int firstColumn;
@@ -86,7 +87,7 @@ public class Range {
     }
 
     public static Range fromRange(String sheet, String range) {
-        Matcher matcher = RANGE_PATTERN.matcher(range);
+        Matcher matcher = NOT_STRICT_RANGE_PATTERN.matcher(range);
         if (matcher.find()) {
             String firstCell = matcher.group(1);
             String lastCell = matcher.group(2);
@@ -101,7 +102,7 @@ public class Range {
     }
 
     public static Range fromCellFormula(String sheet, Cell cellWithFormula) {
-        Matcher matcher = Range.RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
+        Matcher matcher = Range.STRICT_RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
         if (matcher.find()) {
             String rangeStr = matcher.group();
             Range formulaRange = Range.fromRange(sheet, rangeStr);
