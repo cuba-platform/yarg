@@ -16,6 +16,7 @@
 
 package com.haulmont.yarg.formatters.impl.xlsx;
 
+import org.apache.commons.lang.StringUtils;
 import org.xlsx4j.sml.Cell;
 
 import java.util.regex.Matcher;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
 public class Range {
     public static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
     public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
-    public static Pattern RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
+    public static Pattern RANGE_PATTERN = Pattern.compile("([A-z0-9]*):?([A-z0-9]*)?");
 
     private String sheet;
     private int firstColumn;
@@ -89,6 +90,9 @@ public class Range {
         if (matcher.find()) {
             String firstCell = matcher.group(1);
             String lastCell = matcher.group(2);
+            if (StringUtils.isEmpty(lastCell)) {
+                lastCell = firstCell;
+            }
 
             return fromCells(sheet, firstCell, lastCell);
         } else {

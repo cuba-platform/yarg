@@ -66,11 +66,11 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BiMap<BandData, Range> bandsToTemplateRanges = HashBiMap.create();
     protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
-    protected Set<Cell> innerFormulas = new HashSet<Cell>();
-    protected Set<Cell> outerFormulas = new HashSet<Cell>();
+    protected Set<Cell> innerFormulas = new HashSet<>();
+    protected Set<Cell> outerFormulas = new HashSet<>();
 
-    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<String, Range>();
-    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
+    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<>();
+    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<>();
 
     protected int previousRangesRightOffset;
 
@@ -98,6 +98,7 @@ public class XlsxFormatter extends AbstractFormatter {
         updateMergeRegions();
         updateCharts();
         updateFormulas();
+        updateConditionalFormatting();
 
         saveAndClose();
     }
@@ -251,10 +252,32 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void updateFormulas() {
-        int formulaCount = 1;
         CTCalcChain calculationChain = getCalculationChain();
-        formulaCount = processInnerFormulas(formulaCount, calculationChain);
+        int formulaCount = processInnerFormulas(calculationChain);
         processOuterFormulas(formulaCount, calculationChain);
+    }
+
+    //todo support inner bands (where sequence of formatter cells might be broken)
+    protected void updateConditionalFormatting() {
+        for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
+            Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
+            for (CTConditionalFormatting ctConditionalFormatting : worksheet.getConditionalFormatting()) {
+                List<String> references = new ArrayList<>();
+                for (String ref : ctConditionalFormatting.getSqref()) {
+                    Range formulaRange = Range.fromRange(sheetWrapper.getName(), ref);
+                    for (Range templateRange : rangeDependencies.keySet()) {
+                        if (templateRange.contains(formulaRange)) {
+                            List<Range> resultRanges = new ArrayList<>(rangeDependencies.get(templateRange));
+                            formulaRange = calculateFormulaRangeChange(formulaRange, templateRange, resultRanges);
+                            references.add(formulaRange.toRange());
+                        }
+                    }
+                }
+
+                ctConditionalFormatting.getSqref().clear();
+                ctConditionalFormatting.getSqref().addAll(references);
+            }
+        }
     }
 
     protected void processOuterFormulas(int formulaCount, CTCalcChain calculationChain) {
@@ -275,7 +298,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
             for (Range templateRange : rangeDependencies.keySet()) {
                 if (templateRange.contains(formulaRange)) {
-                    List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.get(templateRange));
+                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.get(templateRange));
                     for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
                         Range resultRange = iterator.next();
                         BandData bandData = bandsToResultRanges.inverse().get(resultRange);
@@ -285,14 +308,7 @@ public class XlsxFormatter extends AbstractFormatter {
                     }
 
                     if (resultRanges.size() > 0) {
-                        Range firstResultRange = getFirst(resultRanges);
-                        Range lastResultRange = getLast(resultRanges);
-
-                        Offset offset = calculateOffset(templateRange, firstResultRange);
-                        formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
-
-                        Offset grow = calculateOffset(firstResultRange, lastResultRange);
-                        formulaRange.grow(grow.downOffset, grow.rightOffset);
+                        formulaRange = calculateFormulaRangeChange(formulaRange, templateRange, resultRanges);
                         updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
                     } else {
                         cellWithFormula.setF(null);
@@ -305,7 +321,21 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    protected int processInnerFormulas(int formulaCount, CTCalcChain calculationChain) {
+    protected Range calculateFormulaRangeChange(Range formulaRange, Range templateRange, List<Range> resultRanges) {
+        Range firstResultRange = getFirst(resultRanges);
+        Range lastResultRange = getLast(resultRanges);
+
+        Offset offset = calculateOffset(templateRange, firstResultRange);
+        formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
+
+        Offset grow = calculateOffset(firstResultRange, lastResultRange);
+        formulaRange.grow(grow.downOffset, grow.rightOffset);
+        return formulaRange;
+    }
+
+    protected int processInnerFormulas(CTCalcChain calculationChain) {
+        int formulaCount = 1;
+
         for (Cell cellWithFormula : innerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
             Worksheet worksheet = getWorksheet(row);
@@ -557,7 +587,6 @@ public class XlsxFormatter extends AbstractFormatter {
             resultCells.addAll(currentRowResultCells);
 
             copyRowSettings(templateRow, resultRow, getWorksheet(templateRow), getWorksheet(resultRow));
-            //todo copy conditional formatting
         }
         return resultCells;
     }
@@ -597,7 +626,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(Range templateRange, BandData bandData, Row newRow, List<Cell> templateCells) {
-        List<Cell> resultCells = new ArrayList<Cell>();
+        List<Cell> resultCells = new ArrayList<>();
 
         //if no template cells (xlsx doesn't store empty cells) - create at least 1, to help rendering
         if (CollectionUtils.isEmpty(templateCells)) {
