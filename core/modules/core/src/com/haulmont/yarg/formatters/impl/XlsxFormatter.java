@@ -21,16 +21,11 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
-import com.haulmont.yarg.formatters.impl.xlsx.CellReference;
-import com.haulmont.yarg.formatters.impl.xlsx.Document;
-import com.haulmont.yarg.formatters.impl.xlsx.Range;
+import com.haulmont.yarg.formatters.impl.xlsx.*;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.BandVisitor;
@@ -61,10 +56,9 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Document template;
     protected Document result;
 
-    protected ArrayListMultimap<Range, Range> rangeDependencies = ArrayListMultimap.create();
+    protected RangeDependencies rangeDependencies = new RangeDependencies();
+    protected BandsForRanges bandsForRanges = new BandsForRanges();
     protected LinkedHashMultimap<Range, Range> rangeVerticalIntersections = LinkedHashMultimap.create();
-    protected BiMap<BandData, Range> bandsToTemplateRanges = HashBiMap.create();
-    protected BiMap<BandData, Range> bandsToResultRanges = HashBiMap.create();
 
     protected Set<Cell> innerFormulas = new HashSet<>();
     protected Set<Cell> outerFormulas = new HashSet<>();
@@ -164,9 +158,9 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void updateCharts() {
         for (Map.Entry<Range, Document.ChartWrapper> entry : result.getChartSpaces().entrySet()) {
-            for (Range templateRange : rangeDependencies.keySet()) {
+            for (Range templateRange : rangeDependencies.templates()) {
                 if (templateRange.contains(entry.getKey())) {
-                    List<Range> chartBandResultRanges = rangeDependencies.get(templateRange);
+                    List<Range> chartBandResultRanges = rangeDependencies.resultsForTemplate(templateRange);
                     if (chartBandResultRanges.size() > 0) {
                         Range firstResultRange = getFirst(chartBandResultRanges);
 
@@ -193,9 +187,9 @@ public class XlsxFormatter extends AbstractFormatter {
             CTAxDataSource captions = ctBarSer.getCat();
             if (captions != null && captions.getStrRef() != null) {
                 Range temlpateCaptionsRange = Range.fromFormula(captions.getStrRef().getF());
-                for (Range bandRange : rangeDependencies.keySet()) {
+                for (Range bandRange : rangeDependencies.templates()) {
                     if (bandRange.contains(temlpateCaptionsRange)) {
-                        List<Range> seriesResultRanges = rangeDependencies.get(bandRange);
+                        List<Range> seriesResultRanges = rangeDependencies.resultsForTemplate(bandRange);
 
                         Range seriesFirstRange = getFirst(seriesResultRanges);
                         Range seriesLastRange = getLast(seriesResultRanges);
@@ -218,9 +212,9 @@ public class XlsxFormatter extends AbstractFormatter {
             CTNumDataSource data = ctBarSer.getVal();
             if (data != null && data.getNumRef() != null) {
                 Range templateDataRange = Range.fromFormula(data.getNumRef().getF());
-                for (Range bandRange : rangeDependencies.keySet()) {
+                for (Range bandRange : rangeDependencies.templates()) {
                     if (bandRange.contains(templateDataRange)) {
-                        List<Range> seriesResultRanges = rangeDependencies.get(bandRange);
+                        List<Range> seriesResultRanges = rangeDependencies.resultsForTemplate(bandRange);
 
                         Range seriesFirstRange = getFirst(seriesResultRanges);
                         Range seriesLastRange = getLast(seriesResultRanges);
@@ -251,13 +245,13 @@ public class XlsxFormatter extends AbstractFormatter {
         anchor.getTo().setCol(anchor.getTo().getCol() + offset.rightOffset);
     }
 
+    //todo support formulas without range but with list of cells
     protected void updateFormulas() {
         CTCalcChain calculationChain = getCalculationChain();
         int formulaCount = processInnerFormulas(calculationChain);
         processOuterFormulas(formulaCount, calculationChain);
     }
 
-    //todo support inner bands (where sequence of formatter cells might be broken)
     protected void updateConditionalFormatting() {
         for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
             Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
@@ -265,11 +259,14 @@ public class XlsxFormatter extends AbstractFormatter {
                 List<String> references = new ArrayList<>();
                 for (String ref : ctConditionalFormatting.getSqref()) {
                     Range formulaRange = Range.fromRange(sheetWrapper.getName(), ref);
-                    for (Range templateRange : rangeDependencies.keySet()) {
+                    for (Range templateRange : rangeDependencies.templates()) {
                         if (templateRange.contains(formulaRange)) {
-                            List<Range> resultRanges = new ArrayList<>(rangeDependencies.get(templateRange));
-                            formulaRange = calculateFormulaRangeChange(formulaRange, templateRange, resultRanges);
-                            references.add(formulaRange.toRange());
+                            List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
+                            for (Range resultRange : resultRanges) {
+                                Offset offset = calculateOffset(templateRange, resultRange);
+                                Range shift = formulaRange.copy().shift(offset.downOffset, offset.rightOffset);
+                                references.add(shift.toRange());
+                            }
                         }
                     }
                 }
@@ -289,19 +286,19 @@ public class XlsxFormatter extends AbstractFormatter {
             CellReference formulaCellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
 
             BandData parentBand = null;
-            for (Range resultRange : rangeDependencies.values()) {
+            for (Range resultRange : rangeDependencies.results()) {
                 if (resultRange.contains(formulaCellReference)) {
-                    BandData formulaCellBand = bandsToResultRanges.inverse().get(resultRange);
+                    BandData formulaCellBand = bandsForRanges.bandForResultRange(resultRange);
                     parentBand = formulaCellBand.getParentBand();
                 }
             }
 
-            for (Range templateRange : rangeDependencies.keySet()) {
+            for (Range templateRange : rangeDependencies.templates()) {
                 if (templateRange.contains(formulaRange)) {
-                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.get(templateRange));
+                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
                     for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
                         Range resultRange = iterator.next();
-                        BandData bandData = bandsToResultRanges.inverse().get(resultRange);
+                        BandData bandData = bandsForRanges.bandForResultRange(resultRange);
                         if (!bandData.getParentBand().equals(parentBand)) {
                             iterator.remove();
                         }
@@ -341,9 +338,9 @@ public class XlsxFormatter extends AbstractFormatter {
             Worksheet worksheet = getWorksheet(row);
             Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
             Range originalFormulaRange = formulaRange.copy();
-            for (Range templateRange : rangeDependencies.keySet()) {
+            for (Range templateRange : rangeDependencies.templates()) {
                 if (templateRange.contains(formulaRange)) {
-                    List<Range> resultRanges = rangeDependencies.get(templateRange);
+                    List<Range> resultRanges = rangeDependencies.resultsForTemplate(templateRange);
 
                     CellReference cellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
                     for (Range resultRange : resultRanges) {
@@ -394,7 +391,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void updateMergeRegions() {
-        for (Range templateRange : rangeDependencies.keySet()) {
+        for (Range templateRange : rangeDependencies.templates()) {
             Worksheet templateSheet = template.getSheetByName(templateRange.getSheet());
             Worksheet resultSheet = result.getSheetByName(templateRange.getSheet());
 
@@ -406,7 +403,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 }
             }
 
-            for (Range resultRange : rangeDependencies.get(templateRange)) {
+            for (Range resultRange : rangeDependencies.resultsForTemplate(templateRange)) {
                 if (templateSheet.getMergeCells() != null && templateSheet.getMergeCells().getMergeCell() != null) {
                     for (CTMergeCell templateMergeRegion : templateSheet.getMergeCells().getMergeCell()) {
                         Range mergeRange = Range.fromRange(templateRange.getSheet(), templateMergeRegion.getRef());
@@ -474,9 +471,8 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void updateRangeMappings(BandData band, Range templateRange, List<Cell> resultCells) {
         if (CollectionUtils.isNotEmpty(resultCells)) {
             Range resultRange = Range.fromCells(templateRange.getSheet(), getFirst(resultCells).getR(), resultCells.get(resultCells.size() - 1).getR());
-            rangeDependencies.put(templateRange, resultRange);
-            bandsToTemplateRanges.forcePut(band, templateRange);
-            bandsToResultRanges.forcePut(band, resultRange);
+            rangeDependencies.addDependency(templateRange, resultRange);
+            bandsForRanges.add(band, templateRange, resultRange);
             lastRenderedRangeForBandName.put(band.getName(), resultRange);
         }
     }
@@ -487,7 +483,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
         if (lastRenderedRange != null) {//this band has been already rendered at least once
-            BandData lastRenderedBand = bandsToResultRanges.inverse().get(lastRenderedRange);
+            BandData lastRenderedBand = bandsForRanges.bandForResultRange(lastRenderedRange);
             LastRowBandVisitor bandVisitor = new LastRowBandVisitor();
             lastRenderedBand.visit(bandVisitor);
 
@@ -525,8 +521,8 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected Row findNextRowForChildBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         BandData parentBand = band.getParentBand();
-        Range resultParentRange = bandsToResultRanges.get(parentBand);
-        Range templateParentRange = bandsToTemplateRanges.get(parentBand);
+        Range resultParentRange = bandsForRanges.resultForBand(parentBand);
+        Range templateParentRange = bandsForRanges.templateForBand(parentBand);
 
         if (resultParentRange != null && templateParentRange != null) {
             if (templateParentRange.getFirstRow() == templateRange.getFirstRow()) {
@@ -547,7 +543,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Row findNextRowForFirstRender(Range templateRange, List<Row> resultSheetRows) {
         Collection<Range> templateNeighbours = rangeVerticalIntersections.get(templateRange);
         for (Range templateNeighbour : templateNeighbours) {
-            Collection<Range> resultRanges = rangeDependencies.get(templateNeighbour);
+            Collection<Range> resultRanges = rangeDependencies.resultsForTemplate(templateNeighbour);
             if (resultRanges.size() > 0) {
                 Range firstResultRange = resultRanges.iterator().next();
                 return resultSheetRows.get(firstResultRange.getFirstRow() - 1);//get current  row
@@ -594,7 +590,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Range getLastRenderedBandForThisLevel(BandData band) {
         List<BandData> sameLevelBands = band.getParentBand().getChildrenByName(band.getName());
         for (BandData sameLevelBand : sameLevelBands) {
-            Range range = bandsToResultRanges.get(sameLevelBand);
+            Range range = bandsForRanges.resultForBand(sameLevelBand);
             if (range != null) {
                 return lastRenderedRangeForBandName.get(band.getName());
             }
@@ -812,7 +808,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
         @Override
         public boolean visit(BandData band) {
-            Range range = bandsToResultRanges.get(band);
+            Range range = bandsForRanges.resultForBand(band);
             if (range != null && range.getLastRow() > lastRow) {
                 lastRow = range.getLastRow();
             }

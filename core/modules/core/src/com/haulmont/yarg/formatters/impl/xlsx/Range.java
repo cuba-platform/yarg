@@ -23,10 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Range {
-    public static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
-    public static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
-    public static Pattern NOT_STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):?([A-z0-9]*)?");
-    public static Pattern STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
+    public final static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
+    public final static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
+    public final static Pattern NOT_STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):?([A-z0-9]*)?");
+    public final static Pattern STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
 
     private String sheet;
     private int firstColumn;
