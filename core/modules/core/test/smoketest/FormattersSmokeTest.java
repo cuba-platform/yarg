@@ -671,75 +671,11 @@ public class FormattersSmokeTest {
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
 
-        class StrangeMap implements Map {
-            Random random = new Random();
-
-            @Override
-            public int size() {
-                return 0;
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return false;
-            }
-
-            @Override
-            public boolean containsKey(Object key) {
-                return false;
-            }
-
-            @Override
-            public boolean containsValue(Object value) {
-                return false;
-            }
-
-            @Override
-            public Object get(Object key) {
-                return random.nextInt();
-            }
-
-            @Override
-            public Object put(Object key, Object value) {
-                return null;
-            }
-
-            @Override
-            public Object remove(Object key) {
-                return null;
-            }
-
-            @Override
-            public void putAll(Map m) {
-
-            }
-
-            @Override
-            public void clear() {
-
-            }
-
-            @Override
-            public Set keySet() {
-                return null;
-            }
-
-            @Override
-            public Collection values() {
-                return null;
-            }
-
-            @Override
-            public Set<Entry> entrySet() {
-                return null;
-            }
-        }
-
         BandData band11 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
-        band11.setData(new StrangeMap());
+        band11.setData(new RandomMap());
 
         BandData band12 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
-        band12.setData(new StrangeMap());
+        band12.setData(new RandomMap());
 
         root.addChild(band11);
         root.addChild(band12);
