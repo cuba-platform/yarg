@@ -189,7 +189,11 @@ public abstract class AbstractFormatter implements ReportFormatter {
         return template.replaceAll(parameterRegex, Matcher.quoteReplacement(value));
     }
 
-    protected BandData findBandByPath(BandData rootBand, String path) {
+    protected boolean containsJustOneAlias(String value) {
+        return !StringUtils.isBlank(value) && value.startsWith("${") && value.endsWith("}");
+    }
+
+    protected BandData findBandByPath(String path) {
         if (rootBand.getName().equals(path)) return rootBand;
 
         String[] pathParts = path.split("\\.");
@@ -200,16 +204,6 @@ public abstract class AbstractFormatter implements ReportFormatter {
         }
 
         return currentBand;
-    }
-
-    protected static class BandPathAndParameterName {
-        final String bandPath;
-        final String parameterName;
-
-        public BandPathAndParameterName(String bandPath, String parameterName) {
-            this.bandPath = bandPath;
-            this.parameterName = parameterName;
-        }
     }
 
     protected BandPathAndParameterName separateBandNameAndParameterName(String alias) {
@@ -262,5 +256,23 @@ public abstract class AbstractFormatter implements ReportFormatter {
             }
         }
         return null;
+    }
+
+    public static class BandPathAndParameterName {
+        protected final String bandPath;
+        protected final String parameterName;
+
+        public BandPathAndParameterName(String bandPath, String parameterName) {
+            this.bandPath = bandPath;
+            this.parameterName = parameterName;
+        }
+
+        public String getBandPath() {
+            return bandPath;
+        }
+
+        public String getParameterName() {
+            return parameterName;
+        }
     }
 }

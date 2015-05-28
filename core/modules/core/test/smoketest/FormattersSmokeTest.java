@@ -101,6 +101,8 @@ public class FormattersSmokeTest {
     @Test
     public void testDocx() throws Exception {
         BandData root = createRootBand();
+        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
         footerChild.addData("nestedData", "NESTED_DATA");
@@ -136,6 +138,8 @@ public class FormattersSmokeTest {
     @Test
     public void testDocxToHtml() throws Exception {
         BandData root = createRootBand();
+        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
         footerChild.addData("nestedData", "NESTED_DATA");
@@ -176,6 +180,8 @@ public class FormattersSmokeTest {
     @Test
     public void testOdt() throws Exception {
         BandData root = createRootBand();
+        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
         footerChild.addData("nestedData", "NESTED_DATA");
@@ -194,6 +200,8 @@ public class FormattersSmokeTest {
     @Test
     public void testDoc() throws Exception {
         BandData root = createRootBand();
+        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
         footerChild.addData("nestedData", "NESTED_DATA");
@@ -223,6 +231,7 @@ public class FormattersSmokeTest {
             public void run() {
                 try {
                     BandData root = createRootBand();
+                    root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -246,6 +255,7 @@ public class FormattersSmokeTest {
             public void run() {
                 try {
                     BandData root = createRootBand();
+                    root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -270,6 +280,7 @@ public class FormattersSmokeTest {
             public void run() {
                 try {
                     BandData root = createRootBand();
+                    root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -789,6 +800,7 @@ public class FormattersSmokeTest {
     private BandData createRootBand(List<BandData> bands) {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.param1", "%16s")));
+
         HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
@@ -801,7 +813,7 @@ public class FormattersSmokeTest {
 
         Map<String, Object> datamap = new HashMap<String, Object>();
         datamap.put("col1", 111);
-        datamap.put("col2", 222);
+        datamap.put("col2", "<html><body><b>html text</b></body></html>");
         datamap.put("col3", 333);
         datamap.put("col.nestedCol", null);
         datamap.put("col.nestedBool", null);
@@ -810,7 +822,7 @@ public class FormattersSmokeTest {
 
         Map<String, Object> datamap2 = new HashMap<String, Object>();
         datamap2.put("col1", 444);
-        datamap2.put("col2", 555);
+        datamap2.put("col2", "<html><body><b>html text</b></body></html>");
         datamap2.put("col3", 666);
         datamap2.put("col.nestedCol", "NESTED1");
         datamap2.put("col.nestedBool", false);
@@ -819,7 +831,7 @@ public class FormattersSmokeTest {
 
         Map<String, Object> datamap3 = new HashMap<String, Object>();
         datamap3.put("col1", 777);
-        datamap3.put("col2", 888);
+        datamap3.put("col2", "<html><body><b>html text</b></body></html>");
         datamap3.put("col3", 999);
         datamap3.put("col.nestedCol", "NESTED2");
         datamap3.put("col.nestedBool", true);

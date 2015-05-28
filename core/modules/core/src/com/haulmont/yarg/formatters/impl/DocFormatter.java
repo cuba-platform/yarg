@@ -264,10 +264,10 @@ public class DocFormatter extends AbstractFormatter {
 
                 BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
 
-                BandData band = findBandByPath(rootBand, bandAndParameter.bandPath);
+                BandData band = findBandByPath(bandAndParameter.getBandPath());
 
                 if (band != null) {
-                    insertValue(textRange.getText(), textRange, band, bandAndParameter.parameterName);
+                    insertValue(textRange.getText(), textRange, band, bandAndParameter.getParameterName());
                 } else {
                     throw wrapWithReportingException(String.format("No band for alias [%s] found", alias));
                 }

@@ -24,24 +24,6 @@ public final class HSSFCellHelper {
     private HSSFCellHelper() {
     }
 
-    /**
-     * Detects if cell contains only one template to inline value
-     *
-     * @param cell - cell
-     * @return -
-     */
-    public static boolean isOneValueCell(HSSFCell cell, String value) {
-        boolean result = true;
-        if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
-            if (value.lastIndexOf("${") != 0) {
-                result = false;
-            } else {
-                result = value.indexOf("}") == value.length() - 1;
-            }
-        }
-        return result;
-    }
-
     public static HSSFCell getCellFromReference(CellReference cref, HSSFSheet templateSheet) {
         return getCellFromReference(templateSheet, cref.getCol(), cref.getRow());
     }

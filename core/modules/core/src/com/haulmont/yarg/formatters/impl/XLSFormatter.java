@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.haulmont.yarg.formatters.impl.xls.HSSFCellHelper.getCellFromReference;
-import static com.haulmont.yarg.formatters.impl.xls.HSSFCellHelper.isOneValueCell;
 import static com.haulmont.yarg.formatters.impl.xls.HSSFPicturesHelper.getAllAnchors;
 import static com.haulmont.yarg.formatters.impl.xls.HSSFRangeHelper.*;
 
@@ -607,7 +606,7 @@ public class XLSFormatter extends AbstractFormatter {
             templateCellValue = extractStyles(templateCell, resultCell, templateCellValue, band);
         }
 
-        if (cellType == HSSFCell.CELL_TYPE_STRING && isOneValueCell(templateCell, templateCellValue)) {
+        if (cellType == HSSFCell.CELL_TYPE_STRING && containsJustOneAlias(templateCellValue)) {
             updateValueCell(rootBand, band, templateCellValue, resultCell,
                     drawingPatriarchsMap.get(resultCell.getSheet()));
         } else {
