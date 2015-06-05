@@ -85,6 +85,12 @@ configure([api, core]) {
         archives javadocJar
     }
 
+    if (signing.hasProperty('keyId')) {
+        signing {
+            sign configurations.archives
+        }
+    }
+
     uploadArchives.configure {
         repositories.mavenDeployer {
             name = 'httpDeployer'
@@ -153,12 +159,6 @@ configure([api, core]) {
                     }
                 }
             }
-        }
-    }
-
-    if (signing.hasProperty('keyId')) {
-        signing {
-            sign configurations.archives
         }
     }
 }
