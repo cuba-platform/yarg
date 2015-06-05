@@ -33,7 +33,6 @@ import com.haulmont.yarg.util.converter.ObjectToStringConverter;
 import com.haulmont.yarg.util.converter.ObjectToStringConverterImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +108,8 @@ public class Reporting implements ReportingAPI {
             String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
             return createReportOutputDocument(report, reportTemplate, outputName);
         } catch (ReportingException e) {
-            logReport("An error occurred while running report [%s] with parameters [%s]. Trace: \n" + ExceptionUtils.getStackTrace(e), report, params);
+            logReport("An error occurred while running report [%s] with parameters [%s].", report, params);
+            logger.info("Trace: ", e);
             //validation exception is usually shown to clients, so probably there is no need to add report name there (to keep the original message)
             if (!(e instanceof ValidationException)) {
                 e.setReportDetails(format(" Report name [%s]", report.getName()));
