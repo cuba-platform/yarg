@@ -575,7 +575,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
             Row templateRow = CollectionUtils.isNotEmpty(templateCells) ?
                     (Row) templateCells.get(0).getParent() :
-                    resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow());
+                    resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow() - 1);
             Row resultRow = resultSheetRows.get((int) (firstRow.getR() + i - 1));
 
             List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
