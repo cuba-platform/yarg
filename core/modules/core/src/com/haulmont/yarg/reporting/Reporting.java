@@ -106,7 +106,7 @@ public class Reporting implements ReportingAPI {
             logReport("Finished report [%s] with parameters [%s]", report, handledParams);
 
             String outputName = resolveOutputFileName(report, reportTemplate, rootBand);
-            return createReportOutputDocument(report, reportTemplate, outputName);
+            return createReportOutputDocument(report, reportTemplate, outputName, rootBand);
         } catch (ReportingException e) {
             logReport("An error occurred while running report [%s] with parameters [%s].", report, params);
             logger.info("Trace: ", e);
@@ -178,7 +178,7 @@ public class Reporting implements ReportingAPI {
         logger.info(format(caption, report.getName(), parametersString));
     }
 
-    protected ReportOutputDocument createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName) {
+    protected ReportOutputDocument createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName, BandData rootBand) {
         return new ReportOutputDocumentImpl(report, null, outputName, reportTemplate.getOutputType());
     }
 
