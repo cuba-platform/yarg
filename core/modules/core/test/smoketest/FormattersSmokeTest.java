@@ -344,6 +344,34 @@ public class FormattersSmokeTest {
         HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
 
+        BandData header = new BandData("Header", root, BandOrientation.HORIZONTAL);
+        header.setData(new RandomMap());
+        BandData header2 = new BandData("Header2", root, BandOrientation.HORIZONTAL);
+        header2.setData(new RandomMap());
+        BandData data = new BandData("Table_2", root, BandOrientation.HORIZONTAL);
+        data.setData(new RandomMap());
+        BandData data2 = new BandData("Table_2", root, BandOrientation.HORIZONTAL);
+        data2.setData(new RandomMap());
+
+        root.addChild(header);
+        root.addChild(header2);
+        root.addChild(data);
+        root.addChild(data2);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/Cost Structure.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/Cost Structure.xlsx", "./modules/core/test/smoketest/Cost Structure.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testXlsx3() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
         BandData header = new BandData("Header", root, BandOrientation.VERTICAL);
         BandData band = new BandData("Band", root, BandOrientation.VERTICAL);
         band.addData("number", BigDecimal.valueOf(-200015));

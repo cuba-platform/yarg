@@ -159,7 +159,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void updateCharts() {
         for (Map.Entry<Range, Document.ChartWrapper> entry : result.getChartSpaces().entrySet()) {
             for (Range templateRange : rangeDependencies.templates()) {
-                if (templateRange.contains(entry.getKey())) {
+                if (templateRange.intersects(entry.getKey())) {
                     List<Range> chartBandResultRanges = rangeDependencies.resultsForTemplate(templateRange);
                     if (chartBandResultRanges.size() > 0) {
                         Range firstResultRange = getFirst(chartBandResultRanges);

@@ -132,6 +132,21 @@ public class Range {
         );
     }
 
+    public boolean intersects(Range range) {
+        return this.getSheet().equals(range.getSheet())
+                && (
+                this.getFirstRow() >= range.getFirstRow() && this.getFirstRow() <= range.getLastRow() ||
+                        this.getLastRow() >= range.getFirstRow() && this.getLastRow() <= range.getLastRow() ||
+                        range.getFirstRow() >= this.getFirstRow() && range.getFirstRow() <= this.getLastRow() ||
+                        range.getLastRow() >= this.getFirstRow() && range.getLastRow() <= this.getLastRow())
+                && (
+                this.getFirstColumn() >= range.getFirstColumn() && this.getFirstColumn() <= range.getLastColumn() ||
+                        this.getLastColumn() >= range.getFirstColumn() && this.getLastColumn() <= range.getLastColumn() ||
+                        range.getFirstColumn() >= this.getFirstColumn() && range.getFirstColumn() <= this.getLastColumn() ||
+                        range.getLastColumn() >= this.getFirstColumn() && range.getLastColumn() <= this.getLastColumn()
+        );
+    }
+
 
     public Range shift(int downShift, int rightShift) {
         firstColumn += rightShift;
