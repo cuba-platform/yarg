@@ -21,10 +21,12 @@
  */
 package com.haulmont.yarg.structure;
 
+import java.io.Serializable;
+
 /**
  * This interface describes report input parameter
  */
-public interface ReportParameter {
+public interface ReportParameter extends Serializable {
     /**
      * @return user friendly name
      */

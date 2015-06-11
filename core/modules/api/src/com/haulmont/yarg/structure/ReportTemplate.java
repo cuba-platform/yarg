@@ -24,11 +24,12 @@ package com.haulmont.yarg.structure;
 import com.haulmont.yarg.formatters.CustomReport;
 
 import java.io.InputStream;
+import java.io.Serializable;
 
 /**
  * This interface describes report template document.
   */
-public interface ReportTemplate {
+public interface ReportTemplate extends Serializable {
     public static final String DEFAULT_TEMPLATE_CODE = "DEFAULT";
 
     String getCode();

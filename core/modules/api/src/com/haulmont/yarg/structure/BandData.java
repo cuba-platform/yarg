@@ -18,6 +18,7 @@ package com.haulmont.yarg.structure;
 
 import com.google.common.base.Preconditions;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -26,19 +27,19 @@ import java.util.*;
  */
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class BandData {
+public class BandData implements Serializable {
     public static final String ROOT_BAND_NAME = "Root";
 
-    protected Map<String, Object> data = new HashMap<String, Object>(10);
+    protected Map<String, Object> data = new HashMap<>();
     protected BandData parentBand;
 
-    protected Map<String, List<BandData>> childrenBands = new LinkedHashMap<String, List<BandData>>();
+    protected Map<String, List<BandData>> childrenBands = new LinkedHashMap<>();
 
     protected final String name;
     protected final BandOrientation orientation;
     protected Set<String> firstLevelBandDefinitionNames = null;
     protected int level;
-    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<String, ReportFieldFormat>();
+    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<>();
 
 
     public BandData(String name) {
@@ -121,7 +122,7 @@ public class BandData {
     }
 
     public List<BandData> getChildrenList() {
-        List<BandData> bandList = new ArrayList<BandData>();
+        List<BandData> bandList = new ArrayList<>();
         for (List<BandData> bands : childrenBands.values()) {
             bandList.addAll(bands);
         }

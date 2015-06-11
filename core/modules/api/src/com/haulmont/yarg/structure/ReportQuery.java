@@ -21,13 +21,14 @@
  */
 package com.haulmont.yarg.structure;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * This interface describes certain query which load some data.
  * It might be not only SQL or JPQL query but also Groovy script or smth like this
  */
-public interface ReportQuery {
+public interface ReportQuery extends Serializable {
     String getName();
 
     /**

@@ -21,10 +21,12 @@
  */
 package com.haulmont.yarg.structure;
 
+import java.io.Serializable;
+
 /**
  * This interface describes a format for certain result field.
  */
-public interface ReportFieldFormat {
+public interface ReportFieldFormat extends Serializable {
     /**
      * @return formatted field name. Should also contain all parent band names.
      * Example: Band1.Band2.field1
