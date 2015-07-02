@@ -19,14 +19,19 @@ package com.haulmont.yarg.formatters.impl.xlsx;
 import org.apache.commons.lang.StringUtils;
 import org.xlsx4j.sml.Cell;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.haulmont.yarg.formatters.impl.xlsx.XlsxUtils.getColumnReferenceFromNumber;
 
 public class Range {
     public final static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
     public final static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
-    public final static Pattern NOT_STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):?([A-z0-9]*)?");
-    public final static Pattern STRICT_RANGE_PATTERN = Pattern.compile("([A-z0-9]*):([A-z0-9]*)");
+    public final static Pattern NOT_STRICT_RANGE_PATTERN = Pattern.compile("([A-z]+[0-9]+):?([A-z]+[0-9]+)?");
+    public final static Pattern STRICT_RANGE_PATTERN = Pattern.compile("([A-z]+[0-9]+):([A-z]+[0-9]+)");
 
     private String sheet;
     private int firstColumn;
@@ -101,26 +106,53 @@ public class Range {
         }
     }
 
-    public static Range fromCellFormula(String sheet, Cell cellWithFormula) {
+    public static Set<Range> fromCellFormula(String sheet, Cell cellWithFormula) {
         Matcher matcher = Range.STRICT_RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
-        if (matcher.find()) {
+        Set<Range> ranges = new HashSet<>();
+        while (matcher.find()) {
             String rangeStr = matcher.group();
             Range formulaRange = Range.fromRange(sheet, rangeStr);
-            return formulaRange;
+            ranges.add(formulaRange);
         }
 
-        return null;
+        matcher = Range.NOT_STRICT_RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
+        while (matcher.find()) {
+            String rangeStr = matcher.group();
+            Range formulaRange = Range.fromRange(sheet, rangeStr);
+            ranges.add(formulaRange);
+        }
+
+        return ranges;
     }
 
-
     public boolean contains(CellReference cellReference) {
-        return cellReference.getSheet().equals(getSheet()) && getFirstColumn() <= cellReference.getColumn() && getFirstRow() <= cellReference.getRow()
+        return cellReference.getSheet().equals(getSheet())
+                && getFirstColumn() <= cellReference.getColumn() && getFirstRow() <= cellReference.getRow()
                 && getLastColumn() >= cellReference.getColumn() && getLastRow() >= cellReference.getRow();
     }
 
     public boolean contains(Range range) {
-        return range.getSheet().equals(getSheet()) && getFirstColumn() <= range.getFirstColumn() && getFirstRow() <= range.getFirstRow()
+        return range.getSheet().equals(getSheet())
+                && getFirstColumn() <= range.getFirstColumn() && getFirstRow() <= range.getFirstRow()
                 && getLastColumn() >= range.getLastColumn() && getLastRow() >= range.getLastRow();
+    }
+
+    public boolean containsAny(Collection<Range> range) {
+        for (Range theRange : range) {
+            if (contains(theRange)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean containsAll(Collection<Range> range) {
+        for (Range theRange : range) {
+            if (!contains(theRange)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean intersectsByVertical(Range range) {
@@ -190,12 +222,29 @@ public class Range {
     }
 
     public String toFormula() {
-        return String.format("'%s'!$%s$%d:$%s$%d", getSheet(), XlsxUtils.getColumnReferenceFromNumber(getFirstColumn()), getFirstRow(), XlsxUtils.getColumnReferenceFromNumber(getLastColumn()), getLastRow());
+        return String.format("'%s'!$%s$%d:$%s$%d",
+                getSheet(),
+                getColumnReferenceFromNumber(getFirstColumn()),
+                getFirstRow(),
+                getColumnReferenceFromNumber(getLastColumn()),
+                getLastRow());
     }
 
     public String toRange() {
-        return String.format("%s%d:%s%d", XlsxUtils.getColumnReferenceFromNumber(getFirstColumn()), getFirstRow(), XlsxUtils.getColumnReferenceFromNumber(getLastColumn()), getLastRow());
+        return String.format("%s%d:%s%d",
+                getColumnReferenceFromNumber(getFirstColumn()),
+                getFirstRow(),
+                getColumnReferenceFromNumber(getLastColumn()),
+                getLastRow());
     }
+
+    public String toFirstCellReference() {
+            return String.format("%s%d",
+                    getColumnReferenceFromNumber(getFirstColumn()),
+                    getFirstRow());
+    }
+
+    public boolean isOneCellRange() {return firstColumn == lastColumn && firstRow == lastRow;}
 
     @Override
     public boolean equals(Object o) {

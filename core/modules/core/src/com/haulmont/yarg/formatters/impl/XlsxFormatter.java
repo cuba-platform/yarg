@@ -281,8 +281,7 @@ public class XlsxFormatter extends AbstractFormatter {
         for (Cell cellWithFormula : outerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
             Worksheet worksheet = getWorksheet(row);
-            Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
-            Range originalFormulaRange = formulaRange.copy();
+            Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
             CellReference formulaCellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
 
             BandData parentBand = null;
@@ -294,7 +293,7 @@ public class XlsxFormatter extends AbstractFormatter {
             }
 
             for (Range templateRange : rangeDependencies.templates()) {
-                if (templateRange.contains(formulaRange)) {
+                if (templateRange.containsAny(formulaRanges)) {
                     List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
                     for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
                         Range resultRange = iterator.next();
@@ -304,13 +303,15 @@ public class XlsxFormatter extends AbstractFormatter {
                         }
                     }
 
-                    if (resultRanges.size() > 0) {
-                        formulaRange = calculateFormulaRangeChange(formulaRange, templateRange, resultRanges);
-                        updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
-                    } else {
-                        cellWithFormula.setF(null);
-                        cellWithFormula.setV("ERROR: Formula references to empty range");
-                        cellWithFormula.setT(STCellType.STR);
+                    for (Range formulaRange : formulaRanges) {
+                        if (resultRanges.size() > 0) {
+                            Range shiftedRange = calculateFormulaRangeChange(formulaRange, templateRange, resultRanges);
+                            updateFormula(cellWithFormula, formulaRange, shiftedRange, calculationChain, formulaCount++);
+                        } else {
+                            cellWithFormula.setF(null);
+                            cellWithFormula.setV("ERROR: Formula references to empty range");
+                            cellWithFormula.setT(STCellType.STR);
+                        }
                     }
                     break;
                 }
@@ -323,11 +324,12 @@ public class XlsxFormatter extends AbstractFormatter {
         Range lastResultRange = getLast(resultRanges);
 
         Offset offset = calculateOffset(templateRange, firstResultRange);
-        formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
+        Range shiftedRange = formulaRange.copy();
+        shiftedRange = shiftedRange.shift(offset.downOffset, offset.rightOffset);
 
         Offset grow = calculateOffset(firstResultRange, lastResultRange);
-        formulaRange.grow(grow.downOffset, grow.rightOffset);
-        return formulaRange;
+        shiftedRange.grow(grow.downOffset, grow.rightOffset);
+        return shiftedRange;
     }
 
     protected int processInnerFormulas(CTCalcChain calculationChain) {
@@ -336,10 +338,9 @@ public class XlsxFormatter extends AbstractFormatter {
         for (Cell cellWithFormula : innerFormulas) {
             Row row = (Row) cellWithFormula.getParent();
             Worksheet worksheet = getWorksheet(row);
-            Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
-            Range originalFormulaRange = formulaRange.copy();
+            Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
             for (Range templateRange : rangeDependencies.templates()) {
-                if (templateRange.contains(formulaRange)) {
+                if (templateRange.containsAny(formulaRanges)) {
                     List<Range> resultRanges = rangeDependencies.resultsForTemplate(templateRange);
 
                     CellReference cellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
@@ -347,8 +348,10 @@ public class XlsxFormatter extends AbstractFormatter {
                         if (resultRange.contains(cellReference)) {
                             Offset offset = calculateOffset(templateRange, resultRange);
 
-                            formulaRange = formulaRange.shift(offset.downOffset, offset.rightOffset);
-                            updateFormula(cellWithFormula, originalFormulaRange, formulaRange, calculationChain, formulaCount++);
+                            for (Range formulaRange : formulaRanges) {
+                                Range shiftedFormulaRange = formulaRange.copy().shift(offset.downOffset, offset.rightOffset);
+                                updateFormula(cellWithFormula, formulaRange, shiftedFormulaRange, calculationChain, formulaCount++);
+                            }
                             break;
                         }
                     }
@@ -375,6 +378,9 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange, CTCalcChain calculationChain, int formulaCount) {
         CTCellFormula formula = cellWithFormula.getF();
         formula.setValue(formula.getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
+        if (originalFormulaRange.isOneCellRange() && formulaRange.isOneCellRange()) {
+            formula.setValue(formula.getValue().replace(originalFormulaRange.toFirstCellReference(), formulaRange.toFirstCellReference()));
+        }
 
         if (calculationChain != null) {
             CTCalcCell calcCell = new CTCalcCell();
@@ -566,7 +572,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow, Worksheet resultSheet) {
-        List<Cell> resultCells = new ArrayList<Cell>();
+        List<Cell> resultCells = new ArrayList<>();
         for (int i = 0; i <= templateRange.getLastRow() - templateRange.getFirstRow(); i++) {
             Range oneRowRange = new Range(templateRange.getSheet(),
                     templateRange.getFirstColumn(), templateRange.getFirstRow() + i,
@@ -698,8 +704,8 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {
         Worksheet worksheet = getWorksheet(newRow);
-        Range formulaRange = Range.fromCellFormula(result.getSheetName(worksheet), templateCell);
-        if (templateRange.contains(formulaRange)) {
+        Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), templateCell);
+        if (templateRange.containsAny(formulaRanges)) {
             innerFormulas.add(newCell);
         } else {
             outerFormulas.add(newCell);
