@@ -1,15 +1,12 @@
 package smoketest;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author degtyarjov
  * @version $Id$
  */
-public class RandomMap implements Map {
+public class RandomMap implements Map<String, Object> {
     Random random = new Random();
 
     @Override
@@ -38,7 +35,7 @@ public class RandomMap implements Map {
     }
 
     @Override
-    public Object put(Object key, Object value) {
+    public Object put(String key, Object value) {
         return null;
     }
 
@@ -58,17 +55,17 @@ public class RandomMap implements Map {
     }
 
     @Override
-    public Set keySet() {
-        return null;
+    public Set<String> keySet() {
+        return Collections.emptySet();
     }
 
     @Override
-    public Collection values() {
-        return null;
+    public Collection<Object> values() {
+        return Collections.emptyList();
     }
 
     @Override
-    public Set<Entry> entrySet() {
-        return null;
+    public Set<Entry<String, Object>> entrySet() {
+        return Collections.emptySet();
     }
 }

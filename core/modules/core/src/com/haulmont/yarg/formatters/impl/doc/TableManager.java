@@ -117,10 +117,11 @@ public class TableManager {
     }
 
     public void selectRow(XController xController, int row) throws com.sun.star.uno.Exception {
-        String[] cellNames = xTextTable.getCellNames();
-        int colCount = xTextTable.getColumns().getCount();
-        String firstCellName = cellNames[row * colCount];
-        String lastCellName = cellNames[row * colCount + colCount - 1];
+        List<String> thisRowCells = getCellNamesForTheRow(row);
+        String firstCellName = thisRowCells.get(0);
+        String lastCellName = thisRowCells.get(thisRowCells.size() - 1);
+
+
         XTextTableCursor xTextTableCursor = xTextTable.createCursorByCellName(firstCellName);
         xTextTableCursor.gotoCellByName(lastCellName, true);
         // It works only if XCellRange was created via cursor. why????
@@ -132,6 +133,20 @@ public class TableManager {
             // and why do we need Any here?
             as(XSelectionSupplier.class, xController).select(new Any(new Type(XCellRange.class), xCellRange));
         }
+    }
+
+    /**
+     * @param row - row order number [0..n]
+     * @return list of cell names for the row
+     */
+    public List<String> getCellNamesForTheRow(int row) {
+        List<String> thisRowCells = new ArrayList<>();
+        for (String cellName : xTextTable.getCellNames()) {
+            if (cellName.matches("[A-z]" + (row + 1))) {
+                thisRowCells.add(cellName);
+            }
+        }
+        return thisRowCells;
     }
 
     public void deleteRow(int row) {

@@ -206,9 +206,8 @@ public class DocFormatter extends AbstractFormatter {
 
     protected void fillRow(BandData band, TableManager tableManager, int row)
             throws com.sun.star.lang.IndexOutOfBoundsException, NoSuchElementException, WrappedTargetException {
-        XTextTable xTextTable = tableManager.getXTextTable();
-        int colCount = xTextTable.getColumns().getCount();
-        for (int col = 0; col < colCount; col++) {
+        List<String> cellNamesForTheRow = tableManager.getCellNamesForTheRow(row);
+        for (int col = 0; col < cellNamesForTheRow.size(); col++) {
             fillCell(band, tableManager.getXCell(col, row));
         }
     }

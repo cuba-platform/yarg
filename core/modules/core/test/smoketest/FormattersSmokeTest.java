@@ -198,6 +198,30 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testTableOdt() throws Exception {
+        BandData root = new BandData("Root");
+        root.setData(new RandomMap());
+        BandData ship = new BandData("Ship", root);
+        ship.setData(new RandomMap());
+        BandData corrosion = new BandData("Corrosion", root);
+        corrosion.setData(new RandomMap());
+        BandData custom = new BandData("Custom", root);
+        custom.setData(new RandomMap());
+        root.addChild(ship);
+        root.addChild(corrosion);
+        root.addChild(custom);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/table.doc");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("odt", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/table.odt", "./modules/core/test/smoketest/table.odt", ReportOutputType.doc), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDoc() throws Exception {
         BandData root = createRootBand();
         root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
