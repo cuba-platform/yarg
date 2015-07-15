@@ -641,11 +641,11 @@ public class FormattersSmokeTest {
         root.getFirstLevelBandDefinitionNames().add("DateHeader");
         root.getFirstLevelBandDefinitionNames().add("Band1");
 
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/crosstab.pdf");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/crosstab.xlsx");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/crosstab.xlsx", "./modules/core/test/smoketest/crosstab.xlsx", ReportOutputType.pdf), outputStream));
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/crosstab.xlsx", "./modules/core/test/smoketest/crosstab.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

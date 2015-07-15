@@ -284,11 +284,13 @@ public class XlsxFormatter extends AbstractFormatter {
             Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
             CellReference formulaCellReference = new CellReference(result.getSheetName(worksheet), cellWithFormula.getR());
 
-            BandData parentBand = null;
+            BandData formulaParentBand = null;
+            BandData formulaBand = null;
+
             for (Range resultRange : rangeDependencies.results()) {
                 if (resultRange.contains(formulaCellReference)) {
-                    BandData formulaCellBand = bandsForRanges.bandForResultRange(resultRange);
-                    parentBand = formulaCellBand.getParentBand();
+                    formulaBand = bandsForRanges.bandForResultRange(resultRange);
+                    formulaParentBand = formulaBand.getParentBand();
                 }
             }
 
@@ -298,7 +300,8 @@ public class XlsxFormatter extends AbstractFormatter {
                     for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
                         Range resultRange = iterator.next();
                         BandData bandData = bandsForRanges.bandForResultRange(resultRange);
-                        if (!bandData.getParentBand().equals(parentBand)) {
+                        if (!bandData.getParentBand().equals(formulaParentBand)
+                                && !bandData.getParentBand().equals(formulaBand)) {
                             iterator.remove();
                         }
                     }
@@ -385,7 +388,9 @@ public class XlsxFormatter extends AbstractFormatter {
         if (calculationChain != null) {
             CTCalcCell calcCell = new CTCalcCell();
             calcCell.setR(cellWithFormula.getR());
-            calcCell.setI(formulaCount);
+            if (formulaCount == 1) {//just a workaround for Excel, which shows errors if some of <c> tags, except the first, has i attribute
+                calcCell.setI(formulaCount);
+            }
             calculationChain.getC().add(calcCell);
         }
     }
