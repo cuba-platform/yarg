@@ -84,7 +84,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
                 return docxFormatter;
             }
         });
-        formattersMap.put("xlsx", new FormatterCreator() {
+        FormatterCreator xlsxCreator = new FormatterCreator() {
             @Override
             public ReportFormatter create(FormatterFactoryInput factoryInput) {
                 XlsxFormatter xlsxFormatter = new XlsxFormatter(factoryInput);
@@ -92,7 +92,9 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
                 xlsxFormatter.setPdfConverter(pdfConverter);
                 return xlsxFormatter;
             }
-        });
+        };
+        formattersMap.put("xlsx", xlsxCreator);
+        formattersMap.put("xlsm", xlsxCreator);
     }
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
