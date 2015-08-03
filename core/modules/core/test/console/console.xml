@@ -23,7 +23,7 @@
     </templates>
     <parameters>
         <parameter name="param1" alias="param1" required="true" class="java.lang.String" defaultValue="defaultParam1"/>
-        <parameter name="param2" alias="param2" required="true" class="java.util.Date"/>
+        <parameter name="param2" alias="param2" required="true" class="java.sql.Date"/>
         <parameter name="param3" alias="param3" required="true" class="java.lang.Integer"/>
         <parameter name="param4" alias="param4" required="true" class="java.lang.String"/>
     </parameters>

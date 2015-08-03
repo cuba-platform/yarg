@@ -41,8 +41,38 @@ public class ObjectToStringConverterTest {
 
     @Test
     public void testDate() throws Exception {
-        Date date = ObjectToStringConverterImpl.DEFAULT_DATE_FORMAT.parse("01/01/2014 00:00");
+        Date date = ObjectToStringConverterImpl.DEFAULT_DATETIME_FORMAT.parse("01/01/2014 00:00");
         Object converted = convertFromString(Date.class, convertToString(Date.class, date));
+        Assert.assertEquals(date, converted);
+
+        date = ObjectToStringConverterImpl.DEFAULT_DATE_FORMAT.parse("01/01/2014");
+        converted = convertFromString(Date.class, convertToString(Date.class, date));
+        Assert.assertEquals(date, converted);
+    }
+
+    @Test
+    public void testSqlDate() throws Exception {
+        Date date = new java.sql.Date(ObjectToStringConverterImpl.DEFAULT_DATETIME_FORMAT.parse("01/01/2014 00:00").getTime());
+        Object converted = convertFromString(java.sql.Date.class, convertToString(java.sql.Date.class, date));
+        Assert.assertTrue(converted instanceof java.sql.Date);
+        Assert.assertEquals(date, converted);
+
+        date = new java.sql.Date(ObjectToStringConverterImpl.DEFAULT_DATE_FORMAT.parse("01/01/2014").getTime());
+        converted = convertFromString(java.sql.Date.class, convertToString(java.sql.Date.class, date));
+        Assert.assertTrue(converted instanceof java.sql.Date);
+        Assert.assertEquals(date, converted);
+    }
+
+    @Test
+    public void testSqlTimestamp() throws Exception {
+        Date date = new java.sql.Timestamp(ObjectToStringConverterImpl.DEFAULT_DATETIME_FORMAT.parse("01/01/2014 00:00").getTime());
+        Object converted = convertFromString(java.sql.Timestamp.class, convertToString(java.sql.Timestamp.class, date));
+        Assert.assertTrue(converted instanceof java.sql.Timestamp);
+        Assert.assertEquals(date, converted);
+
+        date = new java.sql.Timestamp(ObjectToStringConverterImpl.DEFAULT_DATE_FORMAT.parse("01/01/2014").getTime());
+        converted = convertFromString(java.sql.Timestamp.class, convertToString(java.sql.Timestamp.class, date));
+        Assert.assertTrue(converted instanceof java.sql.Timestamp);
         Assert.assertEquals(date, converted);
     }
 
