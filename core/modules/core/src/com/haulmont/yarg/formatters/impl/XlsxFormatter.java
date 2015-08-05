@@ -382,7 +382,9 @@ public class XlsxFormatter extends AbstractFormatter {
         CTCellFormula formula = cellWithFormula.getF();
         formula.setValue(formula.getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
         if (originalFormulaRange.isOneCellRange() && formulaRange.isOneCellRange()) {
-            formula.setValue(formula.getValue().replace(originalFormulaRange.toFirstCellReference(), formulaRange.toFirstCellReference()));
+            //here we check that there are no alpha-numeric symbols around the single reference
+            String pattern = "(?<!\\w+)" + originalFormulaRange.toFirstCellReference() + "(?!\\w+)";
+            formula.setValue(formula.getValue().replaceAll(pattern, formulaRange.toFirstCellReference()));
         }
 
         if (calculationChain != null) {
