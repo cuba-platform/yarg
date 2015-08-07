@@ -78,6 +78,7 @@ public class DefaultXmlReader implements XmlReader {
             List<ReportParameter> reportParameters = parseInputParameters(rootElement);
             List<ReportFieldFormat> reportFieldFormats = parseValueFormats(rootElement);
             BandBuilder rootBandDefinitionBuilder = new BandBuilder().name(BandData.ROOT_BAND_NAME);
+            parseQueries(rootElement.element("rootBand"), rootBandDefinitionBuilder);
             parseChildBandDefinitions(rootElement.element("rootBand"), rootBandDefinitionBuilder);
             ReportBand rootBandDefinition = rootBandDefinitionBuilder.build();
             String reportName = rootElement.attribute("name").getText();
@@ -181,22 +182,25 @@ public class DefaultXmlReader implements XmlReader {
                                 .name(childBandName)
                                 .orientation(orientation);
 
-                Element reportQueriesElement = childBandElement.element("queries");
-
-                if (reportQueriesElement != null) {
-                    List<Element> reportQueryElements = reportQueriesElement.elements("query");
-                    for (Element queryElement : reportQueryElements) {
-                        String script = queryElement.element("script").getText();
-                        String type = queryElement.attribute("type").getText();
-                        String queryName = queryElement.attribute("name").getText();
-
-                        childBandDefinitionBuilder.query(queryName, script, type);
-                    }
-                }
-
+                parseQueries(childBandElement, childBandDefinitionBuilder);
                 parseChildBandDefinitions(childBandElement, childBandDefinitionBuilder);
                 ReportBand childBandDefinition = childBandDefinitionBuilder.build();
                 parentBandDefinitionBuilder.child(childBandDefinition);
+            }
+        }
+    }
+
+    private void parseQueries(Element bandElement, BandBuilder bandDefinitionBuilder) {
+        Element reportQueriesElement = bandElement.element("queries");
+
+        if (reportQueriesElement != null) {
+            List<Element> reportQueryElements = reportQueriesElement.elements("query");
+            for (Element queryElement : reportQueryElements) {
+                String script = queryElement.element("script").getText();
+                String type = queryElement.attribute("type").getText();
+                String queryName = queryElement.attribute("name").getText();
+
+                bandDefinitionBuilder.query(queryName, script, type);
             }
         }
     }
