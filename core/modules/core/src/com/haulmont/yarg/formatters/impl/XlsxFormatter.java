@@ -638,11 +638,11 @@ public class XlsxFormatter extends AbstractFormatter {
         List<Cell> resultCells = new ArrayList<>();
 
         //if no template cells (xlsx doesn't store empty cells) - create at least 1, to help rendering
+        //todo eude handle situation with leading empty cell - fill all empty cells with stubs
         if (CollectionUtils.isEmpty(templateCells)) {
             Cell newCell = createEmptyCell(templateRange, bandData, newRow);
             resultCells.add(newCell);
         }
-
 
         Worksheet resultWorksheet = getWorksheet(newRow);
         for (Cell templateCell : templateCells) {
