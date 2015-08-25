@@ -101,7 +101,7 @@ public class FormattersSmokeTest {
     @Test
     public void testDocx() throws Exception {
         BandData root = createRootBand();
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -138,7 +138,7 @@ public class FormattersSmokeTest {
     @Test
     public void testDocxToHtml() throws Exception {
         BandData root = createRootBand();
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -180,7 +180,7 @@ public class FormattersSmokeTest {
     @Test
     public void testOdt() throws Exception {
         BandData root = createRootBand();
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -224,7 +224,7 @@ public class FormattersSmokeTest {
     @Test
     public void testDoc() throws Exception {
         BandData root = createRootBand();
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -255,7 +255,7 @@ public class FormattersSmokeTest {
             public void run() {
                 try {
                     BandData root = createRootBand();
-                    root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+                    root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -279,7 +279,7 @@ public class FormattersSmokeTest {
             public void run() {
                 try {
                     BandData root = createRootBand();
-                    root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+                    root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -304,7 +304,7 @@ public class FormattersSmokeTest {
             public void run() {
                 try {
                     BandData root = createRootBand();
-                    root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+                    root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -886,7 +886,7 @@ public class FormattersSmokeTest {
 
     private BandData createRootBand(List<BandData> bands) {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.param1", "%16s")));
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.param1", "%16s")));
 
         HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
@@ -969,8 +969,12 @@ public class FormattersSmokeTest {
         root.getFirstLevelBandDefinitionNames().add("Footer");
 
 
-        root.setReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"), new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(
+                new ReportFieldFormatImpl("Root.html", "${html}"),
+                new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"),
+                new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
         try {
+            root.addData("html", "<html><body><a href=\"http://localhost:8080/app\">localhost</a></body></html>");
             root.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("date", new Date());

@@ -120,7 +120,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
             } else if (value instanceof Date) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
                 valueString = dateFormat.format(value);
-            } else if (value instanceof String) {
+            } else if (value instanceof String && !formatString.startsWith("${")) {//do not use inliner alias as format string
                 valueString = String.format(formatString, value);
             } else {
                 valueString = value.toString();
@@ -190,7 +190,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected boolean containsJustOneAlias(String value) {
-        return !StringUtils.isBlank(value) && value.startsWith("${") && value.endsWith("}");
+        return !StringUtils.isBlank(value) && value.matches("\\$\\{[^\\$\\{\\}]*\\}");
     }
 
     protected BandData findBandByPath(String path) {

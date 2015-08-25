@@ -28,7 +28,7 @@ public class ReportQueriesTest {
 
         BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
         rootBand.setData(new HashMap<String, Object>());
-        rootBand.setReportFieldFormats(report.getReportFieldFormats());
+        rootBand.addReportFieldFormats(report.getReportFieldFormats());
         rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
         new DataExtractorImpl(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))).extractData(report, new HashMap<String, Object>(), rootBand);

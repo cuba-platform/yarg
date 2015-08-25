@@ -137,7 +137,7 @@ public class Reporting implements ReportingAPI {
     protected BandData loadBandData(Report report, Map<String, Object> handledParams) {
         BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
         rootBand.setData(handledParams);
-        rootBand.setReportFieldFormats(report.getReportFieldFormats());
+        rootBand.addReportFieldFormats(report.getReportFieldFormats());
         rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
 
         dataExtractor.extractData(report, handledParams, rootBand);

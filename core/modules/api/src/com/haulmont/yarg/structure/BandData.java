@@ -202,7 +202,7 @@ public class BandData implements Serializable {
         this.firstLevelBandDefinitionNames = firstLevelBandDefinitionNames;
     }
 
-    public void setReportFieldFormats(List<ReportFieldFormat> reportFieldFormats) {
+    public void addReportFieldFormats(List<ReportFieldFormat> reportFieldFormats) {
         for (ReportFieldFormat reportFieldFormat : reportFieldFormats) {
             this.reportFieldFormats.put(reportFieldFormat.getName(), reportFieldFormat);
         }
