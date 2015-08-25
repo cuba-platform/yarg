@@ -22,6 +22,7 @@
 package com.haulmont.yarg.reporting;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.exception.ValidationException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
@@ -105,8 +106,15 @@ public class DataExtractorImpl implements DataExtractor {
 
             if (result != null) {
                 //add input params to band
+                //todo eude - probably we need to get rid of the following logic, because leads to errors while logging report
                 for (Map<String, Object> map : result) {
-                    map.putAll(params);
+                    for (Map.Entry<String, Object> paramEntry : params.entrySet()) {
+                        if ( !(paramEntry.getValue() instanceof Collection)
+                                && !(paramEntry.getValue() instanceof  Map)
+                                && !(paramEntry.getValue() instanceof Multimap)) {
+                            map.put(paramEntry.getKey(), paramEntry.getValue());
+                        }
+                    }
                 }
             }
         }

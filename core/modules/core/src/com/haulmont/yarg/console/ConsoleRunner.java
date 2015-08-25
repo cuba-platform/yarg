@@ -27,6 +27,7 @@ import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.yarg.loaders.factory.PropertiesSqlLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.JsonDataLoader;
+import com.haulmont.yarg.loaders.impl.SqlDataLoader;
 import com.haulmont.yarg.reporting.Reporting;
 import com.haulmont.yarg.reporting.RunParams;
 import com.haulmont.yarg.structure.Report;
@@ -149,11 +150,17 @@ public class ConsoleRunner {
         }
 
         reporting.setFormatterFactory(formatterFactory);
+        SqlDataLoader sqlDataLoader = new PropertiesSqlLoaderFactory(propertiesLoader).create();
+        GroovyDataLoader groovyDataLoader = new GroovyDataLoader(new DefaultScriptingImpl());
+        JsonDataLoader jsonDataLoader = new JsonDataLoader();
+
         reporting.setLoaderFactory(
                 new DefaultLoaderFactory()
-                        .setSqlDataLoader(new PropertiesSqlLoaderFactory(propertiesLoader).create())
-                        .setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))
-                        .setJsonDataLoader(new JsonDataLoader()));
+                        .setSqlDataLoader(sqlDataLoader)
+                        .setGroovyDataLoader(groovyDataLoader)
+                        .setJsonDataLoader(jsonDataLoader));
+
+        DatasourceHolder.dataSource = sqlDataLoader.getDataSource();
         return reporting;
     }
 

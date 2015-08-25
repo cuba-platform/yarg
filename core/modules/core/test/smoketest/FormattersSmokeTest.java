@@ -450,6 +450,47 @@ public class FormattersSmokeTest {
     }
 
     @Test
+    public void testXlsx4() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData header = new BandData("ReportHeader", root, BandOrientation.HORIZONTAL);
+        header.setData(new RandomMap());
+
+        BandData serviceHeader1 = new BandData("ServiceHeader", root, BandOrientation.HORIZONTAL);
+        serviceHeader1.setData(new RandomMap());
+        BandData serviceDetails11 = new BandData("ServiceDetails", serviceHeader1, BandOrientation.HORIZONTAL);
+        serviceDetails11.setData(new RandomMap());
+        BandData serviceDetails12 = new BandData("ServiceDetails", serviceHeader1, BandOrientation.HORIZONTAL);
+        serviceDetails12.setData(new RandomMap());
+        serviceHeader1.addChild(serviceDetails11);
+        serviceHeader1.addChild(serviceDetails12);
+        serviceHeader1.addChild(new BandData("ServiceTotals", serviceHeader1, BandOrientation.HORIZONTAL));
+
+        BandData serviceHeader2 = new BandData("ServiceHeader", root, BandOrientation.HORIZONTAL);
+        serviceHeader2.setData(new RandomMap());
+        BandData serviceDetails21 = new BandData("ServiceDetails", serviceHeader2, BandOrientation.HORIZONTAL);
+        serviceDetails21.setData(new RandomMap());
+        BandData serviceDetails22 = new BandData("ServiceDetails", serviceHeader2, BandOrientation.HORIZONTAL);
+        serviceDetails22.setData(new RandomMap());
+        serviceHeader2.addChild(serviceDetails21);
+        serviceHeader2.addChild(serviceDetails22);
+        serviceHeader2.addChild(new BandData("ServiceTotals", serviceHeader2, BandOrientation.HORIZONTAL));
+
+        root.addChild(header);
+        root.addChild(serviceHeader1);
+        root.addChild(serviceHeader2);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/Services.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/Cost Structure.xlsx", "./modules/core/test/smoketest/services.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testXlsxToPdf() throws Exception {
         BandData root = createRootBand();
 

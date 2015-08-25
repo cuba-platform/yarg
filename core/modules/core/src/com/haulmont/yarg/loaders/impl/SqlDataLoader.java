@@ -113,4 +113,8 @@ public class SqlDataLoader extends AbstractDbDataLoader {
 
         return fillOutputData(resList, outputValues);
     }
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 }
