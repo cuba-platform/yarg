@@ -1,3 +1,10 @@
+allprojects {
+    apply(plugin: 'java')
+    apply(plugin: 'idea')
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
+}
+
 def projectName = "YARG (Yet another report generator)"
 def projectDescription = "Open source library for report generation. Provided by Haulmont."
 def projectUrl = "https://github.com/Haulmont/yarg"
@@ -25,12 +32,7 @@ if (repositoryUser) {//for internal users
     workRepositoryUrl = "$repositoryUrl/groups/work"
 }
 
-apply(plugin: 'java')
-apply(plugin: 'idea')
-
 configure([api, core]) {
-    apply(plugin: 'java')
-    apply(plugin: 'idea')
     apply(plugin: 'maven')
     apply(plugin: 'signing')
 
