@@ -18,4 +18,4 @@ YARG is a mature and well-tested tool, already used in a number of Haulmont's so
 
 
 ### Forums
-* [Russian language: Cuba platform](https://www.cuba-platform.com/support/)
+* [Cuba Platform](https://www.cuba-platform.com/support/)
