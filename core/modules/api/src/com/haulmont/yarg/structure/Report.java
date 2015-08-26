@@ -32,7 +32,7 @@ public interface Report extends Serializable {
     String getName();
 
     /**
-     * @return map with report templates <templateCode, template>
+     * @return map with report templates &lt;templateCode, template&gt;
      */
     Map<String, ReportTemplate> getReportTemplates();
 

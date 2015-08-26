@@ -452,11 +452,9 @@ public class XLSFormatter extends AbstractFormatter {
     }
 
     /**
-     * <p>
-     * Method creates mapping [rangeName -> List< CellRangeAddress >]. <br/>
-     * List contains all merge regions for this named range
-     * </p>
-     * Attention: if merged regions writes wrong - look on methods isMergeRegionInsideNamedRange & isNamedRangeInsideMergeRegion
+     * Method creates mapping [rangeName : List&lt;CellRangeAddress&gt;].
+     * List contains all merge regions for this named range.
+     * Attention: if merged regions writes wrong - look on methods isMergeRegionInsideNamedRange or isNamedRangeInsideMergeRegion
      * todo: how to recognize if merge region must be copied with named range
      *
      * @param currentSheet Sheet which contains merge regions

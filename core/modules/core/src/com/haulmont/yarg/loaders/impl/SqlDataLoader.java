@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * You can use aliases for output values
  *
  * Example:
- * select login as "Login", password as "Password" from user where create_ts > ${startDate}
+ * select login as "Login", password as "Password" from user where create_ts &gt; ${startDate}
  *
  * ${startDate} is alias of the input parameter, which will be passed to the query
  */

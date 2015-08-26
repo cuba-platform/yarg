@@ -29,7 +29,6 @@ import java.util.List;
 
 /**
  * Starts and stops an OOo server.
- * <p/>
  * Most of the source code in this class has been taken from the Java class
  * "Bootstrap.java" (Revision: 1.15) from the UDK projekt (Uno Software Develop-
  * ment Kit) from OpenOffice.org (http://udk.openoffice.org/). The source code
@@ -81,16 +80,13 @@ public class OOServer {
 
     /**
      * Starts an OOo server which uses the specified accept option.
-     * <p/>
      * The accept option can be used for two different types of connections:
      * 1) The socket connection
      * 2) The named pipe connection
-     * <p/>
      * To create a socket connection a host and port must be provided.
      * For example using the host "localhost" and the port "8100" the
      * accept option looks like this:
      * - accept option    : -accept=socket,host=localhost,port=8100;urp;
-     * <p/>
      * To create a named pipe a pipe name must be provided. For example using
      * the pipe name "oooPipe" the accept option looks like this:
      * - accept option    : -accept=pipe,name=oooPipe;urp;
@@ -128,10 +124,8 @@ public class OOServer {
 
     /**
      * Kills the OOo server process from the previous start.
-     * <p/>
      * If there has been no previous start of the OOo server, the kill does
      * nothing.
-     * <p/>
      * If there has been a previous start, kill destroys the process.
      */
     public void kill() {
