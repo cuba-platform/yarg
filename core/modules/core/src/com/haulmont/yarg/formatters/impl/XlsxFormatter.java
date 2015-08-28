@@ -614,6 +614,8 @@ public class XlsxFormatter extends AbstractFormatter {
             for (CellReference cellReference : oneRowRange.toCellReferences()) {
                 if (!cellsForOneRowRange.containsKey(cellReference)) {
                     Cell newCell = Context.getsmlObjectFactory().createCell();
+                    newCell.setV(null);
+                    newCell.setT(STCellType.STR);
                     newCell.setR(cellReference.toReference());
                     templateCells.add(newCell);
                 }
