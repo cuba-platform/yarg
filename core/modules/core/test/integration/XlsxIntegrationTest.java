@@ -237,6 +237,64 @@ public class XlsxIntegrationTest {
         compareFiles("./result/integration/result-formats.xlsx", "./modules/core/test/integration/etalon-formats.xlsx");
     }
 
+    @Test
+    public void testXlsxFormulas() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<>();
+        root.setData(rootData);
+
+        BandData mainHeader = new BandData("MainHeader", root);
+        mainHeader.setData(rootData);
+        root.addChild(mainHeader);
+
+        BandData header1 = new BandData("Header", root, BandOrientation.HORIZONTAL);
+        header1.setData(new HashMap<String, Object>());
+        header1.addData("service", "IT support");
+        BandData details11 = new BandData("Details", header1, BandOrientation.HORIZONTAL);
+        details11.setData(new HashMap<String, Object>());
+        details11.addData("client", "Google");
+        details11.addData("volume", 900);
+        details11.addData("price", 114);
+        BandData details12 = new BandData("Details", header1, BandOrientation.HORIZONTAL);
+        details12.setData(new HashMap<String, Object>());
+        details12.addData("client", "Yandex");
+        details12.addData("volume", 300);
+        details12.addData("price", 171);
+
+        header1.addChild(details11);
+        header1.addChild(details12);
+        header1.addChild(new BandData("Total", header1, BandOrientation.HORIZONTAL));
+
+        BandData header2 = new BandData("Header", root, BandOrientation.HORIZONTAL);
+        header2.setData(new HashMap<String, Object>());
+        header2.addData("service", "Technical support");
+        BandData details21 = new BandData("Details", header2, BandOrientation.HORIZONTAL);
+        details21.setData(new HashMap<String, Object>());
+        details21.addData("client", "Google");
+        details21.addData("volume", 110);
+        details21.addData("price", 600);
+        BandData details22 = new BandData("Details", header2, BandOrientation.HORIZONTAL);
+        details22.setData(new HashMap<String, Object>());
+        details22.addData("client", "Yandex");
+        details22.addData("volume", 60);
+        details22.addData("price", 800);
+
+        header2.addChild(details21);
+        header2.addChild(details22);
+        header2.addChild(new BandData("Total", header2, BandOrientation.HORIZONTAL));
+
+        root.addChild(header1);
+        root.addChild(header2);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-formulas.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/integration/test-formulas.xlsx", "./modules/core/test/integration/test-formulas.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+        compareFiles("./result/integration/result-formulas.xlsx", "./modules/core/test/integration/etalon-formulas.xlsx");
+    }
+
 
     private BandData createBand(String name, int multiplier, BandData root, BandOrientation childOrient) {
         BandData band1_1 = new BandData(name, root, BandOrientation.HORIZONTAL);

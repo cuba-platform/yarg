@@ -32,7 +32,7 @@ public class CellReference {
     private int row;
     private String sheet;
 
-    public CellReference(String sheet, int column, int row) {
+    public CellReference(String sheet, int row, int column) {
         this.column = column;
         this.row = row;
         this.sheet = sheet;
@@ -79,5 +79,27 @@ public class CellReference {
 
     public String getSheet() {
         return sheet;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CellReference that = (CellReference) o;
+
+        if (column != that.column) return false;
+        if (row != that.row) return false;
+        if (sheet != null ? !sheet.equals(that.sheet) : that.sheet != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = column;
+        result = 31 * result + row;
+        result = 31 * result + (sheet != null ? sheet.hashCode() : 0);
+        return result;
     }
 }

@@ -584,11 +584,14 @@ public class XlsxFormatter extends AbstractFormatter {
             Range oneRowRange = new Range(templateRange.getSheet(),
                     templateRange.getFirstColumn(), templateRange.getFirstRow() + i,
                     templateRange.getLastColumn(), templateRange.getFirstRow() + i);
-            List<Cell> templateCells = template.getCellsByRange(oneRowRange);
-
+            Map<CellReference, Cell> cellsForOneRowRange = template.getCellsByRange(oneRowRange);
+            List<Cell> templateCells = new ArrayList<>(cellsForOneRowRange.values());
             Row templateRow = CollectionUtils.isNotEmpty(templateCells) ?
                     (Row) templateCells.get(0).getParent() :
                     resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow() - 1);
+
+            createFakeTemplateCellsForEmptyOnes(oneRowRange, cellsForOneRowRange, templateCells);
+
             Row resultRow = resultSheetRows.get((int) (firstRow.getR() + i - 1));
 
             List<Cell> currentRowResultCells = copyCells(templateRange, band, resultRow, templateCells);
@@ -598,6 +601,31 @@ public class XlsxFormatter extends AbstractFormatter {
             copyRowSettings(templateRow, resultRow, getWorksheet(templateRow), getWorksheet(resultRow));
         }
         return resultCells;
+    }
+
+    /**
+     * XLSX document does not store empty cells and it might be an issue for formula calculations and etc.
+     * So we need to create fake template cell for each empty cell.
+     */
+    protected void createFakeTemplateCellsForEmptyOnes(Range oneRowRange,
+                                                       Map<CellReference, Cell> cellsForOneRowRange,
+                                                       List<Cell> templateCells) {
+        if (oneRowRange.toCellReferences().size() != templateCells.size()) {
+            for (CellReference cellReference : oneRowRange.toCellReferences()) {
+                if (!cellsForOneRowRange.containsKey(cellReference)) {
+                    Cell newCell = Context.getsmlObjectFactory().createCell();
+                    newCell.setR(cellReference.toReference());
+                    templateCells.add(newCell);
+                }
+            }
+
+            Collections.sort(templateCells, new Comparator<Cell>() {
+                @Override
+                public int compare(Cell o1, Cell o2) {
+                    return o1.getR().compareTo(o2.getR());
+                }
+            });
+        }
     }
 
     protected Range getLastRenderedBandForThisLevel(BandData band) {
@@ -636,13 +664,6 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected List<Cell> copyCells(Range templateRange, BandData bandData, Row newRow, List<Cell> templateCells) {
         List<Cell> resultCells = new ArrayList<>();
-
-        //if no template cells (xlsx doesn't store empty cells) - create at least 1, to help rendering
-        //todo eude handle situation with leading empty cell - fill all empty cells with stubs
-        if (CollectionUtils.isEmpty(templateCells)) {
-            Cell newCell = createEmptyCell(templateRange, bandData, newRow);
-            resultCells.add(newCell);
-        }
 
         Worksheet resultWorksheet = getWorksheet(newRow);
         for (Cell templateCell : templateCells) {
@@ -691,22 +712,6 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Worksheet getWorksheet(Row newRow) {
         SheetData resultSheetData = (SheetData) newRow.getParent();
         return (Worksheet) resultSheetData.getParent();
-    }
-
-    protected Cell createEmptyCell(Range templateRange, BandData bandData, Row newRow) {
-        Cell newCell = Context.getsmlObjectFactory().createCell();
-        newRow.getC().add(newCell);
-        newCell.setParent(newRow);
-
-        CellReference newRef = new CellReference(templateRange.getSheet(), templateRange.getFirstColumn(), templateRange.getFirstRow());
-        newRef.move(newRow.getR().intValue(), newRef.getColumn());
-        if (bandData.getOrientation() == BandOrientation.VERTICAL) {
-            newRef.shift(0, previousRangesRightOffset);
-
-        }
-
-        newCell.setR(newRef.toReference());
-        return newCell;
     }
 
     protected void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {

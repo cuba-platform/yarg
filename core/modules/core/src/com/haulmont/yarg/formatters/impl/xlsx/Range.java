@@ -19,9 +19,7 @@ package com.haulmont.yarg.formatters.impl.xlsx;
 import org.apache.commons.lang.StringUtils;
 import org.xlsx4j.sml.Cell;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -239,9 +237,20 @@ public class Range {
     }
 
     public String toFirstCellReference() {
-            return String.format("%s%d",
-                    getColumnReferenceFromNumber(getFirstColumn()),
-                    getFirstRow());
+        return String.format("%s%d",
+                getColumnReferenceFromNumber(getFirstColumn()),
+                getFirstRow());
+    }
+
+    public List<CellReference> toCellReferences() {
+        List<CellReference> references = new ArrayList<>();
+        for (int row = firstRow; row <= lastRow; row++) {
+            for (int column = firstColumn; column <= lastColumn; column++) {
+                references.add(new CellReference(sheet, row, column));
+            }
+        }
+
+        return references;
     }
 
     public boolean isOneCellRange() {return firstColumn == lastColumn && firstRow == lastRow;}

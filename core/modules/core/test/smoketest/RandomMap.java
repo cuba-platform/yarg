@@ -7,7 +7,15 @@ import java.util.*;
  * @version $Id$
  */
 public class RandomMap implements Map<String, Object> {
-    Random random = new Random();
+    protected Random random = new Random();
+    protected Integer maximum = 1000000;
+
+    public RandomMap() {
+    }
+
+    public RandomMap(Integer maximum) {
+        this.maximum = maximum;
+    }
 
     @Override
     public int size() {
@@ -31,7 +39,7 @@ public class RandomMap implements Map<String, Object> {
 
     @Override
     public Object get(Object key) {
-        return random.nextInt();
+        return Math.abs(maximum != null ? random.nextInt() % maximum : random.nextInt());
     }
 
     @Override

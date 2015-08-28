@@ -134,11 +134,11 @@ public class Document {
         return targetRange;
     }
 
-    public List<Cell> getCellsByRange(Range range) {
+    public Map<CellReference, Cell> getCellsByRange(Range range) {
         Worksheet sheet = getSheetByName(range.getSheet());
         SheetData data = sheet.getSheetData();
 
-        List<Cell> result = new ArrayList<Cell>();
+        Map<CellReference, Cell> result = new LinkedHashMap<>();
         for (int i = 1; i <= data.getRow().size(); i++) {
             Row row = data.getRow().get(i - 1);
             if (range.getFirstRow() <= row.getR() && row.getR() <= range.getLastRow()) {
@@ -147,7 +147,7 @@ public class Document {
                 for (Cell cell : c) {
                     CellReference cellReference = new CellReference(range.getSheet(), cell.getR());
                     if (range.getFirstColumn() <= cellReference.getColumn() && cellReference.getColumn() <= range.getLastColumn()) {
-                        result.add(cell);
+                        result.put(cellReference, cell);
                     }
                 }
             }
