@@ -99,9 +99,9 @@ configure([api, core]) {
             configuration = configurations.deployerJars
 
 //            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
+//
 //            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-//                authentication(userName: '$signing.login', password:  "$signing.password")
+//                authentication(userName: "$oss_login", password:  "$oss_password")
 //            }
 
             repository(url: "$repositoryUrl/repositories/" + (isSnapshot ? 'snapshots' : 'releases')) {
