@@ -1,7 +1,7 @@
 YARG
 ====
 
-YARG is an open source reporting engine, developed by [Haulmont](http://www.haulmont.com/). 
+YARG is an open source reporting library for Java, developed by [Haulmont](http://www.haulmont.com/). 
 
 It is intended to be embedded into enterprise IT systems, thus it comes with no UI so that native UI of the target system can be used. Templates can be created in most common formats including MS Office (doc, docx, xls, xlsx, html, ftl, csv)  or a custom text format and filled with data loaded by sql, groovy or other means.
 
