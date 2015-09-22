@@ -1,6 +1,6 @@
 package utils;
 
-import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
+import com.haulmont.yarg.util.db.DatasourceCreator;
 import org.hsqldb.Server;
 
 import javax.sql.DataSource;
@@ -21,7 +21,7 @@ public class TestDatabase {
         hsqlServer.setDatabasePath(0, "file:./db/testdb");
 
         hsqlServer.start();
-        ds = DefaultLoaderFactory.setupDataSource("org.hsqldb.jdbcDriver", "jdbc:hsqldb:hsql://localhost/reportingDb", "sa", "", 10, 10, 0);
+        ds = DatasourceCreator.setupDataSource("org.hsqldb.jdbcDriver", "jdbc:hsqldb:hsql://localhost/reportingDb", "sa", "", 10, 10, 0);
 
         Connection connection = ds.getConnection();
         try {
