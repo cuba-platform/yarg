@@ -22,7 +22,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxTableWithSplittedBandAlias() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
         BandData ride = new BandData("ride", root, BandOrientation.HORIZONTAL);
         ride.setData(new RandomMap());
@@ -41,7 +41,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxWithSplittedAlias() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData cover = new BandData("Cover", root, BandOrientation.HORIZONTAL);
@@ -65,12 +65,12 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData letterTable = new BandData("letterTable", root, BandOrientation.HORIZONTAL);
         BandData creatorInfo = new BandData("creatorInfo", root, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> letterTableData = new HashMap<>();
+        HashMap<String, Object> letterTableData = new HashMap<String, Object>();
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
@@ -91,7 +91,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         html += "</body></html>";
         letterTableData.put("html", html);
         letterTable.setData(letterTableData);
-        HashMap<String, Object> creatorInfoData = new HashMap<>();
+        HashMap<String, Object> creatorInfoData = new HashMap<String, Object>();
         creatorInfoData.put("name", "12345");
         creatorInfoData.put("phone", "54321");
         creatorInfo.setData(creatorInfoData);

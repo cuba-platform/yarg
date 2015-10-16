@@ -138,7 +138,7 @@ public class Document {
         Worksheet sheet = getSheetByName(range.getSheet());
         SheetData data = sheet.getSheetData();
 
-        Map<CellReference, Cell> result = new LinkedHashMap<>();
+        Map<CellReference, Cell> result = new LinkedHashMap<CellReference, Cell>();
         for (int i = 1; i <= data.getRow().size(); i++) {
             Row row = data.getRow().get(i - 1);
             if (range.getFirstRow() <= row.getR() && row.getR() <= range.getLastRow()) {

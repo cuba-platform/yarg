@@ -60,11 +60,11 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BandsForRanges bandsForRanges = new BandsForRanges();
     protected LinkedHashMultimap<Range, Range> rangeVerticalIntersections = LinkedHashMultimap.create();
 
-    protected Set<Cell> innerFormulas = new HashSet<>();
-    protected Set<Cell> outerFormulas = new HashSet<>();
+    protected Set<Cell> innerFormulas = new HashSet<Cell>();
+    protected Set<Cell> outerFormulas = new HashSet<Cell>();
 
-    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<>();
-    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<>();
+    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<String, Range>();
+    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
 
     protected int previousRangesRightOffset;
 
@@ -256,12 +256,12 @@ public class XlsxFormatter extends AbstractFormatter {
         for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
             Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
             for (CTConditionalFormatting ctConditionalFormatting : worksheet.getConditionalFormatting()) {
-                List<String> references = new ArrayList<>();
+                List<String> references = new ArrayList<String>();
                 for (String ref : ctConditionalFormatting.getSqref()) {
                     Range formulaRange = Range.fromRange(sheetWrapper.getName(), ref);
                     for (Range templateRange : rangeDependencies.templates()) {
                         if (templateRange.contains(formulaRange)) {
-                            List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
+                            List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.resultsForTemplate(templateRange));
                             for (Range resultRange : resultRanges) {
                                 Offset offset = calculateOffset(templateRange, resultRange);
                                 Range shift = formulaRange.copy().shift(offset.downOffset, offset.rightOffset);
@@ -296,7 +296,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
             for (Range templateRange : rangeDependencies.templates()) {
                 if (templateRange.containsAny(formulaRanges)) {
-                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
+                    List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.resultsForTemplate(templateRange));
                     for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
                         Range resultRange = iterator.next();
                         BandData bandData = bandsForRanges.bandForResultRange(resultRange);
@@ -579,13 +579,13 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow, Worksheet resultSheet) {
-        List<Cell> resultCells = new ArrayList<>();
+        List<Cell> resultCells = new ArrayList<Cell>();
         for (int i = 0; i <= templateRange.getLastRow() - templateRange.getFirstRow(); i++) {
             Range oneRowRange = new Range(templateRange.getSheet(),
                     templateRange.getFirstColumn(), templateRange.getFirstRow() + i,
                     templateRange.getLastColumn(), templateRange.getFirstRow() + i);
             Map<CellReference, Cell> cellsForOneRowRange = template.getCellsByRange(oneRowRange);
-            List<Cell> templateCells = new ArrayList<>(cellsForOneRowRange.values());
+            List<Cell> templateCells = new ArrayList<Cell>(cellsForOneRowRange.values());
             Row templateRow = CollectionUtils.isNotEmpty(templateCells) ?
                     (Row) templateCells.get(0).getParent() :
                     resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow() - 1);
@@ -665,7 +665,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(Range templateRange, BandData bandData, Row newRow, List<Cell> templateCells) {
-        List<Cell> resultCells = new ArrayList<>();
+        List<Cell> resultCells = new ArrayList<Cell>();
 
         Worksheet resultWorksheet = getWorksheet(newRow);
         for (Cell templateCell : templateCells) {

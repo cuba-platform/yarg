@@ -1,8 +1,8 @@
 allprojects {
     apply(plugin: 'java')
     apply(plugin: 'idea')
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
+    sourceCompatibility = '1.6'
+    targetCompatibility = '1.6'
 }
 
 def projectName = "YARG (Yet another report generator)"

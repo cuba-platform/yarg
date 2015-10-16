@@ -106,7 +106,7 @@ public class Range {
 
     public static Set<Range> fromCellFormula(String sheet, Cell cellWithFormula) {
         Matcher matcher = Range.STRICT_RANGE_PATTERN.matcher(cellWithFormula.getF().getValue());
-        Set<Range> ranges = new HashSet<>();
+        Set<Range> ranges = new HashSet<Range>();
         while (matcher.find()) {
             String rangeStr = matcher.group();
             Range formulaRange = Range.fromRange(sheet, rangeStr);
@@ -243,7 +243,7 @@ public class Range {
     }
 
     public List<CellReference> toCellReferences() {
-        List<CellReference> references = new ArrayList<>();
+        List<CellReference> references = new ArrayList<CellReference>();
         for (int row = firstRow; row <= lastRow; row++) {
             for (int column = firstColumn; column <= lastColumn; column++) {
                 references.add(new CellReference(sheet, row, column));

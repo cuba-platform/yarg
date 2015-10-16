@@ -140,7 +140,7 @@ public class TableManager {
      * @return list of cell names for the row
      */
     public List<String> getCellNamesForTheRow(int row) {
-        List<String> thisRowCells = new ArrayList<>();
+        List<String> thisRowCells = new ArrayList<String>();
         for (String cellName : xTextTable.getCellNames()) {
             if (cellName.matches("[A-z]" + (row + 1))) {
                 thisRowCells.add(cellName);

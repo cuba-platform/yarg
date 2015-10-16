@@ -214,7 +214,7 @@ public class XlsxIntegrationTest {
     @Test
     public void testXlsxFormats() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
 
         BandData header = new BandData("Header", root, BandOrientation.VERTICAL);
@@ -240,7 +240,7 @@ public class XlsxIntegrationTest {
     @Test
     public void testXlsxFormulas() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<>();
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
 
         BandData mainHeader = new BandData("MainHeader", root);
