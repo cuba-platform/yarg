@@ -63,7 +63,9 @@ public class ReportBuilder {
 
     public Report build() {
         report.validate();
-        return report;
+        ReportImpl result = report;
+        report = new ReportImpl();
+        return result;
     }
 
 }
