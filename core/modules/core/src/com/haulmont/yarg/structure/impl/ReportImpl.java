@@ -43,7 +43,7 @@ public class ReportImpl implements Report {
         validate();
     }
 
-    ReportImpl() {
+    protected ReportImpl() {
         this.name = "";
         this.rootBand = null;
         this.reportTemplates = new HashMap<String, ReportTemplate>();
@@ -51,7 +51,7 @@ public class ReportImpl implements Report {
         this.reportFieldFormats = new ArrayList<ReportFieldFormat>();
     }
 
-    void validate() {
+    protected void validate() {
         Preconditions.checkNotNull(this.name, "\"name\" parameter can not be null");
         Preconditions.checkNotNull(this.reportTemplates, "\"reportTemplates\" parameter can not be null");
         Preconditions.checkNotNull(this.reportParameters, "\"reportParameters\" parameter can not be null");
