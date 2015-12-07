@@ -145,7 +145,7 @@ public class Reporting implements ReportingAPI {
     }
 
     protected Map<String, Object> handleParameters(Report report, Map<String, Object> params) {
-        Map<String, Object> handledParams = new HashMap<>(params);
+        Map<String, Object> handledParams = new HashMap<String, Object>(params);
         for (ReportParameter reportParameter : report.getReportParameters()) {
             String paramName = reportParameter.getAlias();
 

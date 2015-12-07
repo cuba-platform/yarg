@@ -95,6 +95,8 @@ public class ReportTemplateBuilder {
 
     public ReportTemplate build() {
         reportTemplate.validate();
-        return reportTemplate;
+        ReportTemplateImpl result = reportTemplate;
+        reportTemplate = new ReportTemplateImpl();
+        return result;
     }
 }

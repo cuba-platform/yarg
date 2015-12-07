@@ -23,6 +23,7 @@ package com.haulmont.yarg.loaders.factory;
 
 import com.haulmont.yarg.exception.InitializationException;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
+import com.haulmont.yarg.util.db.DatasourceCreator;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
 import org.apache.commons.lang.StringUtils;
 
@@ -47,9 +48,9 @@ public class PropertiesSqlLoaderFactory {
 
             if (StringUtils.isBlank(driver) || StringUtils.isBlank(dbUrl)) {
                 return null;
-            }
+                }
 
-            DataSource dataSource = DefaultLoaderFactory.setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
+            DataSource dataSource = DatasourceCreator.setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
             SqlDataLoader sqlDataLoader = new SqlDataLoader(dataSource);
             return sqlDataLoader;
         } catch (IOException e) {

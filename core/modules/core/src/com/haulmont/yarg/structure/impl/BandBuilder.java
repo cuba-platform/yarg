@@ -57,7 +57,9 @@ public class BandBuilder {
 
     public ReportBand build() {
         bandDefinition.validate();
-        return bandDefinition;
+        ReportBandImpl result = bandDefinition;
+        bandDefinition = new ReportBandImpl();
+        return result;
     }
 
     protected ReportBandImpl createBand() {
