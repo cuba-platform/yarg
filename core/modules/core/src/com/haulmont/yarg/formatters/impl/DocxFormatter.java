@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
+import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -45,8 +46,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -182,9 +181,7 @@ public class DocxFormatter extends AbstractFormatter {
                     altChunk.getId());
             if (afip.getAltChunkType().equals(AltChunkType.Xhtml)) {
                 try {
-                    Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
-                    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
-                    XHTMLImporter xHTMLImporter = (XHTMLImporter) ctor.newInstance(wordprocessingMLPackage);
+                    XHTMLImporter xHTMLImporter = new XHTMLImporterImpl(wordprocessingMLPackage);
                     List results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
 
                     int index = locatedChunk.getIndex();
@@ -204,19 +201,8 @@ public class DocxFormatter extends AbstractFormatter {
                             container.add(result);
                         }
                     }
-                } catch (ClassNotFoundException e) {
-                    log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
-                    log.error(e.getMessage(), e);
-                } catch (InvocationTargetException e) {
-                    log.error("Could not instantiate XHTMLImporter");
-                    log.error(e.getMessage(), e);
-                } catch (NoSuchMethodException e) {
-                    log.error("Could not instantiate XHTMLImporter");
-                    log.error(e.getMessage(), e);
-                } catch (InstantiationException e) {
-                    log.error("Could not instantiate XHTMLImporter");
-                    log.error(e.getMessage(), e);
                 } catch (Exception e) {
+                    log.error("An error occurred while converting HTML parts of DOCX document for PDF render");
                     log.error(e.getMessage(), e);
                 }
             }
