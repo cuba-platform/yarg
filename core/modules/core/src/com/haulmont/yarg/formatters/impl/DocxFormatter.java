@@ -27,16 +27,27 @@ import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4J;
+import org.docx4j.TraversalUtil;
+import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.wml.Text;
-import org.docx4j.wml.Tr;
+import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
+import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.utils.AltChunkFinder;
+import org.docx4j.wml.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -45,6 +56,8 @@ import java.util.regex.Matcher;
  * * Document formatter for '.docx' file types
  */
 public class DocxFormatter extends AbstractFormatter {
+    protected static final Logger log = LoggerFactory.getLogger(DocxFormatter.class);
+
     protected WordprocessingMLPackage wordprocessingMLPackage;
     protected DocumentWrapper documentWrapper;
     protected PdfConverter pdfConverter;
@@ -87,6 +100,7 @@ public class DocxFormatter extends AbstractFormatter {
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
+                convertAltChunks();
                 if (pdfConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(wordprocessingMLPackage, bos);
@@ -152,5 +166,66 @@ public class DocxFormatter extends AbstractFormatter {
     protected void writeToOutputStream(WordprocessingMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
         SaveToZipFile saver = new SaveToZipFile(mlPackage);
         saver.save(outputStream);
+    }
+
+    public void convertAltChunks() throws Docx4JException {
+        JaxbXmlPartAltChunkHost mainDocumentPart = wordprocessingMLPackage.getMainDocumentPart();
+        List<Object> contentList = ((ContentAccessor) mainDocumentPart).getContent();
+
+        AltChunkFinder bf = new AltChunkFinder();
+        new TraversalUtil(contentList, bf);
+
+        for (AltChunkFinder.LocatedChunk locatedChunk : bf.getAltChunks()) {
+            CTAltChunk altChunk = locatedChunk.getAltChunk();
+            AlternativeFormatInputPart afip
+                    = (AlternativeFormatInputPart) mainDocumentPart.getRelationshipsPart().getPart(
+                    altChunk.getId());
+            if (afip.getAltChunkType().equals(AltChunkType.Xhtml)) {
+                try {
+                    Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
+                    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
+                    XHTMLImporter xHTMLImporter = (XHTMLImporter) ctor.newInstance(wordprocessingMLPackage);
+                    List results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
+
+                    int index = locatedChunk.getIndex();
+                    locatedChunk.getContentList().remove(index);
+
+                    List container = locatedChunk.getContentList();
+                    Object chunkParent = locatedChunk.getAltChunk().getParent();
+                    if (chunkParent instanceof R) {
+                        Object parent = ((R) chunkParent).getParent();
+                        if (parent instanceof P && ((P) parent).getParent() instanceof List) {
+                            container = (List) ((P) parent).getParent();
+                        }
+                    }
+
+                    for (Object result : results) {
+                        if (result instanceof P) {
+                            container.add(result);
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
+                    log.error(e.getMessage(), e);
+                } catch (InvocationTargetException e) {
+                    log.error("Could not instantiate XHTMLImporter");
+                    log.error(e.getMessage(), e);
+                } catch (NoSuchMethodException e) {
+                    log.error("Could not instantiate XHTMLImporter");
+                    log.error(e.getMessage(), e);
+                } catch (InstantiationException e) {
+                    log.error("Could not instantiate XHTMLImporter");
+                    log.error(e.getMessage(), e);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    private String toString(ByteBuffer bb) throws UnsupportedEncodingException {
+        byte[] bytes = new byte[bb.limit()];
+        bb.get(bytes);
+        return new String(bytes, "UTF-8");
     }
 }

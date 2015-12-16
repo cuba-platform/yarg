@@ -22,7 +22,7 @@
                                'addLine1': '1600 Amphitheatre Pkwy',
                                'addLine2': 'Mountain View, USA',
                                'addLine3':'CA 94043',
-                               'signature':<![CDATA['<html><body><b><font color="red">Mr. Yarg</font></b></body></html>']]>
+                               'signature':<![CDATA['<html><body><b><span style="color:red">Mr. Yarg</span></b></body></html>']]>
                             ]]
                         </script>
                     </query>

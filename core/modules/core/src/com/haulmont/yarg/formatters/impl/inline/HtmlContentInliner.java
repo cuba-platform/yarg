@@ -87,10 +87,9 @@ public class HtmlContentInliner implements ContentInliner {
     public void inlineToDocx(WordprocessingMLPackage wordPackage, Text text, Object paramValue, Matcher matcher) {
         try {
             R run = (R) text.getParent();
-            wordPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
+            wordPackage.getContentTypeManager().addDefaultContentType("xhtml", "text/xhtml");
             MainDocumentPart mainDocumentPart = wordPackage.getMainDocumentPart();
-            mainDocumentPart.addAltChunk(AltChunkType.Html, paramValue.toString().getBytes(), run);
-            mainDocumentPart.convertAltChunks();
+            mainDocumentPart.addAltChunk(AltChunkType.Xhtml, paramValue.toString().getBytes(), run);
             text.setValue("");
         } catch (Exception e) {
             throw new ReportFormattingException("An error occurred while inserting html to docx file", e);

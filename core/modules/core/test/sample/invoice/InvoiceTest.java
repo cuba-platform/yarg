@@ -30,10 +30,10 @@ public class InvoiceTest {
     @Test
     public void testInvoiceReport() throws Exception {
         Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice.xml")));
-        System.out.println();
 
         Reporting reporting = new Reporting();
-        reporting.setFormatterFactory(new DefaultFormatterFactory());
+        DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory();
+        reporting.setFormatterFactory(formatterFactory);
         reporting.setLoaderFactory(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl())));
 
         ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/sample/invoice.pdf"));
@@ -58,7 +58,7 @@ public class InvoiceTest {
                 "                               'addLine1': '1600 Amphitheatre Pkwy',\n" +
                 "                               'addLine2': 'Mountain View, USA',\n" +
                 "                               'addLine3':'CA 94043',\n" +
-                "                               'signature':'<html><body><b><font color=\"red\">Mr. Yarg</font></b></body></html>'\n" +
+                "                               'signature':'<html><body><b><span style=\"color:red\">Mr. Yarg</span></b></body></html>'\n" +
                 "                            ]]", "groovy").build();
 
 
