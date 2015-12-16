@@ -21,23 +21,23 @@ import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportBand;
 
 public class BandBuilder {
-    ReportBandImpl bandDefinition = new ReportBandImpl();
+    protected ReportBandImpl bandDefinition = createBand();
 
     public BandBuilder child(ReportBand bandDefinition) {
         Preconditions.checkNotNull(bandDefinition, "\"bandDefinition\" parameter can not be null");
-        ReportBandImpl copyBand = new ReportBandImpl(bandDefinition);
+        ReportBandImpl copyBand = copyBand(bandDefinition);
         copyBand.parentBandDefinition = this.bandDefinition;
         this.bandDefinition.childrenBandDefinitions.add(copyBand);
         return this;
     }
 
     public BandBuilder query(String name, String script, String loaderType) {
-        bandDefinition.reportQueries.add(new ReportQueryImpl(name, script, loaderType, null, null));
+        bandDefinition.reportQueries.add(createReportQuery(name, script, loaderType, null));
         return this;
     }
 
     public BandBuilder query(String name, String script, String loaderType, String linkParameterName) {
-        bandDefinition.reportQueries.add(new ReportQueryImpl(name, script, loaderType, linkParameterName, null));
+        bandDefinition.reportQueries.add(createReportQuery(name, script, loaderType, linkParameterName));
         return this;
     }
 
@@ -60,5 +60,17 @@ public class BandBuilder {
         ReportBandImpl result = bandDefinition;
         bandDefinition = new ReportBandImpl();
         return result;
+    }
+
+    protected ReportBandImpl createBand() {
+        return new ReportBandImpl();
+    }
+
+    protected ReportBandImpl copyBand(ReportBand bandDefinition) {
+        return new ReportBandImpl(bandDefinition);
+    }
+
+    protected ReportQueryImpl createReportQuery(String name, String script, String loaderType, String linkParameterName) {
+        return new ReportQueryImpl(name, script, loaderType, linkParameterName, null);
     }
 }

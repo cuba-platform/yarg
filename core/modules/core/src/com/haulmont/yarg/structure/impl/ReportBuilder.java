@@ -20,18 +20,18 @@ import com.google.common.base.Preconditions;
 import com.haulmont.yarg.structure.*;
 
 public class ReportBuilder {
-    private ReportImpl report;
-    private ReportBandImpl rootBandDefinition;
+    protected ReportImpl report;
+    protected ReportBandImpl rootBandDefinition;
 
     public ReportBuilder() {
-        rootBandDefinition = new ReportBandImpl(BandData.ROOT_BAND_NAME, null);
-        report = new ReportImpl();
+        rootBandDefinition = createRootBand();
+        report = createReport();
         report.rootBand = rootBandDefinition;
     }
 
     public ReportBuilder band(ReportBand band) {
         Preconditions.checkNotNull(band, "\"band\" parameter can not be null");
-        ReportBandImpl wrapperBandDefinition = new ReportBandImpl(band);
+        ReportBandImpl wrapperBandDefinition = copyBand(band);
         rootBandDefinition.childrenBandDefinitions.add(wrapperBandDefinition);
         wrapperBandDefinition.parentBandDefinition = rootBandDefinition;
         return this;
@@ -68,4 +68,15 @@ public class ReportBuilder {
         return result;
     }
 
+    protected ReportImpl createReport() {
+        return new ReportImpl();
+    }
+
+    protected ReportBandImpl createRootBand() {
+        return new ReportBandImpl(BandData.ROOT_BAND_NAME, null);
+    }
+
+    protected ReportBandImpl copyBand(ReportBand band) {
+        return new ReportBandImpl(band);
+    }
 }
