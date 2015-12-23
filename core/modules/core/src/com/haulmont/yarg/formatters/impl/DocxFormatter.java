@@ -95,11 +95,12 @@ public class DocxFormatter extends AbstractFormatter {
 
     protected void saveAndClose() {
         try {
-            convertAltChunks();
             if (ReportOutputType.docx.equals(reportTemplate.getOutputType())) {
+                convertAltChunks();
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
+                convertAltChunks();
                 if (pdfConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(wordprocessingMLPackage, bos);
