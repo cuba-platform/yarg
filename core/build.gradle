@@ -237,8 +237,11 @@ configure(core) {
         }
         compile(group: "org.docx4j", name: "docx4j", version: "3.2.0") {
             exclude(group: 'org.apache.poi', module: 'poi')
+            exclude(group: 'junit', module: 'junit')
         }
-        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.2.0")
+        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.2.0"){
+            exclude(group: 'junit', module: 'junit')
+        }
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "0.9.1")
 
         testCompile(group: 'junit', name: 'junit', version: '4.5')

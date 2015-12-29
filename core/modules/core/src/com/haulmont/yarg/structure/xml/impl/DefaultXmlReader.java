@@ -38,10 +38,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,7 +96,7 @@ public class DefaultXmlReader implements XmlReader {
      * @param documentPath - path to document (file system path or other if overriden)
      * @throws FileNotFoundException
      */
-    protected FileInputStream getDocumentContent(String documentPath) throws FileNotFoundException {
+    protected InputStream getDocumentContent(String documentPath) throws FileNotFoundException {
         return new FileInputStream(documentPath);
     }
 
