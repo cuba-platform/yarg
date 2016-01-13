@@ -188,18 +188,14 @@ public class DocxFormatter extends AbstractFormatter {
                     int index = locatedChunk.getIndex();
                     locatedChunk.getContentList().remove(index);
 
-                    List container = locatedChunk.getContentList();
                     Object chunkParent = locatedChunk.getAltChunk().getParent();
-                    if (chunkParent instanceof R) {
-                        Object parent = ((R) chunkParent).getParent();
-                        if (parent instanceof P && ((P) parent).getParent() instanceof List) {
-                            container = (List) ((P) parent).getParent();
-                        }
-                    }
+                    R parentRun = (R) chunkParent;//always should be R
+                    P parentParagraph = (P) parentRun.getParent();
 
                     for (Object result : results) {
                         if (result instanceof P) {
-                            container.add(result);
+                            P resultParagraph = (P) result;
+                            parentParagraph.getContent().addAll(resultParagraph.getContent());
                         }
                     }
                 } catch (Exception e) {

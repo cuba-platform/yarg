@@ -7,6 +7,7 @@
     <formats>
         <format name="Main.date" format="dd/MM/yyyy"/>
         <format name="Main.signature" format="${html}"/>
+        <format name="Main.footer" format="${html}"/>
     </formats>
     <rootBand name="Root" orientation="H">
         <bands>
@@ -22,7 +23,8 @@
                                'addLine1': '1600 Amphitheatre Pkwy',
                                'addLine2': 'Mountain View, USA',
                                'addLine3':'CA 94043',
-                               'signature':<![CDATA['<html><body><b><span style="color:red">Mr. Yarg</span></b></body></html>']]>
+                               'signature': <![CDATA['<html><body><span style="color:red">Mr. Yarg</span></body></html>']]>,
+                               'footer' : <![CDATA['<html><body><span style="color:green;font-weight:bold;">The invoice footer</span></body></html>']]>
                             ]]
                         </script>
                     </query>

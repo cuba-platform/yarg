@@ -58,7 +58,8 @@ public class InvoiceTest {
                 "                               'addLine1': '1600 Amphitheatre Pkwy',\n" +
                 "                               'addLine2': 'Mountain View, USA',\n" +
                 "                               'addLine3':'CA 94043',\n" +
-                "                               'signature':'<html><body><b><span style=\"color:red\">Mr. Yarg</span></b></body></html>'\n" +
+                "                               'signature': '<html><body><span style=\"color:red\">Mr. Yarg</span></body></html>',\n" +
+                "                               'footer' : '<html><body><b><span style=\"color:green;font-weight:bold;\">The invoice footer</span></b></body></html>' \n" +
                 "                            ]]", "groovy").build();
 
 
@@ -72,6 +73,7 @@ public class InvoiceTest {
         reportBuilder.band(main);
         reportBuilder.band(items);
         reportBuilder.format(new ReportFieldFormatImpl("Main.signature", "${html}"));
+        reportBuilder.format(new ReportFieldFormatImpl("Main.footer", "${html}"));
 
         Report report = reportBuilder.build();
 
