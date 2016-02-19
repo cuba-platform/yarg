@@ -7,7 +7,8 @@
     <body>
         <div style="display: table">
             <div>
-                <img src="file:///data/Projects/yarg/core/modules/core/test/yarg.png" height="68" width="199" border="0" align="right"/>
+                <img src="http://samara1.haulmont.com:8594/app/VAADIN/resources/img/Sherlock_logo.png" height="68" width="199" border="0" align="right"/>
+                <!--<img src="file:///data/Sherlock_logo.png" height="68" width="199" border="0" align="right"/>-->
             </div>
             <div>
                 <#assign Table1 = Root.bands.Band1>
