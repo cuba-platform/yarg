@@ -52,12 +52,14 @@ public class DocumentWrapper {
         }
     }
 
-    protected void collectTexts() {TextVisitor collectAliasesCallback = new TextVisitor(docxFormatter);
+    protected void collectTexts() {
+        TextVisitor collectAliasesCallback = new TextVisitor(docxFormatter);
         new TraversalUtil(mainDocumentPart, collectAliasesCallback);
         texts = collectAliasesCallback.textWrappers;
     }
 
-    protected void collectTables() {TableCollector collectTablesCallback = new TableCollector(docxFormatter);
+    protected void collectTables() {
+        TableCollector collectTablesCallback = new TableCollector(docxFormatter);
         new TraversalUtil(mainDocumentPart, collectTablesCallback);
         tables = collectTablesCallback.tableManagers;
     }

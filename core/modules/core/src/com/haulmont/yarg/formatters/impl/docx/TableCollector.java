@@ -51,7 +51,8 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
                 RegexpFinder aliasFinder = new RegexpFinder<P>(docxFormatter, AbstractFormatter.UNIVERSAL_ALIAS_PATTERN, P.class);
                 new TraversalUtil(currentRow, aliasFinder);
 
-                if (aliasFinder.getValue() != null) {
+                String foundAlias = aliasFinder.getValue();
+                if (foundAlias != null && foundAlias.matches(AbstractFormatter.SIMPLE_ALIAS_REGEXP)) {
                     currentTable.rowWithAliases = currentRow;
                 }
             }

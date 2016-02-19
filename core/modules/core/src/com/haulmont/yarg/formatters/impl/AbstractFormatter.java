@@ -38,10 +38,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractFormatter implements ReportFormatter {
+    public static final String SIMPLE_ALIAS_REGEXP = "\\$\\{([A-z0-9_]+?)\\}";
+
+    public static final String ALIAS_GROUP = "([A-z0-9_\\.]+?)";
     public static final String STRING_FUNCTION_GROUP = "(\\[\\d+\\])";
-    public static final String ALIAS_GROUP = "([A-z0-9_\\.#]+?)";
     public static final String UNIVERSAL_ALIAS_REGEXP = "\\$\\{" + ALIAS_GROUP + " *" + STRING_FUNCTION_GROUP + "?\\}";
-    public static final String ALIAS_WITH_BAND_NAME_REGEXP = "\\$\\{([A-z0-9_\\.]+?#?[A-z0-9_\\.]+?) *(\\[\\d+\\])?\\}";
+    public static final String ALIAS_WITH_BAND_NAME_REGEXP = UNIVERSAL_ALIAS_REGEXP;
     public static final String BAND_NAME_DECLARATION_REGEXP = "##band=([A-z_0-9]+) *";
 
     public static final Pattern UNIVERSAL_ALIAS_PATTERN = Pattern.compile(UNIVERSAL_ALIAS_REGEXP, Pattern.CASE_INSENSITIVE);

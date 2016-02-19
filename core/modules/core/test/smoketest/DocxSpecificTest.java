@@ -37,6 +37,36 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         IOUtils.closeQuietly(outputStream);
     }
 
+    @Test
+    public void testDocxTableWithAliasInHeader() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+        BandData price = new BandData("Price", root, BandOrientation.HORIZONTAL);
+        price.setData(new RandomMap());
+        root.addChild(price);
+        BandData price2 = new BandData("Price", root, BandOrientation.HORIZONTAL);
+        price2.setData(new RandomMap());
+        root.addChild(price2);
+        BandData price3 = new BandData("Price", root, BandOrientation.HORIZONTAL);
+        price3.setData(new RandomMap());
+        root.addChild(price3);
+        BandData price4 = new BandData("Price", root, BandOrientation.HORIZONTAL);
+        price4.setData(new RandomMap());
+        root.addChild(price4);
+        BandData info = new BandData("Info", root, BandOrientation.HORIZONTAL);
+        info.setData(new RandomMap());
+        root.addChild(info);
+
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/TemplateRateBook.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/TemplateRateBook.docx", "./modules/core/test/smoketest/TemplateRateBook.docx", ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
 
     @Test
     public void testDocxWithSplittedAlias() throws Exception {
