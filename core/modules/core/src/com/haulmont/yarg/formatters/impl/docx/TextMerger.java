@@ -102,7 +102,7 @@ public class TextMerger {
             }
         }
 
-        if (!containsStartOfRegexp(startText.getValue().replace(regexp, ""))) {
+        if (!containsStartOfRegexp(startText.getValue().replaceAll(regexp, ""))) {
             startText = null;
             mergedTexts = null;
             mergedTextsString = null;
