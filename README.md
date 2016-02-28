@@ -7,7 +7,7 @@ It is intended to be embedded into enterprise IT systems, thus it comes with no 
 
 YARG is a mature and well-tested tool, already used in a number of Haulmont's solutions as part of [CUBA Platform] (https://www.cuba-platform.com/YARG).
 
-[Wiki] (https://github.com/Haulmont/yarg/wiki)
+[Documentation] (https://github.com/Haulmont/yarg/wiki)
 
 
 ### Samples
