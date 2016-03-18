@@ -1,10 +1,10 @@
 package loaders;
 
+import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.JsonDataLoader;
+import com.haulmont.yarg.loaders.impl.SqlDataLoader;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
-import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
-import com.haulmont.yarg.loaders.impl.SqlDataLoader;
 import com.haulmont.yarg.structure.impl.ReportQueryImpl;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import junit.framework.Assert;
@@ -146,6 +146,12 @@ public class DataLoadersTest {
         Map<String, Object> map = maps.get(0);
 
         Assert.assertEquals("red", map.get("store.bicycle.color"));
+
+        params.put("searchParameter", "reference");
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[?(@.category==${searchParameter})]", "json", null, null);
+        maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
+        map = maps.get(0);
+        Assert.assertEquals("reference", map.get("category"));
 
         reportQuery = new ReportQueryImpl("", "parameter=param1 $some.not.existing", "json", null, null);
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);

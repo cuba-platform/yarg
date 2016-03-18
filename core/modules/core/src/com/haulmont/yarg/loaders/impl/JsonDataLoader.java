@@ -95,6 +95,12 @@ public class JsonDataLoader implements ReportDataLoader {
                                     "Script [%s]", reportQuery.getScript()));
                 }
 
+                matcher = AbstractDbDataLoader.COMMON_PARAM_PATTERN.matcher(script);
+                while(matcher.find()) {
+                    String parameter = matcher.group(1);
+                    script = matcher.replaceAll(String.valueOf(params.get(parameter)));
+                }
+
                 try {
                     Object scriptResult = JsonPath.read(json, script);
                     parseScriptResult(result, script, scriptResult);
