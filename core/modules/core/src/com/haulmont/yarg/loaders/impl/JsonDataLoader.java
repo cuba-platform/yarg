@@ -72,16 +72,22 @@ import java.util.regex.Pattern;
  * We get json string from parameter param1 and select all "book" objects from the "store" object
  *
  */
-public class JsonDataLoader implements ReportDataLoader {
+public class JsonDataLoader extends AbstractDataLoader {
     protected Pattern parameterPattern = Pattern.compile("parameter=([A-z0-9_]+)");
 
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 
-
         Matcher matcher = parameterPattern.matcher(reportQuery.getScript());
         String parameterName = getParameterName(matcher);
+
+        //adds parameters from parent bands hierarchy
+        BandData curentParentBand = parentBand;
+        while (curentParentBand != null) {
+            addParentBandDataToParameters(curentParentBand, params);
+            curentParentBand = curentParentBand.getParentBand();
+        }
 
         if (parameterName != null) {
             Object parameterValue = params.get(parameterName);

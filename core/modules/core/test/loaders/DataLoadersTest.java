@@ -105,7 +105,9 @@ public class DataLoadersTest {
     public void testJson() throws Exception {
         JsonDataLoader jsonDataLoader = new JsonDataLoader();
         BandData rootBand = new BandData("band1", null, BandOrientation.HORIZONTAL);
-        rootBand.setData(Collections.<String, Object>emptyMap());
+        rootBand.setData(new HashMap<String, Object>());
+        rootBand.getData().put("searchParameter", "fiction");
+
         ReportQueryImpl reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[*]", "json", null, null);
 
         String json = "{ \"store\": {\n" +
@@ -152,6 +154,11 @@ public class DataLoadersTest {
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
         map = maps.get(0);
         Assert.assertEquals("reference", map.get("category"));
+
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[?(@.category==${band1.searchParameter})]", "json", null, null);
+        maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
+        map = maps.get(0);
+        Assert.assertEquals("fiction", map.get("category"));
 
         reportQuery = new ReportQueryImpl("", "parameter=param1 $some.not.existing", "json", null, null);
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);

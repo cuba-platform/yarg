@@ -151,16 +151,6 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         return new QueryPack(query.trim().replaceAll(" +", " "), queryParameters.toArray(new QueryParameter[queryParameters.size()]));
     }
 
-    protected void addParentBandDataToParameters(BandData parentBand, Map<String, Object> currentParams) {
-        if (parentBand != null) {
-            String parentBandName = parentBand.getName();
-
-            for (Map.Entry<String, Object> entry : parentBand.getData().entrySet()) {
-                currentParams.put(parentBandName + "." + entry.getKey(), entry.getValue());
-            }
-        }
-    }
-
     protected HashSet<String> findParameterNames(String query) {
         HashSet<String> paramsStr = new LinkedHashSet<String>();
         Matcher paramMatcher = COMMON_PARAM_PATTERN.matcher(query);
