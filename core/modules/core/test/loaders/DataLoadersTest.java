@@ -150,17 +150,17 @@ public class DataLoadersTest {
         Assert.assertEquals("red", map.get("store.bicycle.color"));
 
         params.put("searchParameter", "reference");
-        reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[?(@.category==${searchParameter})]", "json", null, null);
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[?(@.category=='${searchParameter}')]", "json", null, null);
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
         map = maps.get(0);
         Assert.assertEquals("reference", map.get("category"));
 
-        reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[?(@.category==${band1.searchParameter})]", "json", null, null);
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $.store.book[?(@.category=='${band1.searchParameter}')]", "json", null, null);
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
         map = maps.get(0);
         Assert.assertEquals("fiction", map.get("category"));
 
-        reportQuery = new ReportQueryImpl("", "parameter=param1 $some.not.existing", "json", null, null);
+        reportQuery = new ReportQueryImpl("", "parameter=param1 $.some.not.existing", "json", null, null);
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
         Assert.assertEquals(0, maps.size());
 

@@ -15,35 +15,29 @@
  */
 
 /**
- *
  * @author degtyarjov
  * @version $Id$
  */
 package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.exception.DataLoadingException;
-import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.impl.json.JsonMap;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
 import com.jayway.jsonpath.JsonPath;
-import net.minidev.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Loads data from json string
  * Uses JsonPath to access necessary parts of json object
- *
+ * <p/>
  * Example:
- *
+ * <p/>
  * JSON:
  * { "store": {
  * "book": [
@@ -65,18 +59,22 @@ import java.util.regex.Pattern;
  * }
  * }
  * }
- *
+ * <p/>
  * Query string:
  * parameter=param1 $.store.book[*]
- *
+ * <p/>
  * We get json string from parameter param1 and select all "book" objects from the "store" object
- *
  */
 public class JsonDataLoader extends AbstractDataLoader {
     protected Pattern parameterPattern = Pattern.compile("parameter=([A-z0-9_]+)");
 
     @Override
-    public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
+    public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> reportParams) {
+        Map<String, Object> currentParams = new HashMap<String, Object>();
+        if (reportParams != null) {
+            currentParams.putAll(reportParams);
+        }
+
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 
         Matcher matcher = parameterPattern.matcher(reportQuery.getScript());
@@ -85,12 +83,12 @@ public class JsonDataLoader extends AbstractDataLoader {
         //adds parameters from parent bands hierarchy
         BandData curentParentBand = parentBand;
         while (curentParentBand != null) {
-            addParentBandDataToParameters(curentParentBand, params);
+            addParentBandDataToParameters(curentParentBand, currentParams);
             curentParentBand = curentParentBand.getParentBand();
         }
 
         if (parameterName != null) {
-            Object parameterValue = params.get(parameterName);
+            Object parameterValue = currentParams.get(parameterName);
             if (parameterValue != null && StringUtils.isNotBlank(parameterValue.toString())) {
                 String json = parameterValue.toString();
                 String script = matcher.replaceAll("");
@@ -102,9 +100,9 @@ public class JsonDataLoader extends AbstractDataLoader {
                 }
 
                 matcher = AbstractDbDataLoader.COMMON_PARAM_PATTERN.matcher(script);
-                while(matcher.find()) {
+                while (matcher.find()) {
                     String parameter = matcher.group(1);
-                    script = matcher.replaceAll(String.valueOf(params.get(parameter)));
+                    script = matcher.replaceAll(String.valueOf(currentParams.get(parameter)));
                 }
 
                 try {
@@ -127,14 +125,15 @@ public class JsonDataLoader extends AbstractDataLoader {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     protected void parseScriptResult(List<Map<String, Object>> result, String script, Object scriptResult) {
         if (scriptResult instanceof List) {//JSONArray is also list
             List theList = (List) scriptResult;
             if (CollectionUtils.isNotEmpty(theList)) {
                 Object listObject = theList.get(0);
-                if (listObject instanceof JSONObject) {
+                if (listObject instanceof Map) {
                     for (Object object : theList) {
-                        result.add(createMap((JSONObject) object));
+                        result.add(createMap((Map) object));
                     }
                 } else {
                     throw new DataLoadingException(
@@ -143,8 +142,8 @@ public class JsonDataLoader extends AbstractDataLoader {
                                     "Script [%s]", listObject, script));
                 }
             }
-        } else if (scriptResult instanceof JSONObject) {
-            result.add(createMap((JSONObject) scriptResult));
+        } else if (scriptResult instanceof Map) {
+            result.add(createMap((Map) scriptResult));
         } else {
             throw new DataLoadingException(
                     String.format("The script collects neither object nor list of objects. " +
@@ -160,7 +159,7 @@ public class JsonDataLoader extends AbstractDataLoader {
         return null;
     }
 
-    protected Map<String, Object> createMap(JSONObject jsonObject) {
+    protected Map<String, Object> createMap(Map jsonObject) {
         return new JsonMap(jsonObject);
     }
 }

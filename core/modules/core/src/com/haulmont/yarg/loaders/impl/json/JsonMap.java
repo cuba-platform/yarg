@@ -1,6 +1,5 @@
 package com.haulmont.yarg.loaders.impl.json;
 
-import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Collection;
@@ -13,9 +12,9 @@ import java.util.Set;
  * $Id$
  */
 public class JsonMap implements Map<String, Object> {
-    private JSONObject instance;
+    private Map<String, Object> instance;
 
-    public JsonMap(JSONObject entity) {
+    public JsonMap(Map<String, Object> entity) {
         instance = entity;
     }
 
@@ -79,15 +78,15 @@ public class JsonMap implements Map<String, Object> {
         return instance.entrySet();
     }
 
-    protected Object getValue(JSONObject instance, String key) {
+    protected Object getValue(Map instance, String key) {
         if (key == null) return null;
         if (key.contains(".")) {
             String thisLevelProperty = StringUtils.substringBefore(key, ".");
             String remainingPath = StringUtils.substringAfter(key, ".");
 
             Object value = instance.get(thisLevelProperty);
-            if (value instanceof JSONObject) {
-                return getValue((JSONObject) value, remainingPath);
+            if (value instanceof Map) {
+                return getValue((Map) value, remainingPath);
             } else {
                 return null;
             }
