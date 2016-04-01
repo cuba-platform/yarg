@@ -35,9 +35,7 @@ import java.util.regex.Pattern;
 /**
  * Loads data from json string
  * Uses JsonPath to access necessary parts of json object
- * <p/>
  * Example:
- * <p/>
  * JSON:
  * { "store": {
  * "book": [
@@ -59,10 +57,8 @@ import java.util.regex.Pattern;
  * }
  * }
  * }
- * <p/>
  * Query string:
  * parameter=param1 $.store.book[*]
- * <p/>
  * We get json string from parameter param1 and select all "book" objects from the "store" object
  */
 public class JsonDataLoader extends AbstractDataLoader {
