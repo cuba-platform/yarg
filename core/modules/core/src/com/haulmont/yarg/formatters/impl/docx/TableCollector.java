@@ -66,12 +66,14 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
                 new RegexpFinder<P>(docxFormatter, AbstractFormatter.BAND_NAME_DECLARATION_PATTERN, P.class) {
                     @Override
                     protected void onFind(P paragraph, Matcher matcher) {
-                        super.onFind(paragraph, matcher);
-                        currentTable.bandName = matcher.group(1);
-                        String bandNameDeclaration = matcher.group();
-                        Set<Text> mergedTexts = new TextMerger(paragraph, bandNameDeclaration).mergeMatchedTexts();
-                        for (Text text : mergedTexts) {
-                            text.setValue(text.getValue().replace(bandNameDeclaration, ""));
+                        if (currentTable.bandName == null) {
+                            super.onFind(paragraph, matcher);
+                            currentTable.bandName = matcher.group(1);
+                            String bandNameDeclaration = matcher.group();
+                            Set<Text> mergedTexts = new TextMerger(paragraph, bandNameDeclaration).mergeMatchedTexts();
+                            for (Text text : mergedTexts) {
+                                text.setValue(text.getValue().replace(bandNameDeclaration, ""));
+                            }
                         }
                     }
                 });

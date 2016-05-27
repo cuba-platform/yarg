@@ -31,10 +31,41 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/splitted-aliases-in-table.docx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/splitted-aliases-in-table.docx", "./modules/core/test/smoketest/splitted-aliases-in-table.docx", ReportOutputType.docx), outputStream));
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/splitted-aliases-in-table.docx", "./modules/core/test/smoketest/splitted-aliases-in-table.docx",
+                        ReportOutputType.docx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testEmbeddedTables() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData band1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band1.setData(new RandomMap());
+        root.addChild(band1);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/embedded-table-hide.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/embedded-table.docx", "./modules/core/test/smoketest/embedded-table.docx",
+                        ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+        IOUtils.closeQuietly(outputStream);
+
+        BandData control = new BandData("Control1", root, BandOrientation.HORIZONTAL);
+        control.setData(new RandomMap());
+        root.addChild(control);
+
+        outputStream = new FileOutputStream("./result/smoke/embedded-table-show.docx");
+        formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/embedded-table.docx", "./modules/core/test/smoketest/embedded-table.docx",
+                        ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+        IOUtils.closeQuietly(outputStream);
+
     }
 
     @Test
@@ -86,7 +117,8 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/splitted-aliases.docx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/splitted-aliases.docx", "./modules/core/test/smoketest/splitted-aliases.docx", ReportOutputType.docx), outputStream));
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/splitted-aliases.docx", "./modules/core/test/smoketest/splitted-aliases.docx",
+                        ReportOutputType.docx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
@@ -132,7 +164,8 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/colontitules.docx");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/colontitules.docx", "./modules/core/test/smoketest/colontitules.docx", ReportOutputType.docx), outputStream));
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/colontitules.docx", "./modules/core/test/smoketest/colontitules.docx",
+                        ReportOutputType.docx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
