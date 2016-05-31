@@ -20,6 +20,7 @@ import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.docx.DocumentWrapper;
 import com.haulmont.yarg.formatters.impl.docx.TableManager;
 import com.haulmont.yarg.formatters.impl.docx.TextWrapper;
+import com.haulmont.yarg.formatters.impl.docx.UrlVisitor;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.structure.BandData;
@@ -79,7 +80,14 @@ public class DocxFormatter extends AbstractFormatter {
 
         replaceAllAliasesInDocument();
 
+        handleUrls();
+
         saveAndClose();
+    }
+
+    private void handleUrls() {
+        UrlVisitor urlVisitor = new UrlVisitor(new DocxFormatterDelegate(this), wordprocessingMLPackage.getMainDocumentPart());
+        new TraversalUtil(wordprocessingMLPackage.getMainDocumentPart(), urlVisitor);
     }
 
     protected void loadDocument() {

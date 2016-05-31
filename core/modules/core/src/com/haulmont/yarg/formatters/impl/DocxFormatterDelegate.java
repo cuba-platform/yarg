@@ -6,6 +6,9 @@ import org.docx4j.TextUtils;
 import org.docx4j.wml.Text;
 
 import java.io.StringWriter;
+import java.util.regex.Matcher;
+
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * @author degtyarjov
@@ -69,5 +72,38 @@ public class DocxFormatterDelegate {
 
     public boolean tryToApplyInliners(String fullParameterName, Object paramValue, Text text) {
         return docxFormatter.tryToApplyInliners(fullParameterName, paramValue, text);
+    }
+
+    public String handleStringWithAliases(String template) {
+        String result = template;
+        Matcher matcher = AbstractFormatter.ALIAS_WITH_BAND_NAME_PATTERN.matcher(result);
+        while (matcher.find()) {
+            String alias = matcher.group(1);
+            String stringFunction = matcher.group(2);
+
+            AbstractFormatter.BandPathAndParameterName bandAndParameter = separateBandNameAndParameterName(alias);
+
+            if (isBlank(bandAndParameter.getBandPath()) || isBlank(bandAndParameter.getParameterName())) {
+                if (alias.matches("[A-z0-9_\\.]+?")) {//skip aliases in tables
+                    continue;
+                }
+
+                throw wrapWithReportingException("Bad alias : " + alias);
+            }
+
+            BandData band = findBandByPath(bandAndParameter.getBandPath());
+
+            if (band == null) {
+                throw wrapWithReportingException(String.format("No band for alias [%s] found", alias));
+            }
+
+            String fullParameterName = band.getName() + "." + bandAndParameter.getParameterName();
+            Object parameterValue = band.getParameterValue(bandAndParameter.getParameterName());
+
+            result = inlineParameterValue(result, alias,
+                    formatValue(parameterValue, bandAndParameter.getParameterName(), fullParameterName, stringFunction));
+        }
+
+        return result;
     }
 }

@@ -69,6 +69,22 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     }
 
     @Test
+    public void testUrl() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        rootData.put("url", "https://www.google.ru/#newwindow=1&q=YARG");
+        rootData.put("urlCaption", "URL");
+        root.setData(rootData);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/url.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/url.docx", "./modules/core/test/smoketest/url.docx",
+                        ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testDocxTableWithAliasInHeader() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<String, Object>();
