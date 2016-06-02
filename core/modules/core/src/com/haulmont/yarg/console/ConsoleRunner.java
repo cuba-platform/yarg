@@ -15,7 +15,6 @@
  */
 
 /**
- *
  * @author degtyarjov
  * @version $Id$
  */
@@ -28,6 +27,7 @@ import com.haulmont.yarg.loaders.factory.PropertiesSqlLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.JsonDataLoader;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
+import com.haulmont.yarg.reporting.DataExtractorImpl;
 import com.haulmont.yarg.reporting.Reporting;
 import com.haulmont.yarg.reporting.RunParams;
 import com.haulmont.yarg.structure.Report;
@@ -88,8 +88,8 @@ public class ConsoleRunner {
             Map<String, Object> params = parseReportParams(cmd, report);
 
             reporting.runReport(new RunParams(report)
-                    .templateCode(templateCode)
-                    .params(params),
+                            .templateCode(templateCode)
+                            .params(params),
                     new FileOutputStream(cmd.getOptionValue(OUTPUT_PATH)));
             if (doExitWhenFinished) {
                 System.exit(0);
@@ -154,13 +154,20 @@ public class ConsoleRunner {
         GroovyDataLoader groovyDataLoader = new GroovyDataLoader(new DefaultScriptingImpl());
         JsonDataLoader jsonDataLoader = new JsonDataLoader();
 
-        reporting.setLoaderFactory(
-                new DefaultLoaderFactory()
-                        .setSqlDataLoader(sqlDataLoader)
-                        .setGroovyDataLoader(groovyDataLoader)
-                        .setJsonDataLoader(jsonDataLoader));
+        DefaultLoaderFactory loaderFactory = new DefaultLoaderFactory()
+                .setSqlDataLoader(sqlDataLoader)
+                .setGroovyDataLoader(groovyDataLoader)
+                .setJsonDataLoader(jsonDataLoader);
+        reporting.setLoaderFactory(loaderFactory);
 
-        DatasourceHolder.dataSource = sqlDataLoader.getDataSource();
+        String putEmptyRowIfNoDataSelected = properties.getProperty(PropertiesLoader.CUBA_REPORTING_PUT_EMPTY_ROW_IF_NO_DATA_SELECTED);
+        DataExtractorImpl dataExtractor = new DataExtractorImpl(loaderFactory);
+        dataExtractor.setPutEmptyRowIfNoDataSelected(Boolean.parseBoolean(putEmptyRowIfNoDataSelected));
+        reporting.setDataExtractor(dataExtractor);
+
+        if (sqlDataLoader != null) {
+            DatasourceHolder.dataSource = sqlDataLoader.getDataSource();
+        }
         return reporting;
     }
 

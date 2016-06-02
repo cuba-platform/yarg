@@ -31,6 +31,7 @@ public interface PropertiesLoader {
     String CUBA_REPORTING_OPENOFFICE_PORTS = "cuba.reporting.openoffice.ports";
     String CUBA_REPORTING_OPENOFFICE_DISPLAY_DEVICE_AVAILABLE = "cuba.reporting.openoffice.displayDeviceAvailable";
     String CUBA_REPORTING_OPENOFFICE_TIMEOUT = "cuba.reporting.openoffice.timeout";
+    String CUBA_REPORTING_PUT_EMPTY_ROW_IF_NO_DATA_SELECTED = "cuba.reporting.dataextractor.putEmptyRowIfNoDataSelected";
 
     Properties load() throws IOException;
 }
