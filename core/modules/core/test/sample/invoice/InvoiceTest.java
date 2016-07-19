@@ -30,19 +30,19 @@ import java.io.FileOutputStream;
 public class InvoiceTest {
     @Test
     public void testInvoiceReport() throws Exception {
-        Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice.xml")));
+        Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice-groovy.xml")));
 
         Reporting reporting = new Reporting();
         DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory();
         reporting.setFormatterFactory(formatterFactory);
         reporting.setLoaderFactory(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl())));
 
-        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/sample/invoice.pdf"));
+        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/sample/invoice-groovy.pdf"));
     }
 
     @Test
     public void testInvoiceJsonReport() throws Exception {
-        Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice2.xml")));
+        Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice-json.xml")));
 
         Reporting reporting = new Reporting();
         DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory();
@@ -51,9 +51,9 @@ public class InvoiceTest {
                 .setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))
                 .setJsonDataLoader(new JsonDataLoader()));
 
-        String json = FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/data.json"));
+        String json = FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice-data.json"));
         ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).param("param1", json),
-                new FileOutputStream("./result/sample/invoice.pdf"));
+                new FileOutputStream("./result/sample/invoice-json.pdf"));
     }
 
 
@@ -100,7 +100,7 @@ public class InvoiceTest {
                 new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl())));
 
         ReportOutputDocument reportOutputDocument = reporting.runReport(
-                new RunParams(report), new FileOutputStream("./result/sample/invoice.docx"));
+                new RunParams(report), new FileOutputStream("./result/sample/invoice-groovy-raw.docx"));
     }
 
 
