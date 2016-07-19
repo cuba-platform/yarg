@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<report name="report">
+    <templates>
+        <template code="DEFAULT" documentName="services.xlsx" documentPath="./modules/core/test/sample/services/services.xlsx" outputType="xlsx" outputNamePattern="services.xlsx"/>
+    </templates>
+    <rootBand name="Root" orientation="H">
+        <bands>
+            <band name="MainHeader" orientation="H"/>
+            <band name="Service" orientation="H">
+                <bands>
+                    <band name="Item" orientation="H">
+                        <queries>
+                            <query name="Item" type="sql">
+                                <script>
+                                    select i.client as "client", i.volume as "volume", i.price as "price" from sold_item i where i.service = ${Service.service}
+                                </script>
+                            </query>
+                        </queries>
+                    </band>
+                    <band name="Total" orientation="H"/>
+                </bands>
+                <queries>
+                    <query name="Service" type="sql">
+                        <script>
+                            select s.name as "service" from service s
+                        </script>
+                    </query>
+                </queries>
+            </band>
+        </bands>
+        <queries/>
+    </rootBand>
+</report>
