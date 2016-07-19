@@ -5,7 +5,6 @@
         <template code="DEFAULT" documentName="invoice.docx" documentPath="./modules/core/test/sample/invoice/invoice.docx" outputType="pdf" outputNamePattern="invoice.pdf"/>
     </templates>
     <formats>
-        <format name="Main.date" format="dd/MM/yyyy"/>
         <format name="Main.signature" format="${html}"/>
         <format name="Main.footer" format="${html}"/>
     </formats>
