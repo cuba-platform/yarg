@@ -3,6 +3,7 @@ package sample.invoice;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
+import com.haulmont.yarg.loaders.impl.JsonDataLoader;
 import com.haulmont.yarg.reporting.ReportOutputDocument;
 import com.haulmont.yarg.reporting.Reporting;
 import com.haulmont.yarg.reporting.RunParams;
@@ -39,6 +40,22 @@ public class InvoiceTest {
         ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/sample/invoice.pdf"));
     }
 
+    @Test
+    public void testInvoiceJsonReport() throws Exception {
+        Report report = new DefaultXmlReader().parseXml(FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/invoice2.xml")));
+
+        Reporting reporting = new Reporting();
+        DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory();
+        reporting.setFormatterFactory(formatterFactory);
+        reporting.setLoaderFactory(new DefaultLoaderFactory()
+                .setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))
+                .setJsonDataLoader(new JsonDataLoader()));
+
+        String json = FileUtils.readFileToString(new File("./modules/core/test/sample/invoice/data.json"));
+        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).param("param1", json),
+                new FileOutputStream("./result/sample/invoice.pdf"));
+    }
+
 
     @Test
     public void testInvoiceReportRaw() throws Exception {
@@ -50,7 +67,7 @@ public class InvoiceTest {
                 .readFileFromPath();
         reportBuilder.template(reportTemplateBuilder.build());
         BandBuilder bandBuilder = new BandBuilder();
-        ReportBand main= bandBuilder.name("Main").query("Main", "return [\n" +
+        ReportBand main = bandBuilder.name("Main").query("Main", "return [\n" +
                 "                              [\n" +
                 "                               'invoiceNumber':99987,\n" +
                 "                               'client' : 'Google Inc.',\n" +

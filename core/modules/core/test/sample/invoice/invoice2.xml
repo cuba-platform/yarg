@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<report name="report">
+    <templates>
+        <template code="DEFAULT" documentName="invoice.docx" documentPath="./modules/core/test/sample/invoice/invoice.docx" outputType="pdf" outputNamePattern="invoice.pdf"/>
+    </templates>
+    <formats>
+        <format name="Main.date" format="dd/MM/yyyy"/>
+        <format name="Main.signature" format="${html}"/>
+        <format name="Main.footer" format="${html}"/>
+    </formats>
+    <rootBand name="Root" orientation="H">
+        <bands>
+            <band name="Main" orientation="H">
+                <queries>
+                    <query name="Main" type="json">
+                        <script>
+                            parameter=param1 $.main
+                        </script>
+                    </query>
+                </queries>
+            </band>
+            <band name="Items" orientation="H">
+                <queries>
+                    <query name="Main" type="json">
+                        <script>
+                            parameter=param1 $.items
+                        </script>
+                    </query>
+                </queries>
+            </band>
+        </bands>
+        <queries/>
+    </rootBand>
+</report>

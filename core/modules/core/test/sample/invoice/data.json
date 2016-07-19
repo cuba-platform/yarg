@@ -1,0 +1,26 @@
+{
+  "main": {
+    "invoiceNumber": 99987,
+    "client": "Google Inc.",
+    "date": "2016-01-01",
+    "addLine1": "1600 Amphitheatre Pkwy",
+    "addLine2": "Mountain View, USA",
+    "addLine3": "CA 94043",
+    "signature": "<html><body><span style=\"color:red\">Mr. Yarg</span></body></html>",
+    "footer": "<html><body><span style=\"color:green;font-weight:bold;\">The invoice footer</span></body></html>"
+  },
+  "items": [
+    {
+      "name": "Java Concurrency in practice",
+      "price": 15000
+    },
+    {
+      "name": "Clear code",
+      "price": 13000
+    },
+    {
+      "name": "Scala in action",
+      "price": 12000
+    }
+  ]
+}  
