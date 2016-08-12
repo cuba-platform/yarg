@@ -32,7 +32,7 @@ public class ServicesTest {
 
         Connection connection = testDatabase.getDs().getConnection();
         try {
-            connection.createStatement().executeUpdate("create table service;");
+            connection.createStatement().executeUpdate("drop table service;");
         } catch (SQLException e) {
             //ignore
         }
