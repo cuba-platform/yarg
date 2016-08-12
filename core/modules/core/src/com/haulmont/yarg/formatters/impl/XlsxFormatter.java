@@ -15,7 +15,6 @@
  */
 
 /**
- *
  * @author degtyarjov
  * @version $Id$
  */
@@ -494,6 +493,10 @@ public class XlsxFormatter extends AbstractFormatter {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
 
+        if (isFirstLevelBand) {//we suppose that when we render HORIZONTAL first level band, it should not be any right offset
+            previousRangesRightOffset = 0;
+        }
+
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
         if (lastRenderedRange != null) {//this band has been already rendered at least once
             BandData lastRenderedBand = bandsForRanges.bandForResultRange(lastRenderedRange);
@@ -680,10 +683,11 @@ public class XlsxFormatter extends AbstractFormatter {
             CellReference tempRef = new CellReference(templateRange.getSheet(), templateCell);
             CellReference newRef = new CellReference(templateRange.getSheet(), newCell.getR());
             newRef.move(newRow.getR().intValue(), newRef.getColumn());
-            if (bandData.getOrientation() == BandOrientation.VERTICAL) {
-                newRef.shift(0, previousRangesRightOffset);
 
-            }
+            //if we have vertical band or horizontal band right after vertical band - it should be shifted
+            //only if there is vertical intersection with vertical band?
+            newRef.shift(0, previousRangesRightOffset);
+
             newCell.setR(newRef.toReference());
 
             newRow.getC().add(newCell);

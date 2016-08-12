@@ -1,5 +1,4 @@
 /**
- *
  * @author degtyarjov
  * @version $Id$
  */
@@ -20,6 +19,8 @@ import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.junit.Test;
 import org.xlsx4j.sml.Cell;
 import org.xlsx4j.sml.Row;
+import smoketest.ConstantMap;
+import smoketest.RandomMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -295,6 +296,64 @@ public class XlsxIntegrationTest {
         compareFiles("./result/integration/result-formulas.xlsx", "./modules/core/test/integration/etalon-formulas.xlsx");
     }
 
+    @Test
+    public void testXlsxHorizontalBandAfterVertical() throws Exception {
+        BandData root = new BandData(BandData.ROOT_BAND_NAME);
+
+        BandData horizontal11 = createBand("Horizontal", root, BandOrientation.HORIZONTAL);
+        BandData horizontal111 = createBand("Horizontal1", horizontal11, BandOrientation.HORIZONTAL);
+        BandData horizontal112 = createBand("Horizontal1", horizontal11, BandOrientation.HORIZONTAL);
+        BandData vertical11 = createBand("Vertical", horizontal11, BandOrientation.VERTICAL);
+        BandData vertical12 = createBand("Vertical", horizontal11, BandOrientation.VERTICAL);
+        BandData vertical13 = createBand("Vertical", horizontal11, BandOrientation.VERTICAL);
+        horizontal11.addChild(horizontal111);
+        horizontal11.addChild(horizontal112);
+        horizontal11.addChildren(Arrays.asList(vertical11, vertical12, vertical13));
+        BandData horizontal21 = createBand("Horizontal2", horizontal11, BandOrientation.HORIZONTAL);
+        BandData horizontal31 = createBand("Horizontal2", horizontal11, BandOrientation.HORIZONTAL);
+        BandData horizontal41 = createBand("Horizontal2", horizontal11, BandOrientation.HORIZONTAL);
+        BandData horizontal51 = createBand("Horizontal2", horizontal11, BandOrientation.HORIZONTAL);
+        horizontal11.addChildren(Arrays.asList(horizontal21, horizontal31, horizontal41, horizontal51));
+
+        BandData horizontal12 = createBand("Horizontal", root, BandOrientation.HORIZONTAL);
+        horizontal111 = createBand("Horizontal1", horizontal12, BandOrientation.HORIZONTAL);
+        horizontal112 = createBand("Horizontal1", horizontal12, BandOrientation.HORIZONTAL);
+        BandData vertical21 = createBand("Vertical", horizontal12, BandOrientation.VERTICAL);
+        BandData vertical22 = createBand("Vertical", horizontal12, BandOrientation.VERTICAL);
+        horizontal12.addChild(horizontal111);
+        horizontal12.addChild(horizontal112);
+        horizontal12.addChildren(Arrays.asList(vertical21, vertical22));
+        BandData horizontal22 = createBand("Horizontal2", horizontal12, BandOrientation.HORIZONTAL);
+        horizontal12.addChild(horizontal22);
+
+        BandData horizontal13 = createBand("Horizontal", root, BandOrientation.HORIZONTAL);
+        BandData vertical31 = createBand("Vertical", horizontal13, BandOrientation.VERTICAL);
+        BandData vertical32 = createBand("Vertical", horizontal13, BandOrientation.VERTICAL);
+        BandData vertical33 = createBand("Vertical", horizontal13, BandOrientation.VERTICAL);
+        horizontal13.addChildren(Arrays.asList(vertical31, vertical32, vertical33));
+        BandData horizontal23 = createBand("Horizontal2", horizontal13, BandOrientation.HORIZONTAL);
+        horizontal13.addChild(horizontal23);
+
+        root.addChildren(Arrays.asList(horizontal11, horizontal12, horizontal13));
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-horizontal-after-vertical.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/integration/test-horizontal-after-vertical.xlsx",
+                        "./modules/core/test/integration/test-horizontal-after-vertical.xlsx",
+                        ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+
+        compareFiles("./result/integration/result-horizontal-after-vertical.xlsx",
+                "./modules/core/test/integration/etalon-horizontal-after-vertical.xlsx");
+    }
+
+    private BandData createBand(String name, BandData root, BandOrientation horizontal) {
+        BandData hor11 = new BandData(name, root, horizontal);
+        hor11.setData(new ConstantMap(name));
+        return hor11;
+    }
 
     private BandData createBand(String name, int multiplier, BandData root, BandOrientation childOrient) {
         BandData band1_1 = new BandData(name, root, BandOrientation.HORIZONTAL);
