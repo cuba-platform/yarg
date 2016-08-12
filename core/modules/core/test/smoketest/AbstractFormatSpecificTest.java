@@ -20,7 +20,7 @@ public abstract class AbstractFormatSpecificTest {
 
     public AbstractFormatSpecificTest() {
         if (StringUtils.isBlank(openOfficePath)) {
-            openOfficePath = "C:/Program Files (x86)/OpenOffice 4/program";
+            openOfficePath = "C:/Program Files (x86)/LibreOffice 5/program";
         }
     }
 
