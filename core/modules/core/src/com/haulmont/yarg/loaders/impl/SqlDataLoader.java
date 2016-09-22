@@ -60,7 +60,6 @@ public class SqlDataLoader extends AbstractDbDataLoader {
             return Collections.emptyList();
         }
 
-        QueryRunner runner = new QueryRunner(dataSource);
         try {
             final QueryPack pack = prepareQuery(query, parentBand, params);
 
@@ -74,7 +73,7 @@ public class SqlDataLoader extends AbstractDbDataLoader {
                 }
             }
 
-            resList = runner.query(pack.getQuery(), resultingParams.toArray(), new ResultSetHandler<List>() {
+            resList = runQuery(reportQuery, pack.getQuery(), resultingParams.toArray(), new ResultSetHandler<List>() {
                 @Override
                 public List handle(ResultSet rs) throws SQLException {
                     List<Object[]> resList = new ArrayList<Object[]>();
@@ -112,6 +111,11 @@ public class SqlDataLoader extends AbstractDbDataLoader {
         }
 
         return fillOutputData(resList, outputValues);
+    }
+
+    protected List runQuery(ReportQuery reportQuery, String queryString, Object[] params, ResultSetHandler<List> handler) throws SQLException {
+        QueryRunner runner = new QueryRunner(getDataSource());
+        return runner.query(queryString, params, handler);
     }
 
     public DataSource getDataSource() {
