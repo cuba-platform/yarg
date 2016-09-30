@@ -10,10 +10,7 @@ import org.docx4j.wml.Text;
 import org.docx4j.wml.Tr;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -23,7 +20,7 @@ import java.util.regex.Matcher;
 public class TableCollector extends TraversalUtil.CallbackImpl {
     private DocxFormatterDelegate docxFormatter;
     protected Stack<TableManager> currentTables = new Stack<TableManager>();
-    protected Set<TableManager> tableManagers = new HashSet<TableManager>();
+    protected Set<TableManager> tableManagers = new LinkedHashSet<TableManager>();
     protected boolean skipCurrentTable = false;
 
     public TableCollector(DocxFormatterDelegate docxFormatter) {this.docxFormatter = docxFormatter;}
