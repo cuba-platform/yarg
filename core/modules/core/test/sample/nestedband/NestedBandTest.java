@@ -51,7 +51,7 @@ public class NestedBandTest {
     }
 
     @Test
-    public void testInvoiceReportRaw() throws Exception {
+    public void testNestedBandRaw() throws Exception {
         ReportBuilder reportBuilder = new ReportBuilder();
         ReportTemplateBuilder reportTemplateBuilder = new ReportTemplateBuilder()
                 .documentPath("./modules/core/test/sample/nestedband/template.docx")

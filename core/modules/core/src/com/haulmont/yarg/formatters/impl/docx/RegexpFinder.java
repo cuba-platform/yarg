@@ -43,7 +43,9 @@ public class RegexpFinder<T> extends TraversalUtil.CallbackImpl {
     }
 
     protected void onFind(T o, Matcher matcher) {
-        value = matcher.group(0);
+        if (value == null) {//todo eude : need stop traversing, not only avoid further collection
+            value = matcher.group(0);
+        }
     }
 
     public String getValue() {

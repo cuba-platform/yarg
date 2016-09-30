@@ -3,6 +3,7 @@ package smoketest;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
+import com.haulmont.yarg.formatters.impl.DocxFormatter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -39,7 +40,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     }
 
     @Test
-    public void testEmbeddedTables() throws Exception {
+    public void testControlTables1() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<String, Object>();
         root.setData(rootData);
@@ -48,9 +49,9 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         band1.setData(new RandomMap());
         root.addChild(band1);
 
-        FileOutputStream outputStream = new FileOutputStream("./result/smoke/embedded-table-hide.docx");
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/control-table-hide.docx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/embedded-table.docx", "./modules/core/test/smoketest/embedded-table.docx",
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/control-tables-1.docx", "./modules/core/test/smoketest/control-tables-1.docx",
                         ReportOutputType.docx), outputStream));
         formatter.renderDocument();
         IOUtils.closeQuietly(outputStream);
@@ -59,13 +60,44 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         control.setData(new RandomMap());
         root.addChild(control);
 
-        outputStream = new FileOutputStream("./result/smoke/embedded-table-show.docx");
+        outputStream = new FileOutputStream("./result/smoke/control-table-show.docx");
         formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
-                new ReportTemplateImpl("", "./modules/core/test/smoketest/embedded-table.docx", "./modules/core/test/smoketest/embedded-table.docx",
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/control-tables-1.docx", "./modules/core/test/smoketest/control-tables-1.docx",
                         ReportOutputType.docx), outputStream));
         formatter.renderDocument();
         IOUtils.closeQuietly(outputStream);
 
+    }
+
+    @Test
+    public void testControlTables2() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData mainControl = band("MainControl", root);
+        BandData portfolio = band("Portfolio", root);
+        BandData participationsControl = band("ParticipationsControl", root);
+        BandData participations = band("Participations", root);
+        BandData priorLearningPlaces = band("PriorLearningPlaces", root);//the table should be hidden
+        BandData projectActivitiesControl = band("ProjectActivitiesControl", root);
+        BandData projectActivities = band("ProjectActivities", root);
+        BandData additionalEducations = band("AdditionalEducations", root);//the table should be hidden
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/control-tables-2.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/control-tables-2.docx", "./modules/core/test/smoketest/control-tables-2.docx",
+                        ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+        IOUtils.closeQuietly(outputStream);
+
+    }
+
+    private BandData band(String name, BandData root) {
+        BandData band1 = new BandData(name, root, BandOrientation.HORIZONTAL);
+        band1.setData(new RandomMap());
+        root.addChild(band1);
+        return band1;
     }
 
     @Test

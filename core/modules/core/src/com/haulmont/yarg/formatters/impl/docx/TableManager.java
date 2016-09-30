@@ -74,4 +74,17 @@ public class TableManager {
     public String getBandName() {
         return bandName;
     }
+
+    /**
+     * Control table is a specific concept which allows to show or hide parts of document
+     * depending on the control table's band values.
+     *
+     * Control table's band usually has 1 record or none.
+     *
+     * @return
+     */
+    public boolean isControlTable() {
+        //todo eude - try to detect control tables more conveniently
+        return getRowWithAliases() != null && getFirstRow().equals(getRowWithAliases());
+    }
 }

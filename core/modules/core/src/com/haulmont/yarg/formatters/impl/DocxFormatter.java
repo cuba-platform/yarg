@@ -146,11 +146,18 @@ public class DocxFormatter extends AbstractFormatter {
             Tr rowWithAliases = resultingTable.getRowWithAliases();
             if (rowWithAliases != null) {
                 List<BandData> bands = rootBand.findBandsRecursively(resultingTable.getBandName());
-                for (final BandData band : bands) {
-                    Tr newRow = resultingTable.copyRow(rowWithAliases);
-                    resultingTable.fillRowFromBand(newRow, band);
+
+                if (bands.size() > 1) {
+                    for (final BandData band : bands) {
+                        Tr newRow = resultingTable.copyRow(rowWithAliases);
+                        resultingTable.fillRowFromBand(newRow, band);
+                    }
+                    resultingTable.getTable().getContent().remove(rowWithAliases);
+                } else if (bands.size() == 1) {
+                    resultingTable.fillRowFromBand(rowWithAliases, bands.get(0));
+                } else if (resultingTable.isControlTable()) {
+                    resultingTable.getTable().getContent().clear();
                 }
-                resultingTable.getTable().getContent().remove(rowWithAliases);
             }
         }
     }
