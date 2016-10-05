@@ -3,7 +3,6 @@ package smoketest;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
-import com.haulmont.yarg.formatters.impl.DocxFormatter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -76,13 +75,13 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         root.setData(rootData);
 
         BandData mainControl = band("MainControl", root);
-        BandData portfolio = band("Portfolio", root);
+        BandData portfolio = randomBand("Portfolio", root);
         BandData participationsControl = band("ParticipationsControl", root);
-        BandData participations = band("Participations", root);
-        BandData priorLearningPlaces = band("PriorLearningPlaces", root);//the table should be hidden
+        BandData participations = randomBand("Participations", root);
+        BandData priorLearningPlaces = randomBand("PriorLearningPlaces", root);//the table should be hidden
         BandData projectActivitiesControl = band("ProjectActivitiesControl", root);
-        BandData projectActivities = band("ProjectActivities", root);
-        BandData additionalEducations = band("AdditionalEducations", root);//the table should be hidden
+        BandData projectActivities = randomBand("ProjectActivities", root);
+        BandData additionalEducations = randomBand("AdditionalEducations", root);//the table should be hidden
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/control-tables-2.docx");
         ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
@@ -93,9 +92,16 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
 
     }
 
-    private BandData band(String name, BandData root) {
+    private BandData randomBand(String name, BandData root) {
         BandData band1 = new BandData(name, root, BandOrientation.HORIZONTAL);
         band1.setData(new RandomMap());
+        root.addChild(band1);
+        return band1;
+    }
+
+    private BandData band(String name, BandData root) {
+        BandData band1 = new BandData(name, root, BandOrientation.HORIZONTAL);
+        band1.setData(new HashMap<String, Object>());
         root.addChild(band1);
         return band1;
     }

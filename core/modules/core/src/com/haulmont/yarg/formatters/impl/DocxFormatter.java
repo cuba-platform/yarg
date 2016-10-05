@@ -155,8 +155,12 @@ public class DocxFormatter extends AbstractFormatter {
                     resultingTable.getTable().getContent().remove(rowWithAliases);
                 } else if (bands.size() == 1) {
                     resultingTable.fillRowFromBand(rowWithAliases, bands.get(0));
-                } else if (resultingTable.isControlTable()) {
-                    resultingTable.getTable().getContent().clear();
+                } else if (bands.size() == 0) {
+                    if (resultingTable.noHeader()) {
+                        resultingTable.getTable().getContent().clear();
+                    } else {
+                        resultingTable.getTable().getContent().remove(rowWithAliases);
+                    }
                 }
             }
         }

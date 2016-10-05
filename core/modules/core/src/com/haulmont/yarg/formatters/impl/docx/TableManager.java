@@ -1,5 +1,6 @@
 package com.haulmont.yarg.formatters.impl.docx;
 
+import com.haulmont.yarg.formatters.impl.AbstractFormatter;
 import com.haulmont.yarg.formatters.impl.DocxFormatterDelegate;
 import com.haulmont.yarg.structure.BandData;
 import org.docx4j.TraversalUtil;
@@ -8,17 +9,21 @@ import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.Tr;
 
+import java.util.regex.Matcher;
+
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 /**
-* @author degtyarjov
-* @version $Id$
-*/
+ * @author degtyarjov
+ * @version $Id$
+ */
 public class TableManager {
-    private DocxFormatterDelegate docxFormatter;
+    public final AliasVisitor INVARIANTS_SETTER;
+    protected DocxFormatterDelegate docxFormatter;
     protected Tbl table;
     protected Tr firstRow = null;
     protected Tr rowWithAliases = null;
     protected String bandName = null;
-    public final AliasVisitor INVARIANTS_SETTER;
 
     TableManager(DocxFormatterDelegate docxFormatter, Tbl tbl) {
         this.docxFormatter = docxFormatter;
@@ -52,9 +57,28 @@ public class TableManager {
                     if (docxFormatter.tryToApplyInliners(fullParameterName, parameterValue, text)) return;
                 }
 
-                String resultString = docxFormatter.insertBandDataToString(band, textValue);
-                text.setValue(resultString);
+
+                //todo eude the following logic is not full and ignores situation when in 1 text we have both table and not table aliases
+                boolean hasTableAliases = false;
+                Matcher matcher = AbstractFormatter.UNIVERSAL_ALIAS_PATTERN.matcher(textValue);
+                while(matcher.find()) {
+                    AbstractFormatter.BandPathAndParameterName bandAndParameter = docxFormatter.separateBandNameAndParameterName(matcher.group(1));
+                    if (isBlank(bandAndParameter.getBandPath()) || isBlank(bandAndParameter.getParameterName())) {
+                        hasTableAliases = true;
+                    }
+                }
+
+                if (hasTableAliases) {
+                    String resultString = docxFormatter.insertBandDataToString(band, textValue);
+                    text.setValue(resultString);
+                }
                 text.setSpace("preserve");
+            }
+
+            @Override
+            public boolean shouldTraverse(Object o) {
+                //ignore nested tables in control bands
+                return controlTable() ? !(o instanceof Tbl) : super.shouldTraverse(o);
             }
         });
     }
@@ -78,13 +102,16 @@ public class TableManager {
     /**
      * Control table is a specific concept which allows to show or hide parts of document
      * depending on the control table's band values.
-     *
      * Control table's band usually has 1 record or none.
      *
      * @return
      */
-    public boolean isControlTable() {
+    public boolean controlTable() {
         //todo eude - try to detect control tables more conveniently
+        return bandName.endsWith("Control") && noHeader();
+    }
+
+    public boolean noHeader() {
         return getRowWithAliases() != null && getFirstRow().equals(getRowWithAliases());
     }
 }
