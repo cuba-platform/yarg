@@ -61,6 +61,9 @@ public class SqlDataLoader extends AbstractDbDataLoader {
         }
 
         try {
+            if (Boolean.TRUE.equals(reportQuery.getProcessTemplate())) {
+                query = processQueryTemplate(query, parentBand, params);
+            }
             final QueryPack pack = prepareQuery(query, parentBand, params);
 
             ArrayList<Object> resultingParams = new ArrayList<Object>();
@@ -106,6 +109,8 @@ public class SqlDataLoader extends AbstractDbDataLoader {
                     }
                 }
             });
+        } catch (DataLoadingException e) {
+            throw e;
         } catch (Throwable e) {
             throw new DataLoadingException(String.format("An error occurred while loading data for data set [%s]", reportQuery.getName()), e);
         }

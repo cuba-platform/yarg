@@ -84,6 +84,33 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
+    public void testTemplate() throws Exception {
+        String query = "select id as id from user where <% if (id != null) {%>id = \\${id}<%} else {%>id is null<%}%>";
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("id", "id");
+        String newQuery = processQueryTemplate(query, null, params);
+        Assert.assertEquals("select id as id from user where id = ${id}", newQuery);
+
+        params.put("id", null);
+        newQuery = processQueryTemplate(query, null, params);
+        Assert.assertEquals("select id as id from user where id is null", newQuery);
+
+        query = "select id as id from user where <% if (Root.name != null) {%>id = \\${id}<%} else {%>id is null<%}%>";
+        BandData parentBand = new BandData("Root");
+        Map<String, Object> bandData = new HashMap<String, Object>();
+        parentBand.setData(bandData);
+        bandData.put("name", "name");
+
+        newQuery = processQueryTemplate(query, parentBand, params);
+        Assert.assertEquals("select id as id from user where id = ${id}", newQuery);
+
+        bandData.put("name", null);
+        newQuery = processQueryTemplate(query, parentBand, params);
+        Assert.assertEquals("select id as id from user where id is null", newQuery);
+    }
+
+    @Test
     public void testParamReordering2() throws Exception {
         String query = "select \n" +
                 "u.id as initiatorId,\n" +

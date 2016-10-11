@@ -44,5 +44,7 @@ public interface ReportQuery extends Serializable {
      */
     String getLoaderType();
 
+    Boolean getProcessTemplate();
+
     Map<String, Object> getAdditionalParams();
 }

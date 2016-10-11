@@ -36,14 +36,21 @@ public class ReportQueryImpl implements ReportQuery {
 
     protected String loaderType;
 
+    protected Boolean processTemplate;
+
     protected Map<String, Object> additionalParams = Collections.emptyMap();
 
     public ReportQueryImpl(String name, String script, String loaderType, String linkParameterName, Map<String, Object> additionalParams) {
+        this(name, script, loaderType, linkParameterName, additionalParams, false);
+    }
+
+    public ReportQueryImpl(String name, String script, String loaderType, String linkParameterName, Map<String, Object> additionalParams, boolean processTemplate) {
         this.name = name;
         this.script = script;
         this.loaderType = loaderType;
         this.additionalParams = additionalParams;
         this.linkParameterName = linkParameterName;
+        this.processTemplate = processTemplate;
         validate();
     }
 
@@ -67,6 +74,11 @@ public class ReportQueryImpl implements ReportQuery {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public Boolean getProcessTemplate() {
+        return processTemplate;
     }
 
     public String getLinkParameterName() {

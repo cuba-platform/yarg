@@ -18,8 +18,11 @@ package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.structure.BandData;
+import groovy.text.GStringTemplateEngine;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.IOException;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -155,6 +158,25 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
         }
 
         return new QueryPack(query.trim().replaceAll(" +", " "), queryParameters.toArray(new QueryParameter[queryParameters.size()]));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected String processQueryTemplate(String query, BandData parentBand, Map<String, Object> reportParams) {
+        try {
+            GStringTemplateEngine engine = new GStringTemplateEngine();
+             Map bindings = new HashMap();
+            if (reportParams != null) {
+                bindings.putAll(reportParams);
+            }
+            if (parentBand != null && parentBand.getData() != null) {
+                bindings.put(parentBand.getName(), parentBand.getData());
+            }
+            return engine.createTemplate(query).make(bindings).toString();
+        } catch (ClassNotFoundException e) {
+            throw new DataLoadingException(String.format("An error occurred while loading processing query template [%s]", query), e);
+        } catch (IOException e) {
+            throw new DataLoadingException(String.format("An error occurred while loading processing query template [%s]", query), e);
+        }
     }
 
     protected HashSet<String> findParameterNames(String query) {
