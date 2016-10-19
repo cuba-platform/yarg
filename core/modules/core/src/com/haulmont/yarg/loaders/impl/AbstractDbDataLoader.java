@@ -22,7 +22,6 @@ import groovy.text.GStringTemplateEngine;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -164,12 +163,15 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
     protected String processQueryTemplate(String query, BandData parentBand, Map<String, Object> reportParams) {
         try {
             GStringTemplateEngine engine = new GStringTemplateEngine();
-             Map bindings = new HashMap();
+            Map bindings = new HashMap();
             if (reportParams != null) {
                 bindings.putAll(reportParams);
             }
-            if (parentBand != null && parentBand.getData() != null) {
-                bindings.put(parentBand.getName(), parentBand.getData());
+            while (parentBand != null) {
+                if (parentBand.getData() != null) {
+                    bindings.put(parentBand.getName(), parentBand.getData());
+                }
+                parentBand = parentBand.getParentBand();
             }
             return engine.createTemplate(query).make(bindings).toString();
         } catch (ClassNotFoundException e) {
