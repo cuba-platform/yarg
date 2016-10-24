@@ -251,6 +251,10 @@ configure(core) {
 
     mainClassName = "com.haulmont.yarg.console.ConsoleRunner"
 
+    configurations.archives.artifacts.removeAll {
+        it.file =~ 'tar' || it.file =~ 'zip'
+    }
+
     startScripts << {
         copy {
             from "reporting.properties"
