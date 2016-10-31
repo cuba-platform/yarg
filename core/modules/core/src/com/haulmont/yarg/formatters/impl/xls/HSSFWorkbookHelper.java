@@ -21,6 +21,7 @@
  */
 package com.haulmont.yarg.formatters.impl.xls;
 
+import com.haulmont.yarg.formatters.impl.xls.caches.XslStyleHelper;
 import org.apache.poi.hssf.record.ExtendedFormatRecord;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -88,7 +89,7 @@ public class HSSFWorkbookHelper {
 
     public static HSSFCellStyle adoptDetachedCellStyle(HSSFWorkbook workbook, HSSFCellStyle detachedCellStyle) {
         HSSFCellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.cloneStyleRelationsFrom(detachedCellStyle);
+        XslStyleHelper.cloneStyleRelations(detachedCellStyle, cellStyle);
         return cellStyle;
     }
 }

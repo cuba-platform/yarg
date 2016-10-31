@@ -16,6 +16,7 @@
 
 package com.haulmont.yarg.formatters.impl.xls.caches;
 
+import org.apache.poi.hssf.record.ExtendedFormatRecord;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 
 import java.io.Serializable;
@@ -29,21 +30,43 @@ public class HSSFStyleCacheKey implements Serializable {
     private static final long serialVersionUID = 3327348050407288508L;
 
     protected final HSSFCellStyle style;
+    protected final ExtendedFormatRecord format;
 
     public HSSFStyleCacheKey(HSSFCellStyle style) {
         this.style = style;
+        if (style != null) {
+            this.format = XslStyleHelper.getFormatFromStyle(style);
+        } else {
+            this.format = null;
+        }
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof HSSFStyleCacheKey)
-            return style.formatEquals(((HSSFStyleCacheKey) obj).style);
-        else
+        if (obj instanceof HSSFStyleCacheKey) {
+            HSSFStyleCacheKey objKey = (HSSFStyleCacheKey) obj;
+            HSSFCellStyle objStyle = objKey.style;
+            if (style == objStyle) {
+                return true;
+            }
+            if (objStyle == null) {
+                return false;
+            }
+            if (format == null) {
+                if (objKey.format != null) {
+                    return false;
+                }
+            } else if (!format.equals(objKey.format)) {
+                return false;
+            }
+            return true;
+        } else {
             return false;
+        }
     }
 
     @Override
     public int hashCode() {
-        return style.formatHashCode();
+        return format == null ? 0 : format.hashCode();
     }
 }

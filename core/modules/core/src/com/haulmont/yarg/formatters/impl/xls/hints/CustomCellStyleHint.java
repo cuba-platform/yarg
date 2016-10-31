@@ -19,6 +19,7 @@ package com.haulmont.yarg.formatters.impl.xls.hints;
 import com.haulmont.yarg.formatters.impl.xls.HSSFWorkbookHelper;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
+import com.haulmont.yarg.formatters.impl.xls.caches.XslStyleHelper;
 import com.haulmont.yarg.structure.BandData;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.DataFormat;
@@ -192,7 +193,7 @@ public class CustomCellStyleHint extends AbstractHint {
             if (leftCellStyle.getBorderRight() != cellStyle.getBorderLeft() ||
                     leftCellStyle.getRightBorderColor() != cellStyle.getLeftBorderColor()) {
                 HSSFCellStyle draftLeftStyle = HSSFWorkbookHelper.createDetachedCellStyle(sheet.getWorkbook());
-                draftLeftStyle.cloneStyleRelationsFrom(leftCellStyle);
+                XslStyleHelper.cloneStyleRelations(leftCellStyle, draftLeftStyle);
                 draftLeftStyle.setBorderRight(cellStyle.getBorderLeft());
                 draftLeftStyle.setRightBorderColor(cellStyle.getLeftBorderColor());
                 HSSFCellStyle newLeftStyle = styleCache.getCellStyleByTemplate(draftLeftStyle);
@@ -232,7 +233,7 @@ public class CustomCellStyleHint extends AbstractHint {
             if (rightCellStyle.getBorderLeft() != cellStyle.getBorderRight() ||
                     rightCellStyle.getLeftBorderColor() != cellStyle.getRightBorderColor()) {
                 HSSFCellStyle draftRightStyle = HSSFWorkbookHelper.createDetachedCellStyle(sheet.getWorkbook());
-                draftRightStyle.cloneStyleRelationsFrom(rightCellStyle);
+                XslStyleHelper.cloneStyleRelations(rightCellStyle, draftRightStyle);
                 draftRightStyle.setBorderLeft(cellStyle.getBorderRight());
                 draftRightStyle.setLeftBorderColor(cellStyle.getRightBorderColor());
 
@@ -275,7 +276,7 @@ public class CustomCellStyleHint extends AbstractHint {
             if (upCellStyle.getBorderBottom() != cellStyle.getBorderTop() ||
                     upCellStyle.getBottomBorderColor() != cellStyle.getTopBorderColor()) {
                 HSSFCellStyle draftUpStyle = HSSFWorkbookHelper.createDetachedCellStyle(sheet.getWorkbook());
-                draftUpStyle.cloneStyleRelationsFrom(upCellStyle);
+                XslStyleHelper.cloneStyleRelations(upCellStyle, draftUpStyle);
                 draftUpStyle.setBorderBottom(cellStyle.getBorderTop());
                 draftUpStyle.setBottomBorderColor(cellStyle.getTopBorderColor());
 
@@ -320,7 +321,7 @@ public class CustomCellStyleHint extends AbstractHint {
                 if (downCellStyle.getBorderTop() != cellStyle.getBorderBottom() ||
                         downCellStyle.getTopBorderColor() != cellStyle.getBottomBorderColor()) {
                     HSSFCellStyle draftDownStyle = HSSFWorkbookHelper.createDetachedCellStyle(sheet.getWorkbook());
-                    draftDownStyle.cloneStyleRelationsFrom(downCellStyle);
+                    XslStyleHelper.cloneStyleRelations(downCellStyle, draftDownStyle);
                     draftDownStyle.setBorderTop(cellStyle.getBorderBottom());
                     draftDownStyle.setTopBorderColor(cellStyle.getBottomBorderColor());
 

@@ -221,7 +221,7 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile(group: 'com.haulmont.thirdparty', name: 'poi', version: '3.9.20130515')
+        compile(group: 'org.apache.poi', name: 'poi', version: '3.15')
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }

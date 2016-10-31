@@ -19,6 +19,7 @@ import com.haulmont.yarg.exception.ReportingException;
 import org.apache.poi.hssf.usermodel.HSSFName;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 
@@ -54,7 +55,7 @@ public final class HSSFRangeHelper {
         if (rangeNameIdx == -1) return null;
 
         HSSFName aNamedRange = workbook.getNameAt(rangeNameIdx);
-        return new AreaReference(aNamedRange.getReference());
+        return new AreaReference(aNamedRange.getRefersToFormula(), SpreadsheetVersion.EXCEL97);
     }
 
     public static HSSFSheet getTemplateSheetForRangeName(HSSFWorkbook workbook, String rangeName) {

@@ -27,6 +27,7 @@ import com.haulmont.yarg.formatters.impl.xls.Cell;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsFontCache;
 import com.haulmont.yarg.formatters.impl.xls.caches.XlsStyleCache;
+import com.haulmont.yarg.formatters.impl.xls.caches.XslStyleHelper;
 import com.haulmont.yarg.formatters.impl.xls.hints.*;
 import com.haulmont.yarg.formatters.impl.xlsx.Range;
 import com.haulmont.yarg.structure.BandData;
@@ -751,13 +752,13 @@ public class XLSFormatter extends AbstractFormatter {
         if (style == null) {
             HSSFCellStyle newStyle = resultWorkbook.createCellStyle();
 
-            newStyle.cloneStyleRelationsFrom(templateStyle);
+            XslStyleHelper.cloneStyleRelations(templateStyle, newStyle);
             HSSFFont templateFont = templateStyle.getFont(templateWorkbook);
             HSSFFont font = fontCache.getFontByTemplate(templateFont);
             if (font != null)
                 newStyle.setFont(font);
             else {
-                newStyle.cloneFontFrom(templateStyle);
+                XslStyleHelper.cloneFont(templateStyle, newStyle);
                 fontCache.addCachedFont(templateFont, newStyle.getFont(resultWorkbook));
             }
             styleCache.addCachedStyle(templateStyle, newStyle);
