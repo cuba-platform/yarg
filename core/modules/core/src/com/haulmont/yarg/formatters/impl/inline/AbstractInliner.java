@@ -44,6 +44,7 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.ImageUtils;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.dml.*;
 import org.docx4j.dml.spreadsheetdrawing.*;
@@ -67,6 +68,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
+import static org.apache.poi.util.Units.EMU_PER_PIXEL;
 
 public abstract class AbstractInliner implements ContentInliner {
     private static final String TEXT_GRAPHIC_OBJECT = "com.sun.star.text.TextGraphicObject";
@@ -199,7 +201,6 @@ public abstract class AbstractInliner implements ContentInliner {
         try {
             Image image = new Image(paramValue, paramsMatcher);
             if (image.isValid()) {
-                resultCell.getRow().setHeightInPoints(image.height);
                 HSSFSheet sheet = resultCell.getSheet();
                 HSSFWorkbook workbook = sheet.getWorkbook();
 
@@ -215,9 +216,10 @@ public abstract class AbstractInliner implements ContentInliner {
                     throw new IllegalArgumentException(String.format("No HSSFPatriarch object provided. Charts on this sheet could cause this effect. Please check sheet %s", resultCell.getSheet().getSheetName()));
                 }
                 HSSFPicture picture = patriarch.createPicture(anchor, pictureIdx);
-                Dimension imageDimension = picture.getImageDimension();
-                double actualHeight = imageDimension.getHeight();
-                picture.resize((double) image.height / actualHeight);
+                Dimension size = ImageUtils.getDimensionFromAnchor(picture);
+                double actualHeight = size.getHeight() / EMU_PER_PIXEL;
+                double actualWidth = size.getWidth() / EMU_PER_PIXEL;
+                picture.resize((double) image.width / actualWidth, (double) image.height / actualHeight);
             }
         } catch (IllegalArgumentException e) {
             throw new ReportFormattingException("An error occurred while inserting bitmap to xls file", e);
