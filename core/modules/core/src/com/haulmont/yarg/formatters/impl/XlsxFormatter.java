@@ -20,6 +20,8 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
@@ -614,6 +616,8 @@ public class XlsxFormatter extends AbstractFormatter {
                                                        Map<CellReference, Cell> cellsForOneRowRange,
                                                        List<Cell> templateCells) {
         if (oneRowRange.toCellReferences().size() != templateCells.size()) {
+            final HashBiMap<CellReference, Cell> referencesToCells = HashBiMap.create(cellsForOneRowRange);
+
             for (CellReference cellReference : oneRowRange.toCellReferences()) {
                 if (!cellsForOneRowRange.containsKey(cellReference)) {
                     Cell newCell = Context.getsmlObjectFactory().createCell();
@@ -621,13 +625,16 @@ public class XlsxFormatter extends AbstractFormatter {
                     newCell.setT(STCellType.STR);
                     newCell.setR(cellReference.toReference());
                     templateCells.add(newCell);
+                    referencesToCells.put(cellReference, newCell);
                 }
             }
 
             Collections.sort(templateCells, new Comparator<Cell>() {
                 @Override
                 public int compare(Cell o1, Cell o2) {
-                    return o1.getR().compareTo(o2.getR());
+                    CellReference cellReference1 = referencesToCells.inverse().get(o1);
+                    CellReference cellReference2 = referencesToCells.inverse().get(o2);
+                    return cellReference1.compareTo(cellReference2);
                 }
             });
         }

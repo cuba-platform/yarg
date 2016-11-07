@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -113,6 +114,59 @@ public class XlsxSpecificTest extends AbstractFormatSpecificTest{
         defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./modules/core/test/smoketest/print-spaces.xlsx", "./modules/core/test/smoketest/print-spaces.xlsx", ReportOutputType.pdf), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    //todo eude move to integration tests
+    @Test
+    public void testLongColumnXlsxWithAggregatedFormulas() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData header = new BandData("header", root, BandOrientation.HORIZONTAL);
+        header.setData(new RandomMap());
+
+        BandData project1 = new BandData("project", root, BandOrientation.HORIZONTAL);
+        project1.setData(new RandomMap(10));
+
+        BandData project2 = new BandData("project", root, BandOrientation.HORIZONTAL);
+        project2.setData(new RandomMap(10));
+
+        BandData project3 = new BandData("project", root, BandOrientation.HORIZONTAL);
+        project3.setData(new RandomMap(10));
+
+        BandData time11 = new BandData("time", project1, BandOrientation.HORIZONTAL);
+        time11.setData(new RandomMap(10));
+        BandData time12 = new BandData("time", project1, BandOrientation.HORIZONTAL);
+        time12.setData(new RandomMap(10));
+        project1.addChild(time11);
+        project1.addChild(time12);
+
+        BandData time21 = new BandData("time", project2, BandOrientation.HORIZONTAL);
+        time21.setData(new RandomMap(10));
+        BandData time22 = new BandData("time", project2, BandOrientation.HORIZONTAL);
+        time22.setData(new RandomMap(10));
+        project2.addChild(time21);
+        project2.addChild(time22);
+
+        BandData time31 = new BandData("time", project3, BandOrientation.HORIZONTAL);
+        time31.setData(new RandomMap(10));
+        BandData time32 = new BandData("time", project3, BandOrientation.HORIZONTAL);
+        time32.setData(new RandomMap(10));
+        project3.addChild(time31);
+        project3.addChild(time32);
+
+        root.addChild(header);
+        root.addChild(project1);
+        root.addChild(project2);
+        root.addChild(project3);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/longColumnXlsxWithAggregatedFormulas.xlsx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/longColumnXlsxWithAggregatedFormulas.xlsx", "./modules/core/test/smoketest/longColumnXlsxWithAggregatedFormulas.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

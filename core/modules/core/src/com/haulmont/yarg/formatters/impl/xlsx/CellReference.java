@@ -15,18 +15,18 @@
  */
 
 /**
- *
  * @author degtyarjov
  * @version $Id$
  */
 package com.haulmont.yarg.formatters.impl.xlsx;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.xlsx4j.sml.Cell;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CellReference {
+public class CellReference implements Comparable {
     public static final Pattern CELL_COORDINATES_PATTERN = Pattern.compile("([A-z]+)([0-9]+)");
     private int column;
     private int row;
@@ -101,5 +101,17 @@ public class CellReference {
         result = 31 * result + row;
         result = 31 * result + (sheet != null ? sheet.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof CellReference) {
+            int rows = ObjectUtils.compare(row, ((CellReference) o).row);
+            int columns = ObjectUtils.compare(column, ((CellReference) o).column);
+            return rows != 0 ? rows : columns;
+
+        } else {
+            throw new IllegalArgumentException("Could not compare with " + o);
+        }
     }
 }
