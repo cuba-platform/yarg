@@ -43,8 +43,8 @@ public class BookStore2Test {
                 //ignore
             }
 
-            connection.createStatement().executeUpdate("create table store (id integer, name varchar, address varchar);");
-            connection.createStatement().executeUpdate("create table book(id integer, name varchar, author varchar, price decimal, store_id integer);");
+            connection.createStatement().executeUpdate("create table store (id integer, name varchar(200), address varchar(200));");
+            connection.createStatement().executeUpdate("create table book(id integer, name varchar(200), author varchar(200), price decimal, store_id integer);");
 
             connection.createStatement().executeUpdate("insert into store values(1, 'Main store', 'Some street');");
             connection.createStatement().executeUpdate("insert into store values(2, 'Secondary store', 'Another street');");

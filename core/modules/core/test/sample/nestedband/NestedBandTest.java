@@ -42,7 +42,7 @@ public class NestedBandTest {
             //ignore
         }
 
-        connection.createStatement().executeUpdate("create table items (id integer, number integer, barcode varchar);");
+        connection.createStatement().executeUpdate("create table items (id integer, number integer, barcode varchar(10));");
 
         connection.createStatement().executeUpdate("insert into items values(1, 1, '12345678');");
 

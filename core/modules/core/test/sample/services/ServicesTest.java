@@ -41,8 +41,8 @@ public class ServicesTest {
                 //ignore
             }
 
-            connection.createStatement().executeUpdate("create table service (name varchar);");
-            connection.createStatement().executeUpdate("create table sold_item (service varchar, client varchar, volume integer, price decimal);");
+            connection.createStatement().executeUpdate("create table service (name varchar(50));");
+            connection.createStatement().executeUpdate("create table sold_item (service varchar(50), client varchar(50), volume integer, price decimal);");
 
             connection.createStatement().executeUpdate("insert into service values('IT Support');");
             connection.createStatement().executeUpdate("insert into service values('Technical support');");

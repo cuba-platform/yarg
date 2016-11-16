@@ -41,8 +41,8 @@ public class BreakdownTest {
                 //ignore
             }
 
-            connection.createStatement().executeUpdate("create table month_batch (month varchar);");
-            connection.createStatement().executeUpdate("create table sold_item (month varchar, name varchar, price decimal);");
+            connection.createStatement().executeUpdate("create table month_batch (month varchar(10));");
+            connection.createStatement().executeUpdate("create table sold_item (month varchar(10), name varchar(100), price decimal);");
 
             connection.createStatement().executeUpdate("insert into month_batch  values('Jan');");
             connection.createStatement().executeUpdate("insert into month_batch  values('Feb');");
