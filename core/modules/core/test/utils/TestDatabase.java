@@ -42,7 +42,7 @@ public class TestDatabase {
 
     public void stop() {
         try {
-            hsqlServer.shutdownCatalogs(org.hsqldb.Database.CLOSEMODE_NORMAL);
+            hsqlServer.shutdown();
         } catch (Exception e) {
             //ignore
         }
