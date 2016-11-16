@@ -10,11 +10,8 @@ import java.util.*;
 
 /**
  * @author degtyarjov
- * @version $Id$
  */
-
 public class SqlLoaderTest {
-
     @Test
     public void testListParameter() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
@@ -39,7 +36,6 @@ public class SqlLoaderTest {
         }
     }
 
-
     @Test
     public void testArrayParameter() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
@@ -62,8 +58,6 @@ public class SqlLoaderTest {
         } finally {
             testDatabase.stop();
         }
-
-
     }
 
     @Test

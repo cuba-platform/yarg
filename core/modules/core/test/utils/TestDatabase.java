@@ -30,9 +30,9 @@ public class TestDatabase {
             //ignore
         }
         connection.createStatement().executeUpdate("create table user (login varchar, password varchar, create_ts timestamp);");
-        connection.createStatement().executeUpdate("insert into user (login, password, create_ts) values ('login1', 'passwd', '2050-01-01');");
-        connection.createStatement().executeUpdate("insert into user (login, password, create_ts) values ('login2', 'passwd', '2050-01-01');");
-        connection.createStatement().executeUpdate("insert into user (login, password, create_ts) values ('login3', 'passwd', '2050-01-01');");
+        connection.createStatement().executeUpdate("insert into user (login, password, create_ts) values ('login1', 'passwd', TIMESTAMP '2050-01-01 00:00:00');");
+        connection.createStatement().executeUpdate("insert into user (login, password, create_ts) values ('login2', 'passwd', TIMESTAMP '2050-01-01 00:00:00');");
+        connection.createStatement().executeUpdate("insert into user (login, password, create_ts) values ('login3', 'passwd', TIMESTAMP '2050-01-01 00:00:00');");
         connection.commit();
     }
 
@@ -42,7 +42,7 @@ public class TestDatabase {
 
     public void stop() {
         try {
-            hsqlServer.stop();
+            hsqlServer.shutdownCatalogs(org.hsqldb.Database.CLOSEMODE_NORMAL);
         } catch (Exception e) {
             //ignore
         }
