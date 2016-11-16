@@ -15,6 +15,7 @@ import com.haulmont.yarg.structure.impl.ReportBuilder;
 import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateBuilder;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import utils.TestDatabase;
@@ -25,9 +26,7 @@ import java.sql.SQLException;
 
 /**
  * @author degtyarjov
- * @version $Id$
  */
-
 public class NestedBandTest {
     private TestDatabase testDatabase;
 
@@ -48,6 +47,11 @@ public class NestedBandTest {
         connection.createStatement().executeUpdate("insert into items values(1, 1, '12345678');");
 
         connection.commit();
+    }
+
+    @After
+    public void tearDown() {
+        testDatabase.stop();
     }
 
     @Test
@@ -86,6 +90,4 @@ public class NestedBandTest {
         ReportOutputDocument reportOutputDocument = reporting.runReport(
                 new RunParams(report), new FileOutputStream("./result/sample/nestedband.docx"));
     }
-
-
 }

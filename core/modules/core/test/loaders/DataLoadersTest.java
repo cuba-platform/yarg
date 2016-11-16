@@ -16,9 +16,7 @@ import java.util.*;
 
 /**
  * @author degtyarjov
- * @version $Id$
  */
-
 public class DataLoadersTest {
 
     @Test
@@ -43,9 +41,9 @@ public class DataLoadersTest {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
+        } finally {
+            testDatabase.stop();
         }
-
-        testDatabase.stop();
     }
 
     @Test
@@ -70,9 +68,9 @@ public class DataLoadersTest {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
+        } finally {
+            testDatabase.stop();
         }
-
-        testDatabase.stop();
     }
 
     private void printResult(List<Map<String, Object>> result) {
@@ -96,7 +94,7 @@ public class DataLoadersTest {
         printResult(result);
     }
 
-    @Test
+//    @Test todo
     public void testLinksInQueries() throws Exception {
 
     }
@@ -163,6 +161,5 @@ public class DataLoadersTest {
         reportQuery = new ReportQueryImpl("", "parameter=param1 $.some.not.existing", "json", null, null);
         maps = jsonDataLoader.loadData(reportQuery, rootBand, params);
         Assert.assertEquals(0, maps.size());
-
     }
 }

@@ -23,26 +23,27 @@ import java.util.Map;
 
 /**
  * @author degtyarjov
- * @version $Id$
  */
-
 public class CustomTemplateTest {
 
     @Test
     public void testReporting() throws Exception {
         TestDatabase testDatabase = new TestDatabase();
         testDatabase.setUpDatabase();
-        Report report = createReport();
 
-        Reporting reporting = new Reporting();
-        reporting.setFormatterFactory(new DefaultFormatterFactory());
-        reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader("./modules/core/test/reporting.properties")).create()));
+        try {
+            Report report = createReport();
 
-        ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/smoke/result.custom"));
+            Reporting reporting = new Reporting();
+            reporting.setFormatterFactory(new DefaultFormatterFactory());
+            reporting.setLoaderFactory(new DefaultLoaderFactory().setSqlDataLoader(new PropertiesSqlLoaderFactory(new DefaultPropertiesLoader("./modules/core/test/reporting.properties")).create()));
 
-        Assert.assertEquals("myFileName.txt", reportOutputDocument.getDocumentName());
+            ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report), new FileOutputStream("./result/smoke/result.custom"));
 
-        testDatabase.stop();
+            Assert.assertEquals("myFileName.txt", reportOutputDocument.getDocumentName());
+        } finally {
+            testDatabase.stop();
+        }
     }
 
     private Report createReport() throws IOException {
