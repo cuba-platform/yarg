@@ -7,7 +7,7 @@ allprojects {
 
 def projectName = "YARG (Yet another report generator)"
 def projectDescription = "Open source library for report generation. Provided by Haulmont."
-def projectUrl = "https://github.com/Haulmont/yarg"
+def projectUrl = "https://github.com/cuba-platform/yarg"
 
 def artifactVersion = '1.1-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
@@ -262,7 +262,7 @@ configure(core) {
         }
     }
 
-    installApp << {
+    installDist << {    
         def outputDir = destinationDir
         copy {
             from "reporting.properties"
