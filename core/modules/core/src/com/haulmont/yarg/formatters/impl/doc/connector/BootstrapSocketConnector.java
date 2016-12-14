@@ -43,7 +43,7 @@ public class BootstrapSocketConnector extends BootstrapConnector {
      * @param port The port
      * @return The component context
      */
-    public XComponentContext connect(String host, int port) throws BootstrapException {
+    public XComponentContext connect(String host, int port) throws Throwable {
         String unoConnectString = "uno:socket,host=" + host + ",port=" + port + ";urp;StarOffice.ComponentContext";
         return connect(unoConnectString);
     }
