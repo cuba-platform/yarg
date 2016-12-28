@@ -40,6 +40,7 @@ import com.sun.star.table.XCell;
 import com.sun.star.text.*;
 import com.sun.star.util.XReplaceable;
 import com.sun.star.util.XSearchDescriptor;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,6 +100,8 @@ public class DocFormatter extends AbstractFormatter {
             }
 
             throw wrapWithReportingException("An error occurred while generating doc report.", e);
+        } finally {
+            IOUtils.closeQuietly(outputStream);
         }
     }
 

@@ -34,6 +34,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
 import org.apache.poi.hssf.record.EscherAggregate;
@@ -174,6 +175,8 @@ public class XLSFormatter extends AbstractFormatter {
                 resultWorkbook.write(outputStream);
             } catch (Exception e) {
                 throw wrapWithReportingException("An error occurred while writing result to file.", e);
+            } finally {
+                IOUtils.closeQuietly(outputStream);
             }
         } else if (ReportOutputType.pdf.equals(outputType)) {
             if (pdfConverter != null) {
@@ -183,6 +186,8 @@ public class XLSFormatter extends AbstractFormatter {
                     pdfConverter.convertToPdf(PdfConverter.FileType.SPREADSHEET, stream.toByteArray(), outputStream);
                 } catch (IOException e) {
                     throw wrapWithReportingException("An error occurred while converting xls to pdf.", e);
+                } finally {
+                    IOUtils.closeQuietly(outputStream);
                 }
             } else {
                 throw new UnsupportedFormatException("Could not convert xls files to pdf because Open Office connection params not set. Please check, that \"cuba.reporting.openoffice.path\" property is set in properties file.");
