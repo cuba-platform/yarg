@@ -49,7 +49,12 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
                 new TraversalUtil(currentRow, aliasFinder);
 
                 String foundAlias = aliasFinder.getValue();
-                if (foundAlias != null && foundAlias.matches(AbstractFormatter.SIMPLE_ALIAS_REGEXP)) {
+                if (foundAlias != null) {
+                    if (currentRow == currentTable.firstRow && foundAlias.matches(AbstractFormatter.SIMPLE_ALIAS_REGEXP)) {
+                        currentTable.rowWithAliases = currentRow;
+                    } else if (currentRow != currentTable.firstRow) {
+                        currentTable.rowWithAliases = currentRow;
+                    }
                     currentTable.rowWithAliases = currentRow;
                 }
             }
