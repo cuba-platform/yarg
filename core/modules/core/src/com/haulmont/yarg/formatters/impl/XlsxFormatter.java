@@ -20,7 +20,6 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
@@ -61,13 +60,23 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BandsForRanges bandsForRanges = new BandsForRanges();
     protected LinkedHashMultimap<Range, Range> rangeVerticalIntersections = LinkedHashMultimap.create();
 
-    protected Set<Cell> innerFormulas = new HashSet<Cell>();
-    protected Set<Cell> outerFormulas = new HashSet<Cell>();
+    protected Set<CellWithBand> innerFormulas = new HashSet<CellWithBand>();
+    protected Set<CellWithBand> outerFormulas = new HashSet<CellWithBand>();
 
     protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<String, Range>();
     protected Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
 
     protected int previousRangesRightOffset;
+
+    protected static class CellWithBand {
+        protected BandData bandData;
+        protected Cell cell;
+
+        public CellWithBand(BandData bandData, Cell cell) {
+            this.bandData = bandData;
+            this.cell = cell;
+        }
+    }
 
     public XlsxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -279,7 +288,13 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void processOuterFormulas(int formulaCount, CTCalcChain calculationChain) {
-        for (Cell cellWithFormula : outerFormulas) {
+        for (CellWithBand cellWithWithBand : outerFormulas) {
+            Cell cellWithFormula = cellWithWithBand.cell;
+            String oldFormula = cellWithFormula.getF().getValue();
+            String newFormula = insertBandDataToString(cellWithWithBand.bandData, oldFormula);
+            if (!oldFormula.equals(newFormula)) {
+                cellWithFormula.getF().setValue(newFormula);
+            }
             Row row = (Row) cellWithFormula.getParent();
             Worksheet worksheet = getWorksheet(row);
             Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
@@ -339,7 +354,13 @@ public class XlsxFormatter extends AbstractFormatter {
     protected int processInnerFormulas(CTCalcChain calculationChain) {
         int formulaCount = 1;
 
-        for (Cell cellWithFormula : innerFormulas) {
+        for (CellWithBand cellWithWithBand : innerFormulas) {
+            Cell cellWithFormula = cellWithWithBand.cell;
+            String oldFormula = cellWithFormula.getF().getValue();
+            String newFormula = insertBandDataToString(cellWithWithBand.bandData, oldFormula);
+            if (!oldFormula.equals(newFormula)) {
+                cellWithFormula.getF().setValue(newFormula);
+            }
             Row row = (Row) cellWithFormula.getParent();
             Worksheet worksheet = getWorksheet(row);
             Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), cellWithFormula);
@@ -682,7 +703,7 @@ public class XlsxFormatter extends AbstractFormatter {
             Cell newCell = XmlUtils.deepCopy(templateCell, Context.jcSML);
 
             if (newCell.getF() != null) {
-                addFormulaForPostProcessing(templateRange, newRow, templateCell, newCell);
+                addFormulaForPostProcessing(templateRange, bandData, newRow, templateCell, newCell);
             }
 
             resultCells.add(newCell);
@@ -727,13 +748,13 @@ public class XlsxFormatter extends AbstractFormatter {
         return (Worksheet) resultSheetData.getParent();
     }
 
-    protected void addFormulaForPostProcessing(Range templateRange, Row newRow, Cell templateCell, Cell newCell) {
+    protected void addFormulaForPostProcessing(Range templateRange, BandData bandData, Row newRow, Cell templateCell, Cell newCell) {
         Worksheet worksheet = getWorksheet(newRow);
         Set<Range> formulaRanges = Range.fromCellFormula(result.getSheetName(worksheet), templateCell);
         if (templateRange.containsAny(formulaRanges)) {
-            innerFormulas.add(newCell);
+            innerFormulas.add(new CellWithBand(bandData, newCell));
         } else {
-            outerFormulas.add(newCell);
+            outerFormulas.add(new CellWithBand(bandData, newCell));
         }
     }
 
