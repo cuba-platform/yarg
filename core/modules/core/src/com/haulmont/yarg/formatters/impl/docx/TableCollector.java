@@ -45,17 +45,27 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
             }
 
             if (currentTable.rowWithAliases == null) {
-                RegexpFinder aliasFinder = new RegexpFinder<P>(docxFormatter, AbstractFormatter.UNIVERSAL_ALIAS_PATTERN, P.class);
+                RegexpCollectionFinder<P> aliasFinder = new RegexpCollectionFinder<P>(docxFormatter, AbstractFormatter.UNIVERSAL_ALIAS_PATTERN, P.class);
                 new TraversalUtil(currentRow, aliasFinder);
-
-                String foundAlias = aliasFinder.getValue();
-                if (foundAlias != null) {
-                    if (currentRow == currentTable.firstRow && foundAlias.matches(AbstractFormatter.SIMPLE_ALIAS_REGEXP)) {
-                        currentTable.rowWithAliases = currentRow;
-                    } else if (currentRow != currentTable.firstRow) {
+                List<String> foundAliases = aliasFinder.getValues();
+                if (!foundAliases.isEmpty()) {
+                    boolean fromCurrentBand = false;
+                    for (String foundAlias : foundAliases) {
+                        String parameterName = docxFormatter.unwrapParameterName(foundAlias);
+                        if (parameterName != null) {
+                            String[] parts = parameterName.split("\\.");
+                            if (parts.length == 1) {
+                                fromCurrentBand = true;
+                                break;
+                            } else if (docxFormatter.findBandByPath(parts[0]) == null) {
+                                fromCurrentBand = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (fromCurrentBand) {
                         currentTable.rowWithAliases = currentRow;
                     }
-                    currentTable.rowWithAliases = currentRow;
                 }
             }
         }

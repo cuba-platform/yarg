@@ -13,39 +13,22 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 * @author degtyarjov
 * @version $Id$
 */
-public class RegexpFinder<T> extends TraversalUtil.CallbackImpl {
-    private DocxFormatterDelegate docxFormatter;
-    protected Class<T> classToHandle;
-    protected Pattern regularExpression;
+public class RegexpFinder<T> extends AbstractRegexpFinder<T> {
     protected String value;
 
     public RegexpFinder(DocxFormatterDelegate docxFormatter, Pattern regularExpression, Class<T> classToHandle) {
-        this.docxFormatter = docxFormatter;
-        this.regularExpression = regularExpression;
-        this.classToHandle = classToHandle;
-    }
-
-    @Override
-    public List<Object> apply(Object o) {
-        if (classToHandle.isAssignableFrom(o.getClass())) {
-            @SuppressWarnings("unchecked")
-            T currentElement = (T) o;
-            String currentElementText = docxFormatter.getElementText(currentElement);
-            if (isNotBlank(currentElementText)) {
-                Matcher matcher = regularExpression.matcher(currentElementText);
-                if (matcher.find()) {
-                    onFind(currentElement, matcher);
-                }
-            }
-        }
-
-        return null;
+        super(docxFormatter, regularExpression, classToHandle);
     }
 
     protected void onFind(T o, Matcher matcher) {
-        if (value == null) {//todo eude : need stop traversing, not only avoid further collection
+        if (value == null) {
             value = matcher.group(0);
         }
+    }
+
+    @Override
+    protected boolean skipFind() {
+        return value != null;
     }
 
     public String getValue() {
