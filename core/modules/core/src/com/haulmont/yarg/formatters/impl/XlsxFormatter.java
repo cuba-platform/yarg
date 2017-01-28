@@ -26,6 +26,9 @@ import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xlsx.*;
+import com.haulmont.yarg.formatters.impl.xlsx.hints.CustomCellStyleXlsxHint;
+import com.haulmont.yarg.formatters.impl.xlsx.hints.XlsxHint;
+import com.haulmont.yarg.formatters.impl.xlsx.hints.XslxHintProcessor;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.BandVisitor;
@@ -65,18 +68,9 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<String, Range>();
     protected Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
+    protected XslxHintProcessor hintProcessor = new XslxHintProcessor();
 
     protected int previousRangesRightOffset;
-
-    protected static class CellWithBand {
-        protected BandData bandData;
-        protected Cell cell;
-
-        public CellWithBand(BandData bandData, Cell cell) {
-            this.bandData = bandData;
-            this.cell = cell;
-        }
-    }
 
     public XlsxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -91,6 +85,7 @@ public class XlsxFormatter extends AbstractFormatter {
     public void renderDocument() {
         init();
 
+        hintProcessor.init(template, result);
         findVerticalDependencies();
 
         result.clearWorkbook();
@@ -103,6 +98,7 @@ public class XlsxFormatter extends AbstractFormatter {
         updateCharts();
         updateFormulas();
         updateConditionalFormatting();
+        hintProcessor.apply();
 
         saveAndClose();
     }
@@ -152,7 +148,9 @@ public class XlsxFormatter extends AbstractFormatter {
         if (definedNames != null) {
             List<CTDefinedName> definedName = definedNames.getDefinedName();
             for (CTDefinedName name1 : definedName) {
+                if (hintProcessor.isHintDefinedName(name1.getName())) continue;
                 for (CTDefinedName name2 : definedName) {
+                    if (hintProcessor.isHintDefinedName(name2.getName())) continue;
                     if (!name1.equals(name2)) {
                         Range range1 = Range.fromFormula(name1.getValue());
                         Range range2 = Range.fromFormula(name2.getValue());
@@ -739,6 +737,9 @@ public class XlsxFormatter extends AbstractFormatter {
                 resultColumn.setMax(newRef.getColumn());
                 resultWorksheet.getCols().get(0).getCol().add(resultColumn);
             }
+
+            hintProcessor.add(tempRef, templateCell, newCell, bandData);
+
         }
         return resultCells;
     }
@@ -843,6 +844,16 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void writeToOutputStream(SpreadsheetMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
         SaveToZipFile saver = new SaveToZipFile(mlPackage);
         saver.save(outputStream);
+    }
+
+    protected static class CellWithBand {
+        protected BandData bandData;
+        protected Cell cell;
+
+        public CellWithBand(BandData bandData, Cell cell) {
+            this.bandData = bandData;
+            this.cell = cell;
+        }
     }
 
     protected static class Offset {

@@ -49,6 +49,7 @@ public abstract class AbstractFormatSpecificTest {
         datamap.put("col.nestedCol", null);
         datamap.put("col.nestedBool", null);
         datamap.put("cwidth", 10000);
+        datamap.put("theStyle", "theTest");
         band1_1.setData(datamap);
 
         Map<String, Object> datamap2 = new HashMap<String, Object>();
@@ -67,6 +68,7 @@ public abstract class AbstractFormatSpecificTest {
         datamap3.put("col.nestedCol", "NESTED2");
         datamap3.put("col.nestedBool", true);
         datamap3.put("cwidth", 10000);
+        datamap3.put("theStyle", "theTest");
         band1_3.setData(datamap3);
 
         BandData band2_1 = new BandData("Band2", root, BandOrientation.HORIZONTAL);
