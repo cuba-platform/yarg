@@ -93,6 +93,7 @@ public abstract class AbstractInliner implements ContentInliner {
                 anchor.setExt(new CTPositiveSize2D());
                 anchor.getExt().setCx(XlsxUtils.convertPxToEmu(image.width));
                 anchor.getExt().setCy(XlsxUtils.convertPxToEmu(image.height));
+                newCell.setV(null);
                 putImage(worksheetPart, pkg, imagePart, anchor);
             }
         } catch (Exception e) {
