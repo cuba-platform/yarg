@@ -442,7 +442,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 if (templateSheet.getMergeCells() != null && templateSheet.getMergeCells().getMergeCell() != null) {
                     for (CTMergeCell templateMergeRegion : templateSheet.getMergeCells().getMergeCell()) {
                         Range mergeRange = Range.fromRange(templateRange.getSheet(), templateMergeRegion.getRef());
-                        if (templateRange.contains(mergeRange)) {
+                        if (templateRange.contains(mergeRange) || templateRange.isOneCellRange() && mergeRange.contains(templateRange)) {
                             Offset offset = calculateOffset(templateRange, resultRange);
                             Range resultMergeRange = mergeRange.copy().shift(offset.downOffset, offset.rightOffset);
                             CTMergeCell resultMergeRegion = new CTMergeCell();
