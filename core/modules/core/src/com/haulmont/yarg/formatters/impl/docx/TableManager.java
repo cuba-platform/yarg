@@ -24,6 +24,7 @@ public class TableManager {
     protected Tr firstRow = null;
     protected Tr rowWithAliases = null;
     protected String bandName = null;
+    protected boolean skipIt = false;
 
     TableManager(DocxFormatterDelegate docxFormatter, Tbl tbl) {
         this.docxFormatter = docxFormatter;
@@ -113,5 +114,13 @@ public class TableManager {
 
     public boolean noHeader() {
         return getRowWithAliases() != null && getFirstRow().equals(getRowWithAliases());
+    }
+
+    public boolean isSkipIt() {
+        return skipIt;
+    }
+
+    public void setSkipIt(boolean skipIt) {
+        this.skipIt = skipIt;
     }
 }

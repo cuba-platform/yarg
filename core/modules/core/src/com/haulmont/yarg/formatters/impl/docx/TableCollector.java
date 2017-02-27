@@ -21,16 +21,17 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
     private DocxFormatterDelegate docxFormatter;
     protected Stack<TableManager> currentTables = new Stack<TableManager>();
     protected Set<TableManager> tableManagers = new LinkedHashSet<TableManager>();
-    protected boolean skipCurrentTable = false;
 
     public TableCollector(DocxFormatterDelegate docxFormatter) {this.docxFormatter = docxFormatter;}
 
     public List<Object> apply(Object object) {
-        if (skipCurrentTable) return null;
+        final TableManager currentTable = !currentTables.isEmpty() ? currentTables.peek() : null;
+        if (currentTable == null || currentTable.isSkipIt()) {
+            return null;
+        }
 
         if (object instanceof Tr) {
             Tr currentRow = (Tr) object;
-            final TableManager currentTable = currentTables.peek();
 
             if (currentTable.firstRow == null) {
                 currentTable.firstRow = currentRow;
@@ -38,7 +39,7 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
                 findNameForCurrentTable(currentTable);
 
                 if (currentTable.bandName == null) {
-                    skipCurrentTable = true;
+                    currentTable.setSkipIt(true);
                 } else {
                     tableManagers.add(currentTable);
                 }
@@ -114,10 +115,9 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
                 }
 
                 if (o instanceof Tbl) {
-                    currentTables.pop();
-                    skipCurrentTable = false;
+                    TableManager currentTable = currentTables.pop();
+                    currentTable.setSkipIt(false);
                 }
-
             }
         }
     }
