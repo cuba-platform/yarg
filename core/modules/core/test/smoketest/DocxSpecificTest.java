@@ -114,6 +114,25 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
                         ReportOutputType.docx), outputStream));
         formatter.renderDocument();
         IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
+    public void testTableOfContents() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData project = randomBand("Project", root);
+        for (int i = 0; i < 30; i++) {
+            BandData options = randomBand("Options", root);
+        }
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/table-of-contents.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/table-of-contents.docx", "./modules/core/test/smoketest/table-of-contents.docx",
+                        ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+        IOUtils.closeQuietly(outputStream);
 
     }
 

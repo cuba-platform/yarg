@@ -38,6 +38,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.toc.TocException;
+import org.docx4j.toc.TocFinder;
+import org.docx4j.toc.TocGenerator;
 import org.docx4j.utils.AltChunkFinder;
 import org.docx4j.wml.*;
 import org.slf4j.Logger;
@@ -82,10 +86,31 @@ public class DocxFormatter extends AbstractFormatter {
 
         handleUrls();
 
+        updateTableOfContents();
+
         saveAndClose();
     }
 
-    private void handleUrls() {
+    protected void updateTableOfContents() {
+        try {
+            MainDocumentPart documentPart = wordprocessingMLPackage.getMainDocumentPart();
+            Document wmlDocumentEl = documentPart.getJaxbElement();
+            Body body =  wmlDocumentEl.getBody();
+
+            TocFinder finder = new TocFinder();
+            new TraversalUtil(body.getContent(), finder);
+            SdtBlock structuredDocumentPart = finder.getTocSDT();
+
+            if (structuredDocumentPart != null) {
+                TocGenerator tocGenerator = new TocGenerator(wordprocessingMLPackage);
+                tocGenerator.updateToc(false);
+            }
+        } catch (TocException e) {
+            log.error("An error occurred during updating the Table Of Contents", e);
+        }
+    }
+
+    protected void handleUrls() {
         UrlVisitor urlVisitor = new UrlVisitor(new DocxFormatterDelegate(this), wordprocessingMLPackage.getMainDocumentPart());
         new TraversalUtil(wordprocessingMLPackage.getMainDocumentPart(), urlVisitor);
     }
