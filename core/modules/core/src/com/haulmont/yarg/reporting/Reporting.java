@@ -207,7 +207,7 @@ public class Reporting implements ReportingAPI {
                                 format("No data in band [%s] parameter [%s] found. " +
                                         "This band and parameter is used for output file name generation.", bandWithFileName, paramName));
                     } else {
-                        outputName = fileName.toString();
+                        outputName = matcher.replaceFirst(fileName.toString());
                     }
                 } else {
                     throw new ReportingException(format("No data in band [%s] found.This band is used for output file name generation.", bandName));
