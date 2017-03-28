@@ -26,8 +26,6 @@ import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
 import com.haulmont.yarg.formatters.impl.xlsx.*;
-import com.haulmont.yarg.formatters.impl.xlsx.hints.CustomCellStyleXlsxHint;
-import com.haulmont.yarg.formatters.impl.xlsx.hints.XlsxHint;
 import com.haulmont.yarg.formatters.impl.xlsx.hints.XslxHintProcessor;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
@@ -311,18 +309,43 @@ public class XlsxFormatter extends AbstractFormatter {
             for (Range templateRange : rangeDependencies.templates()) {
                 if (templateRange.containsAny(formulaRanges)) {
                     List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.resultsForTemplate(templateRange));
-                    for (Iterator<Range> iterator = resultRanges.iterator(); iterator.hasNext(); ) {
-                        Range resultRange = iterator.next();
+                    List<Range> newRanges = new ArrayList<Range>();
+                    for (Range resultRange : resultRanges) {
                         BandData bandData = bandsForRanges.bandForResultRange(resultRange);
-                        if (!bandData.getParentBand().equals(formulaParentBand)
-                                && !bandData.getParentBand().equals(formulaBand)) {
-                            iterator.remove();
+                        boolean hasSameFormulaBand = false;
+                        BandData nextParent = bandData.getParentBand();
+                        while (nextParent != null) {
+                            hasSameFormulaBand = nextParent.equals(formulaBand);
+                            if (hasSameFormulaBand) {
+                                break;
+                            }
+                            nextParent = nextParent.getParentBand();
+                        }
+                        if (hasSameFormulaBand) {
+                            newRanges.add(resultRange);
+                        }
+                    }
+                    if (newRanges.isEmpty()) {
+                        for (Range resultRange : resultRanges) {
+                            BandData bandData = bandsForRanges.bandForResultRange(resultRange);
+                            boolean hasSameParentFormulaBand = false;
+                            BandData nextParent = bandData.getParentBand();
+                            while (nextParent != null) {
+                                hasSameParentFormulaBand = nextParent.equals(formulaParentBand);
+                                if (hasSameParentFormulaBand) {
+                                    break;
+                                }
+                                nextParent = nextParent.getParentBand();
+                            }
+                            if (hasSameParentFormulaBand) {
+                                newRanges.add(resultRange);
+                            }
                         }
                     }
 
                     for (Range formulaRange : formulaRanges) {
-                        if (resultRanges.size() > 0) {
-                            Range shiftedRange = calculateFormulaRangeChange(formulaRange, templateRange, resultRanges);
+                        if (newRanges.size() > 0) {
+                            Range shiftedRange = calculateFormulaRangeChange(formulaRange, templateRange, newRanges);
                             updateFormula(cellWithFormula, formulaRange, shiftedRange, calculationChain, formulaCount++);
                         } else {
                             cellWithFormula.setF(null);
