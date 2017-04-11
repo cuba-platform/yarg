@@ -98,12 +98,12 @@ public class HtmlContentInliner implements ContentInliner {
 
     @Override
     public void inlineToXls(HSSFPatriarch patriarch, HSSFCell resultCell, Object paramValue, Matcher matcher) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Inline html content to XSL is not supported");
     }
 
     @Override
     public void inlineToXlsx(SpreadsheetMLPackage pkg, WorksheetPart worksheetPart, Cell newCell, Object paramValue, Matcher matcher) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Inline html content to XSLX is not supported");
     }
 
     private void insertHTML(XText destination, XTextRange textRange, String htmlContent)
