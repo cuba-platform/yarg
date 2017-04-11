@@ -44,13 +44,17 @@ import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
+import org.xlsx4j.sml.CTHeaderFooter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
     protected PdfConverter pdfConverter;
@@ -69,6 +73,8 @@ public class XlsxFormatter extends AbstractFormatter {
     protected XslxHintProcessor hintProcessor = new XslxHintProcessor();
 
     protected int previousRangesRightOffset;
+
+    protected static final Logger log = LoggerFactory.getLogger(XlsxFormatter.class);
 
     public XlsxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -96,6 +102,8 @@ public class XlsxFormatter extends AbstractFormatter {
         updateCharts();
         updateFormulas();
         updateConditionalFormatting();
+        updateHeaderAndFooter();
+        updateSheetNames();
         hintProcessor.apply();
 
         saveAndClose();
@@ -493,35 +501,39 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void writeHBand(BandData band) {
         Range templateRange = getBandRange(band);
-        Worksheet resultSheet = result.getSheetByName(templateRange.getSheet());
-        List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
+        if (templateRange != null) {
+            Worksheet resultSheet = result.getSheetByName(templateRange.getSheet());
+            List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
 
-        Row firstRow = findNextRowForHBand(band, templateRange, resultSheetRows);
-        firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
+            Row firstRow = findNextRowForHBand(band, templateRange, resultSheetRows);
+            firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
 
-        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow, resultSheet);
+            List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow, resultSheet);
 
-        updateRangeMappings(band, templateRange, resultCells);
+            updateRangeMappings(band, templateRange, resultCells);
 
-        //render children
-        if (CollectionUtils.isNotEmpty(resultCells)) {
-            for (BandData child : band.getChildrenList()) {
-                writeBand(child);
+            //render children
+            if (CollectionUtils.isNotEmpty(resultCells)) {
+                for (BandData child : band.getChildrenList()) {
+                    writeBand(child);
+                }
             }
         }
     }
 
     protected void writeVBand(BandData band) {
         Range templateRange = getBandRange(band);
-        Worksheet resultSheet = result.getSheetByName(templateRange.getSheet());
-        List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
+        if (templateRange != null) {
+            Worksheet resultSheet = result.getSheetByName(templateRange.getSheet());
+            List<Row> resultSheetRows = resultSheet.getSheetData().getRow();
 
-        Row firstRow = findNextRowForVBand(band, templateRange, resultSheetRows);
-        firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
+            Row firstRow = findNextRowForVBand(band, templateRange, resultSheetRows);
+            firstRow = ensureNecessaryRowsCreated(templateRange, resultSheet, firstRow);
 
-        List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow, resultSheet);
+            List<Cell> resultCells = copyCells(band, templateRange, resultSheetRows, firstRow, resultSheet);
 
-        updateRangeMappings(band, templateRange, resultCells);
+            updateRangeMappings(band, templateRange, resultCells);
+        }
     }
 
     protected void updateRangeMappings(BandData band, Range templateRange, List<Cell> resultCells) {
@@ -697,7 +709,8 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Range getBandRange(BandData band) {
         CTDefinedName targetRange = template.getDefinedName(band.getName());
         if (targetRange == null) {
-            throw wrapWithReportingException(String.format("Could not find named range for band [%s]", band.getName()));
+            log.info("Could not find named range for band {}", band.getName());
+            return null;
         }
 
         return Range.fromFormula(targetRange.getValue());
@@ -867,6 +880,49 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void writeToOutputStream(SpreadsheetMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
         SaveToZipFile saver = new SaveToZipFile(mlPackage);
         saver.save(outputStream);
+    }
+
+    protected void updateHeaderAndFooter() {
+        for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
+            Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
+            if (worksheet.getHeaderFooter() != null) {
+                CTHeaderFooter headerFooter  = worksheet.getHeaderFooter();
+                if (headerFooter.getOddHeader() != null) {
+                    headerFooter.setOddHeader(insertBandDataToString(headerFooter.getOddHeader()));
+                }
+                if (headerFooter.getOddFooter() != null) {
+                    headerFooter.setOddFooter(insertBandDataToString(headerFooter.getOddFooter()));
+                }
+            }
+        }
+    }
+
+    protected void updateSheetNames() {
+        Sheets sheets = result.getWorkbook().getSheets();
+        if (sheets != null && sheets.getSheet() != null) {
+            for (Sheet sheet: sheets.getSheet()) {
+                if (sheet.getName() != null) {
+                    sheet.setName(insertBandDataToString(sheet.getName()));
+                }
+            }
+        }
+    }
+
+    protected String insertBandDataToString(String resultStr) {
+        List<String> parametersToInsert = new ArrayList<String>();
+        Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(resultStr);
+        while (matcher.find()) {
+            parametersToInsert.add(unwrapParameterName(matcher.group()));
+        }
+        for (String parameterName : parametersToInsert) {
+            BandPathAndParameterName bandPathAndParameterName = separateBandNameAndParameterName(parameterName);
+            BandData bandData = findBandByPath(bandPathAndParameterName.getBandPath());
+            Object value = bandData.getData().get(bandPathAndParameterName.getParameterName());
+            String fullParameterName = bandData.getName() + "." + parameterName;
+            String valueStr = formatValue(value, parameterName, fullParameterName);
+            resultStr = inlineParameterValue(resultStr, parameterName, valueStr);
+        }
+        return resultStr;
     }
 
     protected static class CellWithBand {

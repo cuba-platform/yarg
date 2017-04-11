@@ -91,6 +91,37 @@ public class XlsxSpecificTest extends AbstractFormatSpecificTest{
     }
 
     @Test
+    public void testXlsxHeader() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        root.addChild(new BandData("Header", root, BandOrientation.HORIZONTAL));
+        BandData header1 = new BandData("Header1", root, BandOrientation.HORIZONTAL);
+        header1.addData("company", "TestCompany");
+        root.addChild(header1);
+
+        Random random = new Random();
+        for (int i = 1; i <= 1000; i++) {
+            BandData band = new BandData("Band", root, BandOrientation.HORIZONTAL);
+            band.addData("i", i);
+            double value1 = 15 + i + Math.abs(random.nextDouble()) * 30;
+            band.addData("value1", value1);
+            double value2 = 20 + i + Math.abs(random.nextDouble()) * 60;
+            band.addData("value2", value2);
+            double value3 = 25 + i + Math.abs(random.nextDouble()) * 90;
+            band.addData("value3", value3);
+            band.addData("value4", (value1 + value2 + value3) / 3);
+            root.addChild(band);
+        }
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/xslx_header.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/xslx_header.xlsx", "./modules/core/test/smoketest/xslx_header.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testXlsxToPdfPrintSpaces() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
 
