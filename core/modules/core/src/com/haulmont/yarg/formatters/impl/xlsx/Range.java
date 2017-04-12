@@ -64,28 +64,34 @@ public class Range {
         Matcher matcher2 = SINGLE_CELL_RANGE_PATTERN.matcher(range);
         if (matcher.find()) {
             String sheet = matcher.group(1);
-
             String startColumnStr = matcher.group(2);
             String startRowStr = matcher.group(3);
             String endColumnStr = matcher.group(4);
             String endRowStr = matcher.group(5);
-            int startColumn = XlsxUtils.getNumberFromColumnReference(startColumnStr);
-            int startRow = Integer.valueOf(startRowStr);
-            int lastColumn = XlsxUtils.getNumberFromColumnReference(endColumnStr);
-            int lastRow = Integer.valueOf(endRowStr);
-            Range result = new Range(sheet, startColumn, startRow, lastColumn, lastRow);
-            return result;
+            try {
+                int startRow = Integer.valueOf(startRowStr);
+                int lastRow = Integer.valueOf(endRowStr);
+                int startColumn = XlsxUtils.getNumberFromColumnReference(startColumnStr);
+                int lastColumn = XlsxUtils.getNumberFromColumnReference(endColumnStr);
+                return new Range(sheet, startColumn, startRow, lastColumn, lastRow);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException(String.format("Wrong range value %s. Error: %s", range, e.getMessage()));
+            }
         } else if (matcher2.find()) {
             String sheet = matcher2.group(1);
 
             String startColumnStr = matcher2.group(2);
             String startRowStr = matcher2.group(3);
             int startColumn = XlsxUtils.getNumberFromColumnReference(startColumnStr);
-            int startRow = Integer.valueOf(startRowStr);
-            Range result = new Range(sheet, startColumn, startRow, startColumn, startRow);
-            return result;
+            int startRow;
+            try {
+                startRow = Integer.valueOf(startRowStr);
+                return new Range(sheet, startColumn, startRow, startColumn, startRow);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException(String.format("Wrong range value %s. Error: %s", range, e.getMessage()));
+            }
         } else {
-            throw new RuntimeException("Wrong range value " + range);
+            throw new RuntimeException(String.format("Wrong range value %s", range));
         }
     }
 
@@ -100,7 +106,7 @@ public class Range {
 
             return fromCells(sheet, firstCell, lastCell);
         } else {
-            throw new RuntimeException("Wrong range value " + range);
+            throw new RuntimeException(String.format("Wrong range value %s", range));
         }
     }
 
@@ -253,7 +259,9 @@ public class Range {
         return references;
     }
 
-    public boolean isOneCellRange() {return firstColumn == lastColumn && firstRow == lastRow;}
+    public boolean isOneCellRange() {
+        return firstColumn == lastColumn && firstRow == lastRow;
+    }
 
     @Override
     public boolean equals(Object o) {

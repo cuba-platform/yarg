@@ -45,7 +45,7 @@ public class CellReference implements Comparable {
             row = Integer.valueOf(matcher.group(2));
             this.sheet = sheet;
         } else {
-            throw new RuntimeException("Wrong cell " + cellRef);
+            throw new RuntimeException(String.format("Wrong cell %s", cellRef));
         }
     }
 
