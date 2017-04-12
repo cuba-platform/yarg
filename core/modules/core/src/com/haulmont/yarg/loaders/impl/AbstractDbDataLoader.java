@@ -43,16 +43,18 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
                 Object[] resultRecord = (Object[]) resultRecordObject;
 
                 if (resultRecord.length != parametersNames.size()) {
-                    throw new DataLoadingException(String.format("Result set size [%d] does not match output fields count [%s]. Detected output fields %s", resultRecord.length, parametersNames.size(), parametersNames));
+                    throw new DataLoadingException(String.format("Please specify aliases for all output fields of the query.\nDetails: result set size [%d] does not match output fields count [%s]. Detected output fields %s", resultRecord.length, parametersNames.size(), parametersNames));
                 }
 
                 for (Integer i = 0; i < resultRecord.length; i++) {
                     OutputValue outputValue = parametersNames.get(i);
                     Object value = resultRecord[i];
                     putValue(outputValues, outputValue, value);
-
                 }
             } else {
+                if (parametersNames.isEmpty()) {
+                    throw new DataLoadingException("Please specify aliases for all output fields of the query.\nDetails: result set size 1 does not match output fields count 0.");
+                }
                 OutputValue outputValue = parametersNames.get(0);
                 putValue(outputValues, outputValue, resultRecordObject);
             }
@@ -293,6 +295,11 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
         public String getSynonym() {
             return synonym;
+        }
+
+        @Override
+        public String toString() {
+            return valueName;
         }
     }
 }
