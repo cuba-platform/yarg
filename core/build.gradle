@@ -239,9 +239,12 @@ configure(core) {
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'junit', module: 'junit')
         }
-        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.3.1"){
+        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.3.1") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'org.apache.poi', module: 'poi')
+        }
+        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "3.3.1") {
+            exclude(group: 'junit', module: 'junit')
         }
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "2.1.0")
 
@@ -255,18 +258,22 @@ configure(core) {
         it.file =~ 'tar' || it.file =~ 'zip'
     }
 
-    startScripts << {
-        copy {
-            from "reporting.properties"
-            into outputDir
+    startScripts {
+        doLast {
+            copy {
+                from "reporting.properties"
+                into outputDir
+            }
         }
     }
 
-    installDist << {    
-        def outputDir = destinationDir
-        copy {
-            from "reporting.properties"
-            into "$outputDir/bin"
+    installDist {
+        doLast {
+            def outputDir = destinationDir
+            copy {
+                from "reporting.properties"
+                into "$outputDir/bin"
+            }
         }
     }
 
