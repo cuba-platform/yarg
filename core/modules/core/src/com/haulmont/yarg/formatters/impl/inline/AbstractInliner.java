@@ -46,13 +46,17 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.ImageUtils;
 import org.apache.xmlgraphics.image.loader.ImageSize;
+import org.docx4j.TraversalUtil;
 import org.docx4j.dml.*;
 import org.docx4j.dml.spreadsheetdrawing.*;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
+import org.docx4j.model.structure.HeaderFooterPolicy;
+import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.DrawingML.Drawing;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
@@ -64,6 +68,8 @@ import org.docx4j.wml.Text;
 import org.xlsx4j.sml.Cell;
 
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -175,11 +181,12 @@ public abstract class AbstractInliner implements ContentInliner {
 
 
     @Override
-    public void inlineToDocx(WordprocessingMLPackage wordPackage, Text text, Object paramValue, Matcher paramsMatcher) {
+    public void inlineToDocx(WordprocessingMLPackage wordPackage, final Text text, Object paramValue, Matcher paramsMatcher) {
         try {
             Image image = new Image(paramValue, paramsMatcher);
             if (image.isValid()) {
-                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, image.imageContent);
+                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, resolveTextPartForDOCX(text, wordPackage),
+                        image.imageContent);
                 Inline inline = imagePart.createImageInline("", "", docxUniqueId1++, docxUniqueId2++, false);
                 ImageSize oldSize = imagePart.getImageInfo().getSize();
                 double widthExtent = (double) image.width / oldSize.getWidthPx();
@@ -316,4 +323,37 @@ public abstract class AbstractInliner implements ContentInliner {
         }
     }
 
+    protected Part resolveTextPartForDOCX(Text text, WordprocessingMLPackage wordPackage) {
+        java.util.List<SectionWrapper> sectionWrappers = wordPackage.getDocumentModel().getSections();
+        for (SectionWrapper sw : sectionWrappers) {
+            HeaderFooterPolicy hfp = sw.getHeaderFooterPolicy();
+            List<Part> parts = Arrays.<Part>asList(hfp.getFirstHeader(), hfp.getDefaultHeader(), hfp.getEvenHeader(),
+                    hfp.getFirstFooter(), hfp.getDefaultFooter(), hfp.getEvenFooter());
+            for (Part part : parts) {
+                TextMatchCallback callback = new TextMatchCallback(text);
+                new TraversalUtil(part, callback);
+                if (callback.matched) {
+                    return part;
+                }
+            }
+        }
+        return wordPackage.getMainDocumentPart();
+    }
+
+    protected class TextMatchCallback extends TraversalUtil.CallbackImpl {
+        Text text;
+        boolean matched;
+
+        public TextMatchCallback(Text text) {
+            this.text = text;
+        }
+
+        @Override
+        public java.util.List<Object> apply(Object o) {
+            if (text == o) {
+                matched = true;
+            }
+            return null;
+        }
+    }
 }
