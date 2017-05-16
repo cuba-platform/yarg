@@ -181,7 +181,7 @@ public abstract class AbstractInliner implements ContentInliner {
 
 
     @Override
-    public void inlineToDocx(WordprocessingMLPackage wordPackage, final Text text, Object paramValue, Matcher paramsMatcher) {
+    public void inlineToDocx(WordprocessingMLPackage wordPackage, Text text, Object paramValue, Matcher paramsMatcher) {
         try {
             Image image = new Image(paramValue, paramsMatcher);
             if (image.isValid()) {
