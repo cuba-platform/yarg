@@ -109,7 +109,7 @@ public class Reporting implements ReportingAPI {
             return createReportOutputDocument(report, reportTemplate, outputName, rootBand);
         } catch (ReportingException e) {
             logReport("An error occurred while running report [%s] with parameters [%s].", report, params);
-            logger.info("Trace: ", e);
+            logException(e);
             //validation exception is usually shown to clients, so probably there is no need to add report name there (to keep the original message)
             if (!(e instanceof ValidationException)) {
                 e.setReportDetails(format(" Report name [%s]", report.getName()));
@@ -176,6 +176,10 @@ public class Reporting implements ReportingAPI {
             parametersString.append("\n").append(entry.getKey()).append(":").append(entry.getValue());
         }
         logger.info(format(caption, report.getName(), parametersString));
+    }
+
+    protected void logException(ReportingException e) {
+        logger.info("Trace: ", e);
     }
 
     protected ReportOutputDocument createReportOutputDocument(Report report, ReportTemplate reportTemplate, String outputName, BandData rootBand) {
