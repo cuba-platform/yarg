@@ -13,11 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.formatters.impl;
 
 import com.google.common.collect.HashBiMap;
@@ -31,7 +26,6 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.BandVisitor;
 import com.haulmont.yarg.structure.ReportOutputType;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.docx4j.XmlUtils;
@@ -122,9 +116,8 @@ public class XlsxFormatter extends AbstractFormatter {
                     outputStream.flush();
                 } else {
                     throw new UnsupportedOperationException(
-                            String.format(
-                                    "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
-                                            "Please setup Libre/Open office connection details."));
+                            "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
+                                    "Please setup Libre/Open office connection details.");
                 }
             } else {
                 throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
@@ -513,7 +506,7 @@ public class XlsxFormatter extends AbstractFormatter {
             updateRangeMappings(band, templateRange, resultCells);
 
             //render children
-            if (CollectionUtils.isNotEmpty(resultCells)) {
+            if (resultCells != null && !resultCells.isEmpty()) {
                 for (BandData child : band.getChildrenList()) {
                     writeBand(child);
                 }
@@ -537,8 +530,9 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void updateRangeMappings(BandData band, Range templateRange, List<Cell> resultCells) {
-        if (CollectionUtils.isNotEmpty(resultCells)) {
-            Range resultRange = Range.fromCells(templateRange.getSheet(), getFirst(resultCells).getR(), resultCells.get(resultCells.size() - 1).getR());
+        if (resultCells != null && !resultCells.isEmpty()) {
+            Range resultRange = Range.fromCells(templateRange.getSheet(), getFirst(resultCells).getR(),
+                    resultCells.get(resultCells.size() - 1).getR());
             rangeDependencies.addDependency(templateRange, resultRange);
             bandsForRanges.add(band, templateRange, resultRange);
             lastRenderedRangeForBandName.put(band.getName(), resultRange);
@@ -645,7 +639,7 @@ public class XlsxFormatter extends AbstractFormatter {
                     templateRange.getLastColumn(), templateRange.getFirstRow() + i);
             Map<CellReference, Cell> cellsForOneRowRange = template.getCellsByRange(oneRowRange);
             List<Cell> templateCells = new ArrayList<Cell>(cellsForOneRowRange.values());
-            Row templateRow = CollectionUtils.isNotEmpty(templateCells) ?
+            Row templateRow = !templateCells.isEmpty() ?
                     (Row) templateCells.get(0).getParent() :
                     resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow() - 1);
 
@@ -862,7 +856,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected <T> T getFirst(List<T> list) {
-        if (CollectionUtils.isNotEmpty(list)) {
+        if (list != null && !list.isEmpty()) {
             return list.get(0);
         }
 
@@ -870,7 +864,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected <T> T getLast(List<T> list) {
-        if (CollectionUtils.isNotEmpty(list)) {
+        if (list != null && !list.isEmpty()) {
             return list.get(list.size() - 1);
         }
 

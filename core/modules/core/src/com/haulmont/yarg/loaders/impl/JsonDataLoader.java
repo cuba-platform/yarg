@@ -13,11 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.loaders.impl;
 
 import com.haulmont.yarg.exception.DataLoadingException;
@@ -25,7 +20,6 @@ import com.haulmont.yarg.loaders.impl.json.JsonMap;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
 import com.jayway.jsonpath.JsonPath;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -125,7 +119,7 @@ public class JsonDataLoader extends AbstractDataLoader {
     protected void parseScriptResult(List<Map<String, Object>> result, String script, Object scriptResult) {
         if (scriptResult instanceof List) {//JSONArray is also list
             List theList = (List) scriptResult;
-            if (CollectionUtils.isNotEmpty(theList)) {
+            if (!theList.isEmpty()) {
                 Object listObject = theList.get(0);
                 if (listObject instanceof Map) {
                     for (Object object : theList) {

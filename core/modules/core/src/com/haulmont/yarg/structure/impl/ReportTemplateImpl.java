@@ -13,12 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.structure.impl;
 
 import com.google.common.base.Preconditions;
@@ -88,10 +82,12 @@ public class ReportTemplateImpl implements ReportTemplate {
         return reportOutputType;
     }
 
+    @Override
     public String getDocumentPath() {
         return documentPath;
     }
 
+    @Override
     public String getOutputNamePattern() {
         return outputNamePattern;
     }

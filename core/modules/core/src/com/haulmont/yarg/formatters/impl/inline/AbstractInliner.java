@@ -13,11 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.formatters.impl.inline;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
@@ -86,6 +81,7 @@ public abstract class AbstractInliner implements ContentInliner {
 
     protected abstract byte[] getContent(Object paramValue);
 
+    @Override
     public void inlineToXlsx(SpreadsheetMLPackage pkg, WorksheetPart worksheetPart, Cell newCell, Object paramValue, Matcher matcher) {
         try {
             Image image = new Image(paramValue, matcher);
@@ -178,7 +174,6 @@ public abstract class AbstractInliner implements ContentInliner {
         pkg.getParts().remove(drawing.getPartName());
         pkg.getParts().put(drawing);
     }
-
 
     @Override
     public void inlineToDocx(WordprocessingMLPackage wordPackage, Text text, Object paramValue, Matcher paramsMatcher) {

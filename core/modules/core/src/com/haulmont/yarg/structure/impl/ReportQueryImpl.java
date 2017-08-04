@@ -13,12 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.structure.impl;
 
 import com.google.common.base.Preconditions;
@@ -64,14 +58,17 @@ public class ReportQueryImpl implements ReportQuery {
         Preconditions.checkNotNull(this.loaderType, "\"loaderType\" parameter can not be null");
     }
 
+    @Override
     public String getScript() {
         return script;
     }
 
+    @Override
     public String getLoaderType() {
         return loaderType;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -81,6 +78,7 @@ public class ReportQueryImpl implements ReportQuery {
         return processTemplate;
     }
 
+    @Override
     public String getLinkParameterName() {
         return linkParameterName;
     }

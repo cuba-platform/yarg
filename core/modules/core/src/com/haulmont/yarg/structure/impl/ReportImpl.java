@@ -13,12 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.structure.impl;
 
 import com.google.common.base.Preconditions;
@@ -33,7 +27,8 @@ public class ReportImpl implements Report {
     protected List<ReportParameter> reportParameters;
     protected List<ReportFieldFormat> reportFieldFormats;
 
-    public ReportImpl(String name, Map<String, ReportTemplate> reportTemplates, ReportBand rootBand, List<ReportParameter> reportParameters, List<ReportFieldFormat> reportFieldFormats) {
+    public ReportImpl(String name, Map<String, ReportTemplate> reportTemplates, ReportBand rootBand,
+                      List<ReportParameter> reportParameters, List<ReportFieldFormat> reportFieldFormats) {
         this.name = name;
         this.reportTemplates = reportTemplates;
         this.rootBand = rootBand;

@@ -13,12 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.structure.xml.impl;
 
 import com.haulmont.yarg.exception.ReportingXmlException;
@@ -50,7 +44,7 @@ public class DefaultXmlReader implements XmlReader {
     @Override
     public Report parseXml(String xml) throws IOException {
         try {
-            SAXReader reader = null;
+            SAXReader reader;
             try {
                 SAXParserFactory factory = SAXParserFactory.newInstance();
 

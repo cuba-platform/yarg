@@ -1,7 +1,17 @@
-/**
+/*
+ * Copyright 2013 Haulmont
  *
- * @author degtyarjov
- * @version $Id$
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package integration;
 
@@ -182,7 +192,7 @@ public class XlsIntegrationTest {
         BandData band2_3 = band(13, 24, BandOrientation.HORIZONTAL, null, "Band2");
         BandData band3_1 = band(111, null, BandOrientation.VERTICAL, band2_3, "Band3");
         BandData band3_2 = band(222, null, BandOrientation.VERTICAL, band2_3, "Band3");
-        band1_2.addChildren(Arrays.asList(band2_3));
+        band1_2.addChildren(Collections.singletonList(band2_3));
         band2_3.addChildren(Arrays.asList(band3_1, band3_2));
 
         BandData band1_3 = band(3, 4, BandOrientation.HORIZONTAL, null, "Band1");
@@ -206,5 +216,4 @@ public class XlsIntegrationTest {
         band1_1.setData(datamap);
         return band1_1;
     }
-
 }

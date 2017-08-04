@@ -1,15 +1,15 @@
 allprojects {
     apply(plugin: 'java')
     apply(plugin: 'idea')
-    sourceCompatibility = '1.6'
-    targetCompatibility = '1.6'
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 }
 
 def projectName = "YARG (Yet another report generator)"
 def projectDescription = "Open source library for report generation. Provided by Haulmont."
 def projectUrl = "https://github.com/cuba-platform/yarg"
 
-def artifactVersion = '1.1-SNAPSHOT'
+def artifactVersion = '2.0-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
@@ -68,7 +68,7 @@ configure([api, core]) {
     }
 
     dependencies {
-        compile(group: 'com.google.guava', name: 'guava', version: '17.0')
+        compile(group: 'com.google.guava', name: 'guava', version: '19.0')
         deployerJars(group: 'org.apache.maven.wagon', name: 'wagon-http', version: '1.0-beta-2')
     }
 
@@ -185,14 +185,13 @@ configure(core) {
         compile(group: 'commons-cli', name: 'commons-cli', version: '1.2')
         compile(group: 'commons-logging', name: 'commons-logging', version: '1.1.1')
         compile(group: 'commons-lang', name: 'commons-lang', version: '2.6')
-        compile(group: 'commons-collections', name: 'commons-collections', version: '3.2.1')
         compile(group: 'commons-io', name: 'commons-io', version: '1.4')
         compile(group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4')
         compile(group: 'dom4j', name: 'dom4j', version: '1.6.1')
         compile(group: 'log4j', name: 'log4j', version: '1.2.16')
         compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5')
         compile(group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5')
-        compile(group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6')
+        compile(group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.12')
         compile(group: 'antlr', name: 'antlr', version: '2.7.7')
         compile(group: 'asm', name: 'asm', version: '3.3.1')
         compile(group: 'org.antlr', name: 'antlr-runtime', version: '3.2')
@@ -225,7 +224,6 @@ configure(core) {
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }
-        compile(group: 'commons-codec', name: 'commons-codec', version: '1.6')
         compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.0.6')
         compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.0.6') {
             exclude(group: 'org.bouncycastle', module: 'bctsp-jdk14')

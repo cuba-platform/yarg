@@ -14,11 +14,6 @@
  * the License.
  */
 
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.loaders;
 
 /**

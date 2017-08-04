@@ -13,12 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.formatters.impl.xlsx;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
@@ -48,7 +42,6 @@ public class Document {
     protected SharedStrings sharedStrings;
     protected StyleSheet styleSheet;
     protected HashSet<Part> handled = new HashSet<Part>();
-
 
     public static Document create(SpreadsheetMLPackage thePackage) {
         Document document = new Document();

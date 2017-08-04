@@ -13,12 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/**
- *
- * @author degtyarjov
- * @version $Id$
- */
 package com.haulmont.yarg.structure;
 
 import com.haulmont.yarg.formatters.CustomReport;
@@ -30,7 +24,7 @@ import java.io.Serializable;
  * This interface describes report template document.
   */
 public interface ReportTemplate extends Serializable {
-    public static final String DEFAULT_TEMPLATE_CODE = "DEFAULT";
+    String DEFAULT_TEMPLATE_CODE = "DEFAULT";
 
     String getCode();
 
