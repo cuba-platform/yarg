@@ -18,7 +18,7 @@
 
 <report name="report">
     <templates>
-        <template code="DEFAULT" documentName="test.xls" documentPath="./modules/core/test/console/console.xls" outputType="xls"
+        <template code="DEFAULT" documentName="test.xls" documentPath="./modules/console/test/console/console.xls" outputType="xls"
                   outputNamePattern="outputNamePattern"/>
     </templates>
     <parameters>

@@ -23,7 +23,7 @@ public class ConsoleRunnerTest {
     public void testConsoleReport() throws Exception {
         ConsoleRunner.doExitWhenFinished = false;
         ConsoleRunner.main(new String[]{
-                "-" + ConsoleRunner.REPORT_PATH, "./modules/core/test/console/console.xml",
+                "-" + ConsoleRunner.REPORT_PATH, "./modules/console/test/console/console.xml",
                 "-" + ConsoleRunner.OUTPUT_PATH, "./result/console/console.xls",
                 "-Pparam2=12/12/12 12:12",
                 "-Pparam3=10",

@@ -1,15 +1,14 @@
 package sample.bookstore2.bookstore
 
 import com.google.common.collect.ArrayListMultimap
-import com.google.common.collect.Multimap
-import com.haulmont.yarg.console.ConsoleRunner
+import com.haulmont.yarg.console.DatasourceHolder
 import com.haulmont.yarg.util.db.QueryRunner
 import com.haulmont.yarg.util.db.ResultSetHandler
 
 import java.sql.ResultSet
 import java.sql.SQLException
 
-QueryRunner runner = new QueryRunner(ConsoleRunner.dataSource);
+QueryRunner runner = new QueryRunner(DatasourceHolder.dataSource);
 def query =
         'select shop.id as "id", shop.name as "name", shop.address as "address", ' +
                 '           book.author as "author", book.name as "name", book.price as "price", count(*) as "count" ' +
