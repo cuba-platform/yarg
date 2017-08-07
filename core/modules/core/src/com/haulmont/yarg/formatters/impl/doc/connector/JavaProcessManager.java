@@ -22,10 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author subbotin
- * @version $Id$
- */
 public class JavaProcessManager implements ProcessManager {
     protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
 

@@ -19,7 +19,7 @@ package com.haulmont.yarg.loaders.impl;
 import com.haulmont.yarg.exception.DataLoadingException;
 import com.haulmont.yarg.structure.BandData;
 import groovy.text.GStringTemplateEngine;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.*;

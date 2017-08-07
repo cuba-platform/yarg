@@ -10,10 +10,6 @@ import org.docx4j.wml.P;
 import java.net.URLDecoder;
 import java.util.List;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
 public class UrlVisitor extends TraversalUtil.CallbackImpl {
     protected DocxFormatterDelegate docxFormatter;
     protected MainDocumentPart mainDocumentPart;

@@ -1,18 +1,10 @@
 package com.haulmont.yarg.formatters.impl.docx;
 
 import com.haulmont.yarg.formatters.impl.DocxFormatterDelegate;
-import org.docx4j.TraversalUtil;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
-/**
-* @author degtyarjov
-* @version $Id$
-*/
 public class RegexpFinder<T> extends AbstractRegexpFinder<T> {
     protected String value;
 

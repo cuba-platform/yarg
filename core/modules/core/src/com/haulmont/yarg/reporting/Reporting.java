@@ -26,7 +26,7 @@ import com.haulmont.yarg.structure.*;
 import com.haulmont.yarg.util.converter.ObjectToStringConverter;
 import com.haulmont.yarg.util.converter.ObjectToStringConverterImpl;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -35,7 +35,7 @@ import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
 import org.apache.poi.hssf.record.EscherAggregate;
 import org.apache.poi.hssf.usermodel.*;

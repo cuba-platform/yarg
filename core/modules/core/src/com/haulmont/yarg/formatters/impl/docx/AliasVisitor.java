@@ -12,10 +12,6 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 import java.util.List;
 import java.util.Set;
 
-/**
-* @author degtyarjov
-* @version $Id$
-*/
 public abstract class AliasVisitor extends TraversalUtil.CallbackImpl {
     protected DocxFormatterDelegate docxFormatter;
 

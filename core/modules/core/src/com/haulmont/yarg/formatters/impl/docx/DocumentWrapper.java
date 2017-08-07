@@ -10,10 +10,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import java.util.List;
 import java.util.Set;
 
-/**
-* @author degtyarjov
-* @version $Id$
-*/
 public class DocumentWrapper {
     protected DocxFormatterDelegate docxFormatter;
     protected WordprocessingMLPackage wordprocessingMLPackage;

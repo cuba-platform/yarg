@@ -27,7 +27,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;

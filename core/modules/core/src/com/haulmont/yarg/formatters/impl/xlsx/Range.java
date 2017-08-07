@@ -16,7 +16,7 @@
 
 package com.haulmont.yarg.formatters.impl.xlsx;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xlsx4j.sml.Cell;
 
 import java.util.*;

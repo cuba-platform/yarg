@@ -18,7 +18,7 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +28,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-/**
- * @author subbotin
- * @version $Id$
- */
 public class WinProcessManager extends JavaProcessManager implements ProcessManager {
     protected static final Logger log = LoggerFactory.getLogger(WinProcessManager.class);
 

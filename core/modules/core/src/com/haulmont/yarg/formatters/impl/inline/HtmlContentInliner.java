@@ -23,7 +23,7 @@ import com.sun.star.text.XText;
 import com.sun.star.text.XTextCursor;
 import com.sun.star.text.XTextRange;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;

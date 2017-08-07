@@ -13,10 +13,6 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 import java.util.*;
 import java.util.regex.Matcher;
 
-/**
-* @author degtyarjov
-* @version $Id$
-*/
 public class TableCollector extends TraversalUtil.CallbackImpl {
     private DocxFormatterDelegate docxFormatter;
     protected Stack<TableManager> currentTables = new Stack<TableManager>();

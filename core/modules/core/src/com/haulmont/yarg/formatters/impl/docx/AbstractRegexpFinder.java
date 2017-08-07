@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public abstract class AbstractRegexpFinder<T> extends TraversalUtil.CallbackImpl {
     protected DocxFormatterDelegate docxFormatter;

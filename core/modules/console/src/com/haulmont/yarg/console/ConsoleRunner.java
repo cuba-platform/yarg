@@ -37,7 +37,7 @@ import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

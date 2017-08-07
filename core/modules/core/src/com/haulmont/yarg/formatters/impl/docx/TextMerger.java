@@ -9,10 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/**
-* @author degtyarjov
-* @version $Id$
-*/
 public class TextMerger {
     protected Set<Text> resultingTexts = new HashSet<Text>();
     protected Set<Text> textsToRemove = new HashSet<Text>();

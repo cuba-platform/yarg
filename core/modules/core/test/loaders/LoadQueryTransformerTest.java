@@ -14,7 +14,7 @@ import com.haulmont.yarg.loaders.impl.AbstractDbDataLoader;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
 import junit.framework.Assert;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.util.Arrays;

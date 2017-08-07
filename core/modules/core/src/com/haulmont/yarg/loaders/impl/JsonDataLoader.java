@@ -20,7 +20,7 @@ import com.haulmont.yarg.loaders.impl.json.JsonMap;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
 import com.jayway.jsonpath.JsonPath;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;

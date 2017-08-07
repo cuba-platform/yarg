@@ -21,7 +21,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportQuery;
 import com.haulmont.yarg.util.db.QueryRunner;
 import com.haulmont.yarg.util.db.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;

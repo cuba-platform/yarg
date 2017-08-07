@@ -19,7 +19,7 @@ import com.haulmont.yarg.exception.InitializationException;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
 import com.haulmont.yarg.util.db.DatasourceCreator;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.sql.DataSource;
 import java.io.IOException;

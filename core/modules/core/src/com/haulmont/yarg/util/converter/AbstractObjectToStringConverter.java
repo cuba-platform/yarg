@@ -1,8 +1,8 @@
 package com.haulmont.yarg.util.converter;
 
 import com.haulmont.yarg.exception.ReportingException;
-import org.apache.commons.lang.reflect.ConstructorUtils;
-import org.apache.commons.lang.reflect.MethodUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

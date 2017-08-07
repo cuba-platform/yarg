@@ -8,7 +8,7 @@ import org.docx4j.wml.Text;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * @author degtyarjov

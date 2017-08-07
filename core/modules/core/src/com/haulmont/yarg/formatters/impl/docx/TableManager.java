@@ -11,7 +11,7 @@ import org.docx4j.wml.Tr;
 
 import java.util.regex.Matcher;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * @author degtyarjov

@@ -6,10 +6,6 @@ import org.docx4j.wml.Text;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
 public class TextVisitor extends AliasVisitor {
     protected Set<TextWrapper> textWrappers = new HashSet<TextWrapper>();
 
