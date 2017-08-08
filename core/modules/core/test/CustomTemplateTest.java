@@ -1,7 +1,7 @@
 import com.haulmont.yarg.formatters.CustomReport;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
-import com.haulmont.yarg.loaders.factory.PropertiesSqlLoaderFactory;
+import com.haulmont.yarg.PropertiesSqlLoaderFactory;
 import com.haulmont.yarg.reporting.ReportOutputDocument;
 import com.haulmont.yarg.reporting.Reporting;
 import com.haulmont.yarg.reporting.RunParams;

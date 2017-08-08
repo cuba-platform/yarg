@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.haulmont.yarg.loaders.factory;
+package com.haulmont.yarg.console;
 
 import com.haulmont.yarg.exception.InitializationException;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
-import com.haulmont.yarg.util.db.DatasourceCreator;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
+import org.apache.commons.dbcp.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.sql.DataSource;
@@ -42,13 +42,45 @@ public class PropertiesSqlLoaderFactory {
 
             if (StringUtils.isBlank(driver) || StringUtils.isBlank(dbUrl)) {
                 return null;
-                }
+            }
 
-            DataSource dataSource = DatasourceCreator.setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
-            SqlDataLoader sqlDataLoader = new SqlDataLoader(dataSource);
-            return sqlDataLoader;
+            DataSource dataSource = setupDataSource(driver, dbUrl, user, password, 3, 2, 1);
+            return new SqlDataLoader(dataSource);
         } catch (IOException e) {
             throw new InitializationException("An error occurred while loading properties", e);
+        }
+    }
+
+    protected DataSource setupDataSource(String driver, String connectURI,
+                                         String username,
+                                         String password,
+                                         Integer maxActive,
+                                         Integer maxIdle,
+                                         Integer maxWait) {
+        try {
+            Class.forName(driver);
+            final AbandonedConfig config = new AbandonedConfig();
+            config.setLogAbandoned(true);
+
+            AbandonedObjectPool connectionPool = new AbandonedObjectPool(null, config);
+
+            connectionPool.setMaxIdle(maxIdle);
+            connectionPool.setMaxActive(maxActive);
+            if (maxWait != null) {
+                connectionPool.setMaxWait(maxWait);
+            }
+
+            ConnectionFactory connectionFactory =
+                    new DriverManagerConnectionFactory(connectURI, username, password);
+
+            PoolableConnectionFactory poolableConnectionFactory =
+                    new PoolableConnectionFactory(
+                            connectionFactory, connectionPool, null, null, false, true);
+
+            connectionPool.setFactory(poolableConnectionFactory);
+            return new PoolingDataSource(connectionPool);
+        } catch (ClassNotFoundException e) {
+            throw new InitializationException("An error occurred during creation of new datasource object", e);
         }
     }
 }

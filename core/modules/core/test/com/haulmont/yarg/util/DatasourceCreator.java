@@ -1,4 +1,4 @@
-package com.haulmont.yarg.util.db;
+package com.haulmont.yarg.util;
 
 import com.haulmont.yarg.exception.InitializationException;
 import org.apache.commons.dbcp.*;

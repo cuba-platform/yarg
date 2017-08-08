@@ -1,6 +1,6 @@
 package utils;
 
-import com.haulmont.yarg.util.db.DatasourceCreator;
+import com.haulmont.yarg.util.DatasourceCreator;
 import org.hsqldb.Server;
 
 import javax.sql.DataSource;

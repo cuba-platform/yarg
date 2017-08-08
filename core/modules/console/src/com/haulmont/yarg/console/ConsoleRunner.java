@@ -18,7 +18,6 @@ package com.haulmont.yarg.console;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
-import com.haulmont.yarg.loaders.factory.PropertiesSqlLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.JsonDataLoader;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
