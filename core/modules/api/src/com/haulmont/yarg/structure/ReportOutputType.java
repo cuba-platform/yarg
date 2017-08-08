@@ -15,8 +15,6 @@
  */
 package com.haulmont.yarg.structure;
 
-import com.google.common.base.Preconditions;
-
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Map;
@@ -52,7 +50,9 @@ public class ReportOutputType implements Serializable {
     }
 
     protected static void registerOutputType(ReportOutputType outputType) {
-        Preconditions.checkNotNull(outputType, "\"outputType\" parameter can not be null");
+        if (outputType == null) {
+            throw new NullPointerException("\"outputType\" parameter can not be null");
+        }
         values.put(outputType.id, outputType);
     }
 
@@ -61,7 +61,9 @@ public class ReportOutputType implements Serializable {
     }
 
     public ReportOutputType(String id) {
-        Preconditions.checkNotNull(id, "\"id\" field can not be null");
+        if (id == null) {
+            throw new NullPointerException("\"id\" field can not be null");
+        }
         this.id = id;
     }
 

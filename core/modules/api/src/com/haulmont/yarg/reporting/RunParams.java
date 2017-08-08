@@ -15,7 +15,6 @@
  */
 package com.haulmont.yarg.reporting;
 
-import com.google.common.base.Preconditions;
 import com.haulmont.yarg.structure.Report;
 import com.haulmont.yarg.structure.ReportTemplate;
 
@@ -40,9 +39,13 @@ public class RunParams {
      * @param templateCode - string code of template
      */
     public RunParams templateCode(String templateCode) {
-        Preconditions.checkNotNull(templateCode, "\"templateCode\" parameter can not be null");
+        if (templateCode == null) {
+            throw new NullPointerException("\"templateCode\" parameter can not be null");
+        }
         this.reportTemplate = report.getReportTemplates().get(templateCode);
-        Preconditions.checkNotNull(reportTemplate, String.format("Report template not found for code [%s]", templateCode));
+        if (reportTemplate == null) {
+            throw new NullPointerException(String.format("Report template not found for code [%s]", templateCode));
+        }
         return this;
     }
 
@@ -50,7 +53,9 @@ public class RunParams {
      * Setup template. Throws validation exception if template is null
      */
     public RunParams template(ReportTemplate reportTemplate) {
-        Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" parameter can not be null");
+        if (reportTemplate == null) {
+            throw new NullPointerException("\"reportTemplate\" parameter can not be null");
+        }
         this.reportTemplate = reportTemplate;
         return this;
     }
@@ -59,7 +64,9 @@ public class RunParams {
      * Adds parameters from map
      */
     public RunParams params(Map<String, Object> params) {
-        Preconditions.checkNotNull(params, "\"params\" parameter can not be null");
+        if (params == null) {
+            throw new NullPointerException("\"params\" parameter can not be null");
+        }
         this.params.putAll(params);
         return this;
     }

@@ -16,8 +16,6 @@
 
 package com.haulmont.yarg.structure;
 
-import com.google.common.base.Preconditions;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -229,7 +227,9 @@ public class BandData implements Serializable {
         protected BandData foundBand;
 
         public BandNameVisitor(String name) {
-            Preconditions.checkNotNull(name, "Could not find band with name = null");
+            if (name == null) {
+                throw new NullPointerException("Could not find band with name = null");
+            }
             this.name = name;
         }
 
