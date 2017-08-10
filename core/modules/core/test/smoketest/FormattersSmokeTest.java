@@ -308,4 +308,26 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
 
         IOUtils.closeQuietly(outputStream);
     }
+
+    @Test
+    public void testCsv() throws Exception {
+        BandData root = new BandData("Root");
+        BandData header = new BandData("Header", root);
+        BandData first = new BandData("First", root);
+        first.addData("firstName", "first");
+        first.addData("lastName", "last");
+        first.addData("amount", "1");
+        BandData second = new BandData("Second", root);
+        second.addData("firstName", "second");
+        second.addData("lastName", "last 2");
+        second.addData("amount", "2");
+        root.addChildren(Arrays.asList(header, first, second));
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.csv");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("csv", root,
+                new ReportTemplateImpl("", "test.csv", "./modules/core/test/smoketest/test.csv", ReportOutputType.csv), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
 }

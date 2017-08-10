@@ -89,6 +89,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         };
         formattersMap.put("xlsx", xlsxCreator);
         formattersMap.put("xlsm", xlsxCreator);
+        FormatterCreator csvCreator = new FormatterCreator() {
+            @Override
+            public ReportFormatter create(FormatterFactoryInput factoryInput) {
+                CsvFormatter csvFormatter = new CsvFormatter(factoryInput);
+                return csvFormatter;
+            }
+        };
+        formattersMap.put("csv", csvCreator);
     }
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
