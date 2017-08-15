@@ -26,6 +26,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.BandVisitor;
 import com.haulmont.yarg.structure.ReportOutputType;
+import com.opencsv.CSVWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.docx4j.XmlUtils;
@@ -47,6 +48,7 @@ import org.xlsx4j.sml.CTHeaderFooter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -108,6 +110,9 @@ public class XlsxFormatter extends AbstractFormatter {
             if (ReportOutputType.xlsx.equals(reportTemplate.getOutputType())) {
                 writeToOutputStream(result.getPackage(), outputStream);
                 outputStream.flush();
+            } else if (ReportOutputType.csv.equals(reportTemplate.getOutputType())) {
+                saveXlsxAsCsv(result, outputStream);
+                outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
                 if (pdfConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -125,7 +130,7 @@ public class XlsxFormatter extends AbstractFormatter {
         } catch (Docx4JException e) {
             throw wrapWithReportingException("An error occurred while saving result report", e);
         } catch (IOException e) {
-            throw wrapWithReportingException("An error occurred while saving result report to PDF", e);
+            throw wrapWithReportingException("An error occurred while saving result report to " + reportTemplate.getOutputType().getId(), e);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
@@ -869,6 +874,31 @@ public class XlsxFormatter extends AbstractFormatter {
         }
 
         return null;
+    }
+
+    protected void saveXlsxAsCsv(Document document, OutputStream outputStream) throws IOException, Docx4JException {
+        CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), ';', CSVWriter.DEFAULT_QUOTE_CHARACTER);
+
+        for (Document.SheetWrapper sheetWrapper : document.getWorksheets()) {
+            Worksheet worksheet = sheetWrapper.getWorksheet().getContents();
+            for (Row row : worksheet.getSheetData().getRow()) {
+                String rows[] = new String[row.getC().size()];
+                List<Cell> cells = row.getC();
+
+                boolean emptyRow = true;
+                for (int i = 0; i < cells.size(); i++) {
+                    Cell cell = cells.get(i);
+                    String value = cell.getV();
+                    rows[i] = value;
+                    if (value != null && !value.isEmpty())
+                        emptyRow = false;
+                }
+
+                if (!emptyRow)
+                    writer.writeNext(rows);
+            }
+        }
+        writer.close();
     }
 
     protected void writeToOutputStream(SpreadsheetMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
