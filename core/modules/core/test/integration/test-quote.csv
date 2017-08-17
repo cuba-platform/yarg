@@ -1,2 +1,2 @@
-"First name";"Last name";"Amount";"Date";"BigDecimal";"Double"
-"${firstName}";"${lastName}";"${amount}";"${date}";"${bigdc}";"${double}"
+First name;Last name;Date;BigDecimal
+${firstName};${lastName};${date};${bigdc}

@@ -188,7 +188,7 @@ public class XlsxIntegrationTest {
 
         File sample = new File("./modules/core/test/integration/ethalon_xlsx.csv");
         File result = new File("./result/integration/result_xlsx.csv");
-        boolean isTwoEqual = FileUtils.contentEquals(sample, result);
+        boolean isTwoEqual = FileUtils.contentEqualsIgnoreEOL(sample, result, null);
 
         org.junit.Assert.assertTrue("Files are not equal", isTwoEqual);
     }
