@@ -85,6 +85,8 @@ public class XlsxFormatter extends AbstractFormatter {
     public void renderDocument() {
         init();
 
+        validateTemplateContainsNamedRange();
+
         hintProcessor.init(template, result);
         findVerticalDependencies();
 
@@ -103,6 +105,12 @@ public class XlsxFormatter extends AbstractFormatter {
         hintProcessor.apply();
 
         saveAndClose();
+    }
+
+    protected void validateTemplateContainsNamedRange() {
+        if (Objects.isNull(template.getWorkbook().getDefinedNames())) {
+            throw wrapWithReportingException("An error occurred while rendering document from template. Template does not contains named ranges");
+        }
     }
 
     protected void saveAndClose() {
