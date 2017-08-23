@@ -26,6 +26,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.BandVisitor;
 import com.haulmont.yarg.structure.ReportOutputType;
+import com.haulmont.yarg.util.docx4j.XmlCopyUtils;
 import com.opencsv.CSVWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
@@ -45,6 +46,8 @@ import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
 import org.xlsx4j.sml.CTHeaderFooter;
 
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -69,6 +72,9 @@ public class XlsxFormatter extends AbstractFormatter {
     protected XslxHintProcessor hintProcessor = new XslxHintProcessor();
 
     protected int previousRangesRightOffset;
+
+    protected Unmarshaller unmarshaller;
+    protected Marshaller marshaller;
 
     protected static final Logger log = LoggerFactory.getLogger(XlsxFormatter.class);
 
@@ -138,10 +144,12 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void init() {
         try {
-            template = Document.create((SpreadsheetMLPackage) SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
-            result = Document.create((SpreadsheetMLPackage) SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
+            template = Document.create(SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
+            result = Document.create(SpreadsheetMLPackage.load(reportTemplate.getDocumentContent()));
             result.getWorkbook().getCalcPr().setCalcMode(STCalcMode.AUTO);
             result.getWorkbook().getCalcPr().setFullCalcOnLoad(true);
+            marshaller = XmlCopyUtils.createMarshaller(Context.jcSML);
+            unmarshaller = XmlCopyUtils.createUnmarshaller(Context.jcSML);
         } catch (Exception e) {
             throw wrapWithReportingException(String.format("An error occurred while loading template [%s]", reportTemplate.getDocumentName()), e);
         }
@@ -729,11 +737,11 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(Range templateRange, BandData bandData, Row newRow, List<Cell> templateCells) {
-        List<Cell> resultCells = new ArrayList<Cell>();
+        List<Cell> resultCells = new ArrayList<>();
 
         Worksheet resultWorksheet = getWorksheet(newRow);
         for (Cell templateCell : templateCells) {
-            Cell newCell = XmlUtils.deepCopy(templateCell, Context.jcSML);
+            Cell newCell = copyCell(templateCell);
 
             if (newCell.getF() != null) {
                 addFormulaForPostProcessing(templateRange, bandData, newRow, templateCell, newCell);
@@ -777,6 +785,10 @@ public class XlsxFormatter extends AbstractFormatter {
 
         }
         return resultCells;
+    }
+
+    protected Cell copyCell(Cell cell) {
+        return XmlCopyUtils.copyCell(cell, unmarshaller, marshaller);
     }
 
     protected Worksheet getWorksheet(Row newRow) {
@@ -910,7 +922,7 @@ public class XlsxFormatter extends AbstractFormatter {
         for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
             Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
             if (worksheet.getHeaderFooter() != null) {
-                CTHeaderFooter headerFooter  = worksheet.getHeaderFooter();
+                CTHeaderFooter headerFooter = worksheet.getHeaderFooter();
                 if (headerFooter.getOddHeader() != null) {
                     headerFooter.setOddHeader(insertBandDataToString(headerFooter.getOddHeader()));
                 }
@@ -924,7 +936,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void updateSheetNames() {
         Sheets sheets = result.getWorkbook().getSheets();
         if (sheets != null && sheets.getSheet() != null) {
-            for (Sheet sheet: sheets.getSheet()) {
+            for (Sheet sheet : sheets.getSheet()) {
                 if (sheet.getName() != null) {
                     sheet.setName(insertBandDataToString(sheet.getName()));
                 }
