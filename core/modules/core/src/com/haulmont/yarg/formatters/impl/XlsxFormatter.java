@@ -109,7 +109,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void validateTemplateContainsNamedRange() {
         if (Objects.isNull(template.getWorkbook().getDefinedNames())) {
-            throw wrapWithReportingException("An error occurred while rendering document from template. Template does not contains named ranges");
+            throw wrapWithReportingException("An error occurred while rendering document from template. Template does not contain named ranges");
         }
     }
 
