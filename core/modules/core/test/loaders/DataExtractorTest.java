@@ -38,8 +38,7 @@ public class DataExtractorTest {
 
     @Test
     public void testSelectingEmptyBands() throws Exception {
-        DefaultLoaderFactory loaderFactory = new DefaultLoaderFactory();
-        loaderFactory.setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()));
+        DefaultLoaderFactory loaderFactory = initLoaderFactory();
 
         DataExtractorImpl dataExtractor = new DataExtractorImpl(loaderFactory) {
             {
@@ -69,6 +68,25 @@ public class DataExtractorTest {
         Assert.assertEquals(0, rootBand.getChildrenList().size());
     }
 
+    @Test
+    public void returnImmutableMapShouldNotThrowException() throws Exception {
+        DefaultLoaderFactory loaderFactory = initLoaderFactory();
+        DataExtractorImpl dataExtractor = new DataExtractorImpl(loaderFactory);
+        Report report = createReportReturnImmutableMapAsQuery();
+        BandData rootBand = rootBand();
+        Map<String, Object> dummyParams = new HashMap<>();
+        dummyParams.put("param1", "val1");
+        dummyParams.put("param2", "val2");
+        dataExtractor.extractData(report, dummyParams, rootBand);
+        Assert.assertEquals(1, rootBand.getChildrenList().size());
+    }
+
+    private DefaultLoaderFactory initLoaderFactory() {
+        DefaultLoaderFactory loaderFactory = new DefaultLoaderFactory();
+        loaderFactory.setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()));
+        return loaderFactory;
+    }
+
     private BandData rootBand() {
         BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
         rootBand.setData(new HashMap<String, Object>());
@@ -82,6 +100,28 @@ public class DataExtractorTest {
                         .name("Band1")
                         .query("", "return null", "groovy")
                         .child(new BandBuilder().name("Band11").query("", "return null", "groovy").build())
+                        .build()
+                );
+        report.template(
+                new ReportTemplateBuilder()
+                        .code("XLS")
+                        .documentName("result.xls")
+                        .documentPath("./modules/core/test/smoketest/test.xls").readFileFromPath()
+                        .outputType(ReportOutputType.xls)
+                        .outputNamePattern("${Band1.FILE_NAME}")
+                        .build())
+                .name("report");
+
+        return report.build();
+    }
+
+    private Report createReportReturnImmutableMapAsQuery() throws IOException {
+        String query = "return [['var1':'val1'].asImmutable()]";
+
+        ReportBuilder report = new ReportBuilder()
+                .band(new BandBuilder()
+                        .name("Band1")
+                        .query("", query, "groovy")
                         .build()
                 );
         report.template(

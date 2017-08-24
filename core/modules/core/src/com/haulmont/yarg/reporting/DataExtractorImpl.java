@@ -103,6 +103,7 @@ public class DataExtractorImpl implements DataExtractor {
                 //add input params to band
                 //todo eude - probably we need to get rid of the following logic, because leads to errors while logging report
                 for (Map<String, Object> map : result) {
+                    map = new HashMap<>(map);
                     for (Map.Entry<String, Object> paramEntry : params.entrySet()) {
                         if ( !(paramEntry.getValue() instanceof Collection)
                                 && !(paramEntry.getValue() instanceof  Map)
