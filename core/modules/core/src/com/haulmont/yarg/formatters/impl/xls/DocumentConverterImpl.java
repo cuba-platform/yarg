@@ -28,28 +28,39 @@ import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 
-public class PdfConverterImpl implements PdfConverter {
-    protected static final Logger log = LoggerFactory.getLogger(PdfConverterImpl.class);
+public class DocumentConverterImpl implements DocumentConverter {
+    protected static final Logger log = LoggerFactory.getLogger(DocumentConverterImpl.class);
 
     private static final String XLS_TO_PDF_OUTPUT_FILE = "calc_pdf_Export";
     private static final String ODT_TO_PDF_OUTPUT_FILE = "writer_pdf_Export";
+    private static final String XLS_TO_HTML_OUTPUT_FILE = "HTML (StarCalc)";
+    private static final String ODT_TO_HTML_OUTPUT_FILE = "HTML (StarWriter)";
 
     protected OfficeIntegrationAPI officeIntegration;
 
-    public PdfConverterImpl(OfficeIntegrationAPI officeIntegration) {
+    public DocumentConverterImpl(OfficeIntegrationAPI officeIntegration) {
         this.officeIntegration = officeIntegration;
     }
 
-    @Override
     public void convertToPdf(FileType fileType, final byte[] documentBytes, final OutputStream outputStream) {
         String convertPattern = FileType.SPREADSHEET == fileType ? XLS_TO_PDF_OUTPUT_FILE : ODT_TO_PDF_OUTPUT_FILE;
+        convertWithRetry(convertPattern, documentBytes, outputStream);
+    }
+
+    @Override
+    public void convertToHtml(FileType fileType, byte[] documentBytes, OutputStream outputStream) {
+        String convertPattern = FileType.SPREADSHEET == fileType ? XLS_TO_HTML_OUTPUT_FILE : ODT_TO_HTML_OUTPUT_FILE;
+        convertWithRetry(convertPattern, documentBytes, outputStream);
+    }
+
+    protected void convertWithRetry(String convertPattern, final byte[] documentBytes, final OutputStream outputStream) {
         try {
-            doConvertToPdf(convertPattern, documentBytes, outputStream);
+            convertOnes(convertPattern, documentBytes, outputStream);
         } catch (Exception e) {
-            log.warn("An error occurred while converting xls to pdf. System will retry to generate report again.", e);
+            log.warn("An error occurred while converting. System will retry to generate report again.", e);
             for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
                 try {
-                    doConvertToPdf(convertPattern, documentBytes, outputStream);
+                    convertOnes(convertPattern, documentBytes, outputStream);
                     return;
                 } catch (NoFreePortsException e1) {
                     if (e instanceof NoFreePortsException) {
@@ -58,26 +69,23 @@ public class PdfConverterImpl implements PdfConverter {
                 }
             }
 
-            throw new ReportingException("An error occurred while converting xls to pdf.", e);
+            throw new ReportingException("An error occurred while converting.", e);
         }
     }
 
-    private void doConvertToPdf(final String convertPattern, final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
-        OfficeTask officeTask = new OfficeTask() {
-            @Override
-            public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
-                try {
-                    XComponent xComponent = ooResourceProvider.loadXComponent(documentBytes);
-                    saveAndClose(ooResourceProvider, xComponent, outputStream, convertPattern);
-                } catch (Exception e) {
-                    throw new ReportingException("An error occurred while running task in Open Office server", e);
-                }
+    protected void convertOnes(final String convertPattern, final byte[] documentBytes, final OutputStream outputStream) throws NoFreePortsException {
+        OfficeTask officeTask = ooResourceProvider -> {
+            try {
+                XComponent xComponent = ooResourceProvider.loadXComponent(documentBytes);
+                saveAndClose(ooResourceProvider, xComponent, outputStream, convertPattern);
+            } catch (Exception e) {
+                throw new ReportingException("An error occurred while running task in Open Office server", e);
             }
         };
         officeIntegration.runTaskWithTimeout(officeTask, officeIntegration.getTimeoutInSeconds());
     }
 
-    private void saveAndClose(OfficeResourceProvider ooResourceProvider, XComponent xComponent, OutputStream outputStream, String filterName) throws com.sun.star.io.IOException {
+    protected void saveAndClose(OfficeResourceProvider ooResourceProvider, XComponent xComponent, OutputStream outputStream, String filterName) throws com.sun.star.io.IOException {
         OfficeOutputStream officeOutputStream = new OfficeOutputStream(outputStream);
         ooResourceProvider.saveXComponent(xComponent, officeOutputStream, filterName);
         ooResourceProvider.closeXComponent(xComponent);

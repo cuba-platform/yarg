@@ -22,7 +22,7 @@ import com.haulmont.yarg.formatters.impl.docx.TableManager;
 import com.haulmont.yarg.formatters.impl.docx.TextWrapper;
 import com.haulmont.yarg.formatters.impl.docx.UrlVisitor;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
+import com.haulmont.yarg.formatters.impl.xls.DocumentConverter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -64,7 +64,7 @@ public class DocxFormatter extends AbstractFormatter {
 
     protected WordprocessingMLPackage wordprocessingMLPackage;
     protected DocumentWrapper documentWrapper;
-    protected PdfConverter pdfConverter;
+    protected DocumentConverter documentConverter;
 
     public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -72,8 +72,8 @@ public class DocxFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.pdf);
     }
 
-    public void setPdfConverter(PdfConverter pdfConverter) {
-        this.pdfConverter = pdfConverter;
+    public void setDocumentConverter(DocumentConverter documentConverter) {
+        this.documentConverter = documentConverter;
     }
 
     @Override
@@ -134,20 +134,28 @@ public class DocxFormatter extends AbstractFormatter {
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
                 convertAltChunks();
-                if (pdfConverter != null) {
+                if (documentConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(wordprocessingMLPackage, bos);
-                    pdfConverter.convertToPdf(PdfConverter.FileType.DOCUMENT, bos.toByteArray(), outputStream);
+                    documentConverter.convertToPdf(DocumentConverter.FileType.DOCUMENT, bos.toByteArray(), outputStream);
                     outputStream.flush();
                 } else {
                     Docx4J.toPDF(wordprocessingMLPackage, outputStream);
                     outputStream.flush();
                 }
             } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
-                HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
-                htmlSettings.setWmlPackage(wordprocessingMLPackage);
-                Docx4J.toHTML(htmlSettings, outputStream, Docx4J.FLAG_NONE);
-                outputStream.flush();
+                if (documentConverter != null) {
+                    convertAltChunks();
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    writeToOutputStream(wordprocessingMLPackage, bos);
+                    documentConverter.convertToHtml(DocumentConverter.FileType.DOCUMENT, bos.toByteArray(), outputStream);
+                    outputStream.flush();
+                } else {
+                    HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
+                    htmlSettings.setWmlPackage(wordprocessingMLPackage);
+                    Docx4J.toHTML(htmlSettings, outputStream, Docx4J.FLAG_NONE);
+                    outputStream.flush();
+                }
             } else {
                 throw new UnsupportedOperationException(String.format("DocxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
             }

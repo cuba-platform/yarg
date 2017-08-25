@@ -17,11 +17,13 @@ package com.haulmont.yarg.formatters.impl.xls;
 
 import java.io.OutputStream;
 
-public interface PdfConverter {
+public interface DocumentConverter {
     enum FileType {
         SPREADSHEET,
         DOCUMENT
     }
 
     void convertToPdf(FileType fileType, byte[] documentBytes, OutputStream outputStream);
+
+    void convertToHtml(FileType fileType, byte[] documentBytes, OutputStream outputStream);
 }

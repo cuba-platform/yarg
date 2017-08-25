@@ -19,7 +19,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
-import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
+import com.haulmont.yarg.formatters.impl.xls.DocumentConverter;
 import com.haulmont.yarg.formatters.impl.xlsx.*;
 import com.haulmont.yarg.formatters.impl.xlsx.hints.XslxHintProcessor;
 import com.haulmont.yarg.structure.BandData;
@@ -56,7 +56,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
-    protected PdfConverter pdfConverter;
+    protected DocumentConverter documentConverter;
     protected Document template;
     protected Document result;
 
@@ -83,8 +83,8 @@ public class XlsxFormatter extends AbstractFormatter {
         supportedOutputTypes.add(ReportOutputType.xlsx);
     }
 
-    public void setPdfConverter(PdfConverter pdfConverter) {
-        this.pdfConverter = pdfConverter;
+    public void setDocumentConverter(DocumentConverter documentConverter) {
+        this.documentConverter = documentConverter;
     }
 
     @Override
@@ -128,10 +128,10 @@ public class XlsxFormatter extends AbstractFormatter {
                 saveXlsxAsCsv(result, outputStream);
                 outputStream.flush();
             } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
-                if (pdfConverter != null) {
+                if (documentConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(result.getPackage(), bos);
-                    pdfConverter.convertToPdf(PdfConverter.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
+                    documentConverter.convertToPdf(DocumentConverter.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
                     outputStream.flush();
                 } else {
                     throw new UnsupportedOperationException(
