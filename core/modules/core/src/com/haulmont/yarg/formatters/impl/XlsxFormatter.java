@@ -819,13 +819,18 @@ public class XlsxFormatter extends AbstractFormatter {
         newRow.setCustomHeight(true);
         CTPageBreak rowBreaks = templateWorksheet.getRowBreaks();
         if (rowBreaks != null && rowBreaks.getBrk() != null) {
+            CTPageBreak resultWorksheetRowBreaks = resultWorksheet.getRowBreaks();
             for (CTBreak templateBreak : rowBreaks.getBrk()) {
                 if (templateRow.getR().equals(templateBreak.getId())) {
                     CTBreak newBreak = XmlUtils.deepCopy(templateBreak, Context.jcSML);
                     newBreak.setId(newRow.getR());
-                    resultWorksheet.getRowBreaks().getBrk().add(newBreak);
+                    resultWorksheetRowBreaks.getBrk().add(newBreak);
                 }
             }
+
+            long rowBreaksCount = resultWorksheetRowBreaks.getBrk().size();
+            resultWorksheetRowBreaks.setCount(rowBreaksCount);
+            resultWorksheetRowBreaks.setManualBreakCount(rowBreaksCount);
         }
     }
 

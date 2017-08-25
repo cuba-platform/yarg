@@ -58,6 +58,42 @@ public class XlsxSpecificTest extends AbstractFormatSpecificTest{
     }
 
     @Test
+    public void testXlsxRowBreaks() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+
+        root.addChild(new BandData("Header", root, BandOrientation.HORIZONTAL));
+
+        Random random = new Random();
+        for (int i = 1; i <= 100; i++) {
+            BandData band = new BandData("Band", root, BandOrientation.HORIZONTAL);
+            band.addData("i", i);
+            double value1 = 15 + i + Math.abs(random.nextDouble()) * 30;
+            band.addData("value1", value1);
+            double value2 = 20 + i + Math.abs(random.nextDouble()) * 60;
+            band.addData("value2", value2);
+            double value3 = 25 + i + Math.abs(random.nextDouble()) * 90;
+            band.addData("value3", value3);
+            band.addData("value4", (value1 + value2 + value3) / 3);
+            root.addChild(band);
+            if (i % 10 == 0) {
+                band.addChild(new BandData("Footer", band));
+            }
+        }
+
+        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.getFirstLevelBandDefinitionNames().add("Header");
+        root.getFirstLevelBandDefinitionNames().add("Band");
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/row_breaks.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/row_breaks.xlsx", "./modules/core/test/smoketest/row_breaks.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testXlsxStyles() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         root.addChild(new BandData("Header", root, BandOrientation.HORIZONTAL));
