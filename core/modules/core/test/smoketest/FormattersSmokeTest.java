@@ -290,6 +290,42 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     }
 
     @Test
+    public void testXlsxToHtml() throws Exception {
+        BandData root = createRootBand();
+
+        BandData band3_1 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_1.addData("col1", 123);
+        band3_1.addData("col2", 321);
+        BandData band3_2 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_2.addData("col1", 456);
+        band3_2.addData("col2", 654);
+        BandData band3_3 = new BandData("Band3", root, BandOrientation.VERTICAL);
+        band3_3.addData("col1", 789);
+        band3_3.addData("col2", 987);
+        BandData second = new BandData("Second", root, BandOrientation.HORIZONTAL);
+
+
+        root.addChild(band3_1);
+        root.addChild(band3_2);
+        root.addChild(band3_3);
+        root.addChild(second);
+
+        BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
+        split.setData(new HashMap<String, Object>());
+        split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
+        root.addChild(split);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_xlsx.html");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/test.xlsx", "./modules/core/test/smoketest/test.xlsx", ReportOutputType.html), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testHtml() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<String, Object>();

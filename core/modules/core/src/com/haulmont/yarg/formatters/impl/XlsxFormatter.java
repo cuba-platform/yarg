@@ -138,6 +138,17 @@ public class XlsxFormatter extends AbstractFormatter {
                             "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
                                     "Please setup Libre/Open office connection details.");
                 }
+            } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
+                if (documentConverter != null) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    writeToOutputStream(result.getPackage(), bos);
+                    documentConverter.convertToHtml(DocumentConverter.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
+                    outputStream.flush();
+                } else {
+                    throw new UnsupportedOperationException(
+                            "XlsxFormatter could not convert result to html without Libre/Open office connected. " +
+                                    "Please setup Libre/Open office connection details.");
+                }
             } else {
                 throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
             }
