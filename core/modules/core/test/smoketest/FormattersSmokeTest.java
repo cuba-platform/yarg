@@ -126,6 +126,26 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     }
 
     @Test
+    public void testDocxToHtml_OfficeIntegration() throws Exception {
+        BandData root = createRootBand();
+        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+
+        BandData footer = root.getChildByName("Footer");
+        BandData footerChild = new BandData("FooterChild", footer);
+        footerChild.addData("nestedData", "NESTED_DATA");
+        footer.addChild(footerChild);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/result_docx_office.html");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setOfficeIntegration(new OfficeIntegration(openOfficePath, 8100));
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/test.docx", "./modules/core/test/smoketest/test.docx", ReportOutputType.html), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testOdt() throws Exception {
         BandData root = createRootBand();
         root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));

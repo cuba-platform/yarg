@@ -33,8 +33,8 @@ public class DocumentConverterImpl implements DocumentConverter {
 
     private static final String XLS_TO_PDF_OUTPUT_FILE = "calc_pdf_Export";
     private static final String ODT_TO_PDF_OUTPUT_FILE = "writer_pdf_Export";
-    private static final String XLS_TO_HTML_OUTPUT_FILE = "HTML (StarCalc)";
-    private static final String ODT_TO_HTML_OUTPUT_FILE = "HTML (StarWriter)";
+    private static final String XLS_TO_HTML_OUTPUT_FILE = "XHTML Calc File";
+    private static final String ODT_TO_HTML_OUTPUT_FILE = "XHTML Writer File";
 
     protected OfficeIntegrationAPI officeIntegration;
 
