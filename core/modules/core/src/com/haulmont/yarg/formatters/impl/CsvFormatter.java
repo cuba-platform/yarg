@@ -60,7 +60,7 @@ public class CsvFormatter extends AbstractFormatter {
 
             writer.close();
         } catch (IOException e) {
-            throw new ReportFormattingException("Error while writing a csv document");
+            throw new ReportFormattingException("Error while writing a csv document", e);
         }
     }
 

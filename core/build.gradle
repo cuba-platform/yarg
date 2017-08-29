@@ -246,6 +246,17 @@ configure(core) {
         }
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "2.1.0")
         compile(group: "com.opencsv", name: "opencsv", version: "3.10")
+        compile group: 'org.olap4j', name: 'olap4j', version: '1.2.0'
+        compile(group: "net.sf.jasperreports", name: "jasperreports", version: "6.4.1") {
+            exclude(group: 'org.apache.lucene')
+            exclude(group: 'commons-beanutils', module: 'commons-beanutils')
+            exclude(group: 'com.google.zxing', module: 'core')
+            exclude(group: 'com.ibm.icu', module: 'icu4j')
+            exclude(group: 'com.fasterxml.jackson.core')
+            exclude(group: 'org.jfree')
+            exclude(group: 'org.eclipse.jdt.core.compiler', module: 'ecj')
+            exclude(group: 'com.lowagie', module: 'itext')
+        }
 
         testCompile(group: 'junit', name: 'junit', version: '4.5')
         testCompile(group: 'org.hsqldb', name: 'hsqldb', version: '2.3.3')

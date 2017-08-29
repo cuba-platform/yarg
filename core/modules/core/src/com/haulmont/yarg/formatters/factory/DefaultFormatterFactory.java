@@ -74,7 +74,12 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         };
         formattersMap.put("xlsx", xlsxCreator);
         formattersMap.put("xlsm", xlsxCreator);
+
         formattersMap.put("csv", CsvFormatter::new);
+
+        FormatterCreator jasperCreator = JasperFormatter::new;
+        formattersMap.put("jasper", jasperCreator);
+        formattersMap.put("jrxml", jasperCreator);
     }
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
