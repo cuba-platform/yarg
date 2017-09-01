@@ -60,56 +60,62 @@ public class JsonDataLoader extends AbstractDataLoader {
 
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> reportParams) {
-        Map<String, Object> currentParams = new HashMap<String, Object>();
-        if (reportParams != null) {
-            currentParams.putAll(reportParams);
-        }
-
-        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        Map<String, Object> currentParams = copyParameters(reportParams);
 
         Matcher matcher = parameterPattern.matcher(reportQuery.getScript());
         String parameterName = getParameterName(matcher);
 
-        //adds parameters from parent bands hierarchy
-        BandData curentParentBand = parentBand;
-        while (curentParentBand != null) {
-            addParentBandDataToParameters(curentParentBand, currentParams);
-            curentParentBand = curentParentBand.getParentBand();
-        }
+        addParentBandDataToParametersRecursively(parentBand, currentParams);
+
+        List<Map<String, Object>> result;
 
         if (parameterName != null) {
             Object parameterValue = currentParams.get(parameterName);
             if (parameterValue != null && StringUtils.isNotBlank(parameterValue.toString())) {
-                String json = parameterValue.toString();
-                String script = matcher.replaceAll("");
-
-                if (StringUtils.isBlank(script)) {
-                    throw new DataLoadingException(
-                            String.format("The script doesn't contain json path expression. " +
-                                    "Script [%s]", reportQuery.getScript()));
-                }
-
-                matcher = AbstractDbDataLoader.COMMON_PARAM_PATTERN.matcher(script);
-                while (matcher.find()) {
-                    String parameter = matcher.group(1);
-                    script = matcher.replaceAll(String.valueOf(currentParams.get(parameter)));
-                }
-
-                try {
-                    Object scriptResult = JsonPath.read(json, script);
-                    parseScriptResult(result, script, scriptResult);
-                } catch (com.jayway.jsonpath.PathNotFoundException e) {
-                    return Collections.emptyList();
-                } catch (Throwable e) {
-                    throw new DataLoadingException(
-                            String.format("An error occurred while loading data with script [%s]", reportQuery.getScript()), e);
-                }
+                result = loadDataFromScript(reportQuery, currentParams, matcher, parameterValue);
             } else {
                 return Collections.emptyList();
             }
         } else {
             throw new DataLoadingException(String.format("Query string doesn't contain link to parameter. " +
                     "Script [%s]", reportQuery.getScript()));
+        }
+
+        return result;
+    }
+
+    protected List<Map<String, Object>> loadDataFromScript(ReportQuery reportQuery, Map<String, Object> currentParams,
+                                                           Matcher matcher, Object parameterValue) {
+        List<Map<String, Object>> result;
+        String json = parameterValue.toString();
+        String script = matcher.replaceAll("");
+
+        if (StringUtils.isBlank(script)) {
+            throw new DataLoadingException(
+                    String.format("The script doesn't contain json path expression. " +
+                            "Script [%s]", reportQuery.getScript()));
+        }
+
+        matcher = AbstractDbDataLoader.COMMON_PARAM_PATTERN.matcher(script);
+        while (matcher.find()) {
+            String parameter = matcher.group(1);
+            script = matcher.replaceAll(String.valueOf(currentParams.get(parameter)));
+        }
+
+        result = extractScriptResult(json, script, reportQuery);
+        return result;
+    }
+
+    protected List<Map<String, Object>> extractScriptResult(String jsonData, String jsonPathScript, ReportQuery reportQuery) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        try {
+            Object scriptResult = JsonPath.read(jsonData, jsonPathScript);
+            parseScriptResult(result, jsonPathScript, scriptResult);
+        } catch (com.jayway.jsonpath.PathNotFoundException e) {
+            return Collections.emptyList();
+        } catch (Throwable e) {
+            throw new DataLoadingException(
+                    String.format("An error occurred while loading data with script [%s]", reportQuery.getScript()), e);
         }
 
         return result;
@@ -151,5 +157,30 @@ public class JsonDataLoader extends AbstractDataLoader {
 
     protected Map<String, Object> createMap(Map jsonObject) {
         return new JsonMap(jsonObject);
+    }
+
+    protected Map<String, Object> copyParameters(Map<String, Object> parametersToCopy) {
+        Map<String, Object> copyParams = new HashMap<>();
+        if (parametersToCopy != null) {
+            copyParams.putAll(parametersToCopy);
+        }
+        return copyParams;
+    }
+
+    protected void addParentBandDataToParametersRecursively(BandData parentBand, Map<String, Object> currentParams) {
+        while (parentBand != null) {
+            addParentBandDataToParameters(parentBand, currentParams);
+            parentBand = parentBand.getParentBand();
+        }
+    }
+
+    protected void addParentBandDataToParameters(BandData parentBand, Map<String, Object> currentParams) {
+        if (parentBand != null) {
+            String parentBandName = parentBand.getName();
+
+            for (Map.Entry<String, Object> entry : parentBand.getData().entrySet()) {
+                currentParams.put(parentBandName + "." + entry.getKey(), entry.getValue());
+            }
+        }
     }
 }
