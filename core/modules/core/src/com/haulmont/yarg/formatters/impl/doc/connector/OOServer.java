@@ -38,7 +38,7 @@ import java.util.List;
  * http://udk.openoffice.org/source/browse/udk/javaunohelper/com/sun/star/comp/helper/Bootstrap.java?view=markup
  */
 public class OOServer {
-    protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
+    protected static final Logger log = LoggerFactory.getLogger(OOServer.class);
     /**
      * The OOo server process.
      */
@@ -91,7 +91,7 @@ public class OOServer {
      * the pipe name "oooPipe" the accept option looks like this:
      * - accept option    : -accept=pipe,name=oooPipe;urp;
      */
-    public void start() throws BootstrapException, IOException {
+    public synchronized void start() throws BootstrapException, IOException {
         // find office executable relative to this class's class loader
         String sOffice = System.getProperty("os.name").startsWith("Windows") ? "soffice.exe" : "soffice";
         //accept option !Note! we are using old version notation (- instead of --) to support old version of office
@@ -118,8 +118,8 @@ public class OOServer {
         // start office process
         oooProcess = Runtime.getRuntime().exec(oooCommand);
 
-        pipe(oooProcess.getInputStream(), System.out, "CO> ");
-        pipe(oooProcess.getErrorStream(), System.err, "CE> ");
+        pipe(oooProcess.getInputStream(), "OUT");
+        pipe(oooProcess.getErrorStream(), "ERR");
     }
 
     /**
@@ -128,17 +128,17 @@ public class OOServer {
      * nothing.
      * If there has been a previous start, kill destroys the process.
      */
-    public void kill() {
+    public synchronized void kill() {
         if (oooProcess != null) {
-            log.info("OOServer is killing office instance with port " + port);
+            log.info("OOServer is killing office instance with port {}", port);
             List<Long> pids = processManager.findPid(host, port);
             processManager.kill(oooProcess, pids);
             oooProcess = null;
         }
     }
 
-    private static void pipe(final InputStream in, final PrintStream out, final String prefix) {
-        new Thread("Pipe: " + prefix) {
+    protected void pipe(final InputStream in, final String prefix) {
+        new Thread(String.format("OOServer: %s", prefix)) {
             @Override
             public void run() {
                 BufferedReader r = new BufferedReader(new InputStreamReader(in));
@@ -148,10 +148,10 @@ public class OOServer {
                         if (s == null) {
                             break;
                         }
-                        out.println(prefix + s);
+                        log.debug("{}: {}", prefix, s);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace(System.err);
+                    log.debug("OOServer error:", e);
                 }
             }
         }.start();
