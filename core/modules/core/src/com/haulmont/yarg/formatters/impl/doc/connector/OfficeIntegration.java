@@ -15,6 +15,7 @@
  */
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.sun.star.comp.helper.BootstrapException;
 
@@ -39,7 +40,7 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
         this.openOfficePath = openOfficePath;
         this.openOfficePorts = ports;
         initConnections(ports);
-        executor = Executors.newFixedThreadPool(connections.size());
+        executor = createExecutor();
     }
 
     public void setTemporaryDirPath(String temporaryDirPath) {
@@ -150,6 +151,13 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     public void setPlatformDependProcessManagement(boolean platformDependProcessManagement) {
         this.platformDependProcessManagement = platformDependProcessManagement;
+    }
+
+    protected ExecutorService createExecutor() {
+        return Executors.newFixedThreadPool(connections.size(),
+                new ThreadFactoryBuilder()
+                        .setNameFormat("OfficeIntegration-%d")
+                        .build());
     }
 
     protected OfficeConnection acquireConnection() throws NoFreePortsException {
