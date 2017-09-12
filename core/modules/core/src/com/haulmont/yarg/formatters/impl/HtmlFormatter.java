@@ -30,6 +30,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -145,7 +146,7 @@ public class HtmlFormatter extends AbstractFormatter {
 
     protected Template getTemplate() {
         try {
-            String templateContent = IOUtils.toString(reportTemplate.getDocumentContent());
+            String templateContent = IOUtils.toString(reportTemplate.getDocumentContent(), StandardCharsets.UTF_8);
             StringTemplateLoader stringLoader = new StringTemplateLoader();
             stringLoader.putTemplate(reportTemplate.getDocumentName(), templateContent);
 
