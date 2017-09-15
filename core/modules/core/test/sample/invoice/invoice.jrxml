@@ -117,7 +117,7 @@
 			</staticText>
 			<image>
 				<reportElement x="450" y="20" width="50" height="50" uuid="02e361e8-9cab-4a7c-8cf3-9e7debc08f21"/>
-				<imageExpression><![CDATA[$P{CUBA}.bitmap($F{Main.image})]]></imageExpression>
+				<imageExpression><![CDATA[$P{REPORTING}.bitmap($F{Main.image})]]></imageExpression>
 			</image>
 		</band>
 	</columnHeader>
@@ -140,7 +140,7 @@
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<datasetRun subDataset="Dataset2" uuid="a5dad775-27c6-4581-918a-91b5a89f1f01">
-						<dataSourceExpression><![CDATA[$P{CUBA}.dataset("Dataset2")]]></dataSourceExpression>
+						<dataSourceExpression><![CDATA[$P{REPORTING}.dataset("Dataset2")]]></dataSourceExpression>
 					</datasetRun>
 					<jr:column width="250" uuid="f7204607-3d20-483c-90ba-4435ab468d67">
 						<jr:columnHeader style="Table_CH" height="30">
@@ -193,7 +193,7 @@
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<datasetRun subDataset="Dataset3" uuid="8a76ba82-86cf-47c4-bc7e-c69276f32f5b">
-						<dataSourceExpression><![CDATA[$P{CUBA}.dataset("Dataset3")]]></dataSourceExpression>
+						<dataSourceExpression><![CDATA[$P{REPORTING}.dataset("Dataset3")]]></dataSourceExpression>
 					</datasetRun>
 					<jr:column width="250" uuid="a18646fc-053f-4bab-a279-efa5e2275d76">
 						<jr:columnHeader style="Table 1_CH" height="30">

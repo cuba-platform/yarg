@@ -25,7 +25,7 @@ public class JasperFormatter extends AbstractFormatter {
 
     protected static final String CSV_DELIMETER = ";";
 
-    private static final String CUBA_PARAM = "CUBA";
+    private static final String CUBA_PARAM = "REPORTING";
 
     public JasperFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
