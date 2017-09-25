@@ -358,6 +358,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
         root.addData("date2", new Date());
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.pdf");
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        defaultFormatterFactory.setFontsDirectory(fontsDirectory);
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("html", root,
                 new ReportTemplateImpl("", "test.ftl", "./modules/core/test/smoketest/test.ftl", ReportOutputType.pdf), outputStream));
         formatter.renderDocument();

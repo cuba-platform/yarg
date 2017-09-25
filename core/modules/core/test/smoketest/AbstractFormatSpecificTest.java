@@ -17,10 +17,15 @@ import java.util.*;
  */
 public abstract class AbstractFormatSpecificTest {
     protected String openOfficePath = System.getenv("YARG_OPEN_OFFICE_PATH");
+    protected String fontsDirectory = System.getenv("YARG_FONTS_DIRECTORY");
 
     public AbstractFormatSpecificTest() {
         if (StringUtils.isBlank(openOfficePath)) {
             openOfficePath = "C:/Program Files (x86)/LibreOffice 5/program";
+        }
+
+        if (StringUtils.isBlank(fontsDirectory)) {
+            fontsDirectory = "C:/Windows/Fonts";
         }
     }
 

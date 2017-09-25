@@ -32,6 +32,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected OfficeIntegrationAPI officeIntegration;
     protected DocumentConverter documentConverter;
     protected DefaultFormatProvider defaultFormatProvider;
+    protected String fontsDirectory;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
 
@@ -56,6 +57,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         FormatterCreator ftlCreator = factoryInput -> {
             HtmlFormatter htmlFormatter = new HtmlFormatter(factoryInput);
             htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
+            htmlFormatter.setFontsDirectory(getFontsDirectory());
             return htmlFormatter;
         };
         formattersMap.put("ftl", ftlCreator);
@@ -89,6 +91,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setDefaultFormatProvider(DefaultFormatProvider defaultFormatProvider) {
         this.defaultFormatProvider = defaultFormatProvider;
+    }
+
+    public String getFontsDirectory() {
+        return fontsDirectory;
+    }
+
+    public void setFontsDirectory(String fontsDirectory) {
+        this.fontsDirectory = fontsDirectory;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {

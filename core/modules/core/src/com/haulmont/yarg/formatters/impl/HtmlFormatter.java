@@ -20,12 +20,15 @@ import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.beans.MapModel;
 import freemarker.template.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.*;
@@ -36,12 +39,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
+
 /**
  * Document formatter for '.html' and '.ftl' file types
  */
 public class HtmlFormatter extends AbstractFormatter {
     protected BeansWrapper beansWrapper = new BeansWrapper();
     protected ObjectWrapper objectWrapper;
+    protected String fontsDirectory;
 
     public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -79,6 +85,9 @@ public class HtmlFormatter extends AbstractFormatter {
         }
     }
 
+    public void setFontsDirectory(String fontsDirectory) {
+        this.fontsDirectory = fontsDirectory;
+    }
 
     protected void renderPdfDocument(String htmlContent, OutputStream outputStream) {
         ITextRenderer renderer = new ITextRenderer();
@@ -89,6 +98,8 @@ public class HtmlFormatter extends AbstractFormatter {
             dataOutputStream.write(htmlContent.getBytes(Charset.forName("UTF-8")));
             dataOutputStream.close();
 
+            loadFonts(renderer);
+
             String url = temporaryFile.toURI().toURL().toString();
             renderer.setDocument(url);
 
@@ -98,6 +109,40 @@ public class HtmlFormatter extends AbstractFormatter {
             throw wrapWithReportingException("", e);
         } finally {
             FileUtils.deleteQuietly(temporaryFile);
+        }
+    }
+
+    protected void loadFonts(ITextRenderer renderer) {
+        if (StringUtils.isNotBlank(fontsDirectory)) {
+            File systemFontsDir = new File(fontsDirectory);
+            loadFontsFromDirectory(renderer, systemFontsDir);
+        }
+    }
+
+    protected void loadFontsFromDirectory(ITextRenderer renderer, File fontsDir) {
+        if (fontsDir.exists()) {
+            if (fontsDir.isDirectory()) {
+                File[] files = fontsDir.listFiles((dir, name) -> {
+                    String lower = name.toLowerCase();
+                    return lower.endsWith(".otf") || lower.endsWith(".ttf");
+                });
+                for (File file : files) {
+                    try {
+                        // Usage of some fonts may be not permitted
+                        renderer.getFontResolver().addFont(file.getAbsolutePath(), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+                    } catch (IOException | DocumentException e) {
+                        if (StringUtils.contains(e.getMessage(), "cannot be embedded due to licensing restrictions")) {
+                            e.printStackTrace();//todo log message
+                        } else {
+                            e.printStackTrace();//todo log message
+                        }
+                    }
+                }
+            } else {
+                //todo log message
+            }
+        } else {
+            //todo log message
         }
     }
 

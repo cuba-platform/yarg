@@ -121,6 +121,9 @@ public class ConsoleRunner {
         Properties properties = propertiesLoader.load();
         String openOfficePath = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PATH);
         String openOfficePorts = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PORTS);
+        String fontsDirectory = properties.getProperty(PropertiesLoader.CUBA_REPORTING_FONTS_DIRECTORY);
+
+        formatterFactory.setFontsDirectory(fontsDirectory);
         if (StringUtils.isNotBlank(openOfficePath) && StringUtils.isNotBlank(openOfficePorts)) {
             String[] portsStr = openOfficePorts.split("[,|]");
             Integer[] ports = new Integer[portsStr.length];
