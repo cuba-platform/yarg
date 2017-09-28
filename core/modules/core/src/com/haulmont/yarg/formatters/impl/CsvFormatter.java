@@ -33,7 +33,6 @@ public class CsvFormatter extends AbstractFormatter {
 
     @Override
     public void renderDocument() {
-        ReportOutputType outputType = reportTemplate.getOutputType();
         if (ReportOutputType.csv.equals(outputType)) {
             writeCsvDocument(rootBand, outputStream);
         } else {

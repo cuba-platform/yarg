@@ -70,7 +70,6 @@ public class HtmlFormatter extends AbstractFormatter {
 
     @Override
     public void renderDocument() {
-        ReportOutputType outputType = reportTemplate.getOutputType();
         if (ReportOutputType.custom.equals(outputType) || ReportOutputType.csv.equals(outputType) || ReportOutputType.html.equals(outputType)) {
             writeHtmlDocument(rootBand, outputStream);
         } else if (ReportOutputType.pdf.equals(outputType)) {

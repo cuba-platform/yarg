@@ -16,6 +16,7 @@
 package com.haulmont.yarg.reporting;
 
 import com.haulmont.yarg.structure.Report;
+import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class RunParams {
     protected Report report;
     protected ReportTemplate reportTemplate;
+    protected ReportOutputType outputType;
     protected Map<String, Object> params = new HashMap<String, Object>();
 
     public RunParams(Report report) {
@@ -76,6 +78,14 @@ public class RunParams {
      */
     public RunParams param(String key, Object value) {
         params.put(key, value);
+        return this;
+    }
+
+    /**
+     * Add output type
+     */
+    public RunParams output(ReportOutputType outputType) {
+        this.outputType = outputType;
         return this;
     }
 }

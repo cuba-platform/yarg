@@ -84,13 +84,13 @@ public class DocFormatter extends AbstractFormatter {
 
     public void renderDocument() {
         try {
-            doCreateDocument(reportTemplate.getOutputType(), outputStream);
+            doCreateDocument(outputStream);
         } catch (Exception e) {//just try again if any exceptions occurred
             log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report again.", reportTemplate.getDocumentName()), e);
 
             for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
                 try {
-                    doCreateDocument(reportTemplate.getOutputType(), outputStream);
+                    doCreateDocument(outputStream);
                     return;
                 } catch (NoFreePortsException e1) {
                     if (e instanceof NoFreePortsException) {
@@ -105,7 +105,7 @@ public class DocFormatter extends AbstractFormatter {
         }
     }
 
-    protected void doCreateDocument(final ReportOutputType outputType, final OutputStream outputStream) throws NoFreePortsException {
+    protected void doCreateDocument(final OutputStream outputStream) throws NoFreePortsException {
         OfficeTask officeTask = new OfficeTask() {
             @Override
             public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {

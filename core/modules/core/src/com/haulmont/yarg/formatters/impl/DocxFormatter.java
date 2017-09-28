@@ -128,11 +128,11 @@ public class DocxFormatter extends AbstractFormatter {
 
     protected void saveAndClose() {
         try {
-            if (ReportOutputType.docx.equals(reportTemplate.getOutputType())) {
+            if (ReportOutputType.docx.equals(outputType)) {
                 convertAltChunks();
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
                 outputStream.flush();
-            } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
+            } else if (ReportOutputType.pdf.equals(outputType)) {
                 convertAltChunks();
                 if (documentConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -143,7 +143,7 @@ public class DocxFormatter extends AbstractFormatter {
                     Docx4J.toPDF(wordprocessingMLPackage, outputStream);
                     outputStream.flush();
                 }
-            } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
+            } else if (ReportOutputType.html.equals(outputType)) {
                 if (documentConverter != null) {
                     convertAltChunks();
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -157,7 +157,7 @@ public class DocxFormatter extends AbstractFormatter {
                     outputStream.flush();
                 }
             } else {
-                throw new UnsupportedOperationException(String.format("DocxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
+                throw new UnsupportedOperationException(String.format("DocxFormatter could not output file with type [%s]", outputType));
             }
         } catch (Docx4JException e) {
             throw wrapWithReportingException("An error occurred while saving result report", e);

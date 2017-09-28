@@ -69,38 +69,38 @@ public class JasperFormatter extends AbstractFormatter {
     @SuppressWarnings("unchecked")
     protected Exporter createExporter() {
         Exporter exporter;
-        if (ReportOutputType.pdf == reportTemplate.getOutputType()) {
+        if (ReportOutputType.pdf == outputType) {
             exporter = new JRPdfExporter();
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
             exporter.setConfiguration(new SimplePdfExporterConfiguration());
-        } else if (ReportOutputType.html == reportTemplate.getOutputType()) {
+        } else if (ReportOutputType.html == outputType) {
             exporter = new HtmlExporter();
             exporter.setExporterOutput(new SimpleHtmlExporterOutput(outputStream));
             exporter.setConfiguration(new SimpleHtmlExporterConfiguration());
-        } else if (ReportOutputType.csv == reportTemplate.getOutputType()){
+        } else if (ReportOutputType.csv == outputType){
             exporter = new JRCsvExporter();
             exporter.setExporterOutput(new SimpleWriterExporterOutput(outputStream));
             SimpleCsvExporterConfiguration config = new SimpleCsvExporterConfiguration();
             config.setFieldDelimiter(CSV_DELIMETER);
             exporter.setConfiguration(config);
-        } else if (ReportOutputType.doc == reportTemplate.getOutputType() ){
+        } else if (ReportOutputType.doc == outputType ){
             exporter = new JRRtfExporter();
             exporter.setExporterOutput(new SimpleWriterExporterOutput(outputStream));
             exporter.setConfiguration(new SimpleRtfExporterConfiguration());
-        } else if (ReportOutputType.docx == reportTemplate.getOutputType()){
+        } else if (ReportOutputType.docx == outputType){
             exporter = new JRDocxExporter();
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
             exporter.setConfiguration(new SimpleDocxExporterConfiguration());
-        } else if (ReportOutputType.xls == reportTemplate.getOutputType()){
+        } else if (ReportOutputType.xls == outputType){
             exporter = new JRXlsExporter();
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
             exporter.setConfiguration(new SimpleXlsExporterConfiguration());
-        } else if (ReportOutputType.xlsx == reportTemplate.getOutputType()){
+        } else if (ReportOutputType.xlsx == outputType){
             exporter = new JRXlsxExporter();
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
             exporter.setConfiguration(new SimpleXlsxExporterConfiguration());
         } else
-            throw new ReportFormattingException("Cannot create jasper exporter using defined output type: " + reportTemplate.getOutputType());
+            throw new ReportFormattingException("Cannot create jasper exporter using defined output type: " + outputType);
 
         return exporter;
     }

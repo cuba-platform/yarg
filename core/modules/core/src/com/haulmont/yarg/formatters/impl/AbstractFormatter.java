@@ -53,6 +53,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
     protected BandData rootBand;
     protected ReportTemplate reportTemplate;
+    protected ReportOutputType outputType;
     protected OutputStream outputStream;
     protected Set<ReportOutputType> supportedOutputTypes = new HashSet<ReportOutputType>();
     protected DefaultFormatProvider defaultFormatProvider;
@@ -68,6 +69,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
         this.rootBand = formatterFactoryInput.getRootBand();
         this.reportTemplate = formatterFactoryInput.getReportTemplate();
+        this.outputType = (formatterFactoryInput.getOutputType() != null) ? formatterFactoryInput.getOutputType() : reportTemplate.getOutputType();
         this.outputStream = formatterFactoryInput.getOutputStream();
 
         this.contentInliners.add(new BitmapContentInliner());
@@ -77,7 +79,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
     @Override
     public byte[] createDocument() {
-        Preconditions.checkArgument(supportedOutputTypes.contains(reportTemplate.getOutputType()), String.format("%s formatter doesn't support %s output type", getClass(), reportTemplate.getOutputType()));
+        Preconditions.checkArgument(supportedOutputTypes.contains(outputType), String.format("%s formatter doesn't support %s output type", getClass(), outputType));
         outputStream = new ByteArrayOutputStream();
         renderDocument();
         return ((ByteArrayOutputStream) outputStream).toByteArray();

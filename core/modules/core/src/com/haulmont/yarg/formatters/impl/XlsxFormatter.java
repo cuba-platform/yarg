@@ -121,13 +121,13 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void saveAndClose() {
         try {
-            if (ReportOutputType.xlsx.equals(reportTemplate.getOutputType())) {
+            if (ReportOutputType.xlsx.equals(outputType)) {
                 writeToOutputStream(result.getPackage(), outputStream);
                 outputStream.flush();
-            } else if (ReportOutputType.csv.equals(reportTemplate.getOutputType())) {
+            } else if (ReportOutputType.csv.equals(outputType)) {
                 saveXlsxAsCsv(result, outputStream);
                 outputStream.flush();
-            } else if (ReportOutputType.pdf.equals(reportTemplate.getOutputType())) {
+            } else if (ReportOutputType.pdf.equals(outputType)) {
                 if (documentConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(result.getPackage(), bos);
@@ -138,7 +138,7 @@ public class XlsxFormatter extends AbstractFormatter {
                             "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
                                     "Please setup Libre/Open office connection details.");
                 }
-            } else if (ReportOutputType.html.equals(reportTemplate.getOutputType())) {
+            } else if (ReportOutputType.html.equals(outputType)) {
                 if (documentConverter != null) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(result.getPackage(), bos);
@@ -150,12 +150,12 @@ public class XlsxFormatter extends AbstractFormatter {
                                     "Please setup Libre/Open office connection details.");
                 }
             } else {
-                throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", reportTemplate.getOutputType()));
+                throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", outputType));
             }
         } catch (Docx4JException e) {
             throw wrapWithReportingException("An error occurred while saving result report", e);
         } catch (IOException e) {
-            throw wrapWithReportingException("An error occurred while saving result report to " + reportTemplate.getOutputType().getId(), e);
+            throw wrapWithReportingException("An error occurred while saving result report to " + outputType.getId(), e);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }

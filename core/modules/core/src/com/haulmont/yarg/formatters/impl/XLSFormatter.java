@@ -168,8 +168,6 @@ public class XLSFormatter extends AbstractFormatter {
     }
 
     protected void outputDocument() {
-        ReportOutputType outputType = reportTemplate.getOutputType();
-
         if (ReportOutputType.xls.equals(outputType)) {
             try {
                 resultWorkbook.write(outputStream);
