@@ -466,9 +466,15 @@ public class XlsxFormatter extends AbstractFormatter {
         if (calculationChain != null) {
             CTCalcCell calcCell = new CTCalcCell();
             calcCell.setR(cellWithFormula.getR());
-            if (formulaCount == 1) {//just a workaround for Excel, which shows errors if some of <c> tags, except the first, has i attribute
-                calcCell.setI(formulaCount);
-            }
+
+            String sheetName = originalFormulaRange.getSheet();
+            for (Sheet sheet : template.getWorkbook().getSheets().getSheet()) {
+                if (sheet.getName().equals(sheetName)) {
+                    calcCell.setI(((Long) sheet.getSheetId()).intValue());
+                    break;
+                }
+            }            
+
             calculationChain.getC().add(calcCell);
         }
     }
