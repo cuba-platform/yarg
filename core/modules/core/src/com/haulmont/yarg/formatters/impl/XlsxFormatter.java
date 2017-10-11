@@ -466,15 +466,16 @@ public class XlsxFormatter extends AbstractFormatter {
         if (calculationChain != null) {
             CTCalcCell calcCell = new CTCalcCell();
             calcCell.setR(cellWithFormula.getR());
-
             String sheetName = originalFormulaRange.getSheet();
-            for (Sheet sheet : template.getWorkbook().getSheets().getSheet()) {
-                if (sheet.getName().equals(sheetName)) {
-                    calcCell.setI(((Long) sheet.getSheetId()).intValue());
-                    break;
+            Sheets sheets = template.getWorkbook().getSheets();
+            if (sheets != null && sheets.getSheet() != null) {
+                for (Sheet sheet : sheets.getSheet()) {
+                    if (Objects.equals(sheet.getName(), sheetName)) {
+                        calcCell.setI((int) sheet.getSheetId());
+                        break;
+                    }
                 }
-            }            
-
+            }
             calculationChain.getC().add(calcCell);
         }
     }
