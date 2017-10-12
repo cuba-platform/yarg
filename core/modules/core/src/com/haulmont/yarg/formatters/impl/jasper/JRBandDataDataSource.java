@@ -1,6 +1,5 @@
 package com.haulmont.yarg.formatters.impl.jasper;
 
-import com.haulmont.yarg.exception.ReportFormattingException;
 import com.haulmont.yarg.structure.BandData;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -16,6 +15,7 @@ public class JRBandDataDataSource implements JRDataSource {
     protected BandData currentBand;
     protected Iterator<BandData> currentIterator;
     protected Map<BandData, Iterator<BandData>> visitedBands = new HashMap<>();
+    protected Set<BandData> readBands = new HashSet<>();
 
     /**
      * Accepts root element.
@@ -25,8 +25,7 @@ public class JRBandDataDataSource implements JRDataSource {
      */
     public JRBandDataDataSource(BandData root) {
         this.root = root;
-        List<BandData> children = root.getChildrenList();
-        currentIterator = children.iterator();
+        currentIterator = root.getChildrenList().iterator();
         visitedBands.put(root, currentIterator);
         currentBand = root;
     }
@@ -49,7 +48,7 @@ public class JRBandDataDataSource implements JRDataSource {
 
         if (currentIterator.hasNext()) {
             currentBand = currentIterator.next();
-            if (currentBand.getData().isEmpty())
+            if (readBands.contains(currentBand) || currentBand.getData().isEmpty())
                 return next();
 
             return true;
@@ -57,9 +56,6 @@ public class JRBandDataDataSource implements JRDataSource {
             BandData parentBand = currentBand.getParentBand();
             currentBand = parentBand;
             currentIterator = visitedBands.get(parentBand);
-
-            if (currentIterator.hasNext())
-                return next();
 
             if (parentBand == null || parentBand.equals(root))
                 return false;
@@ -76,6 +72,7 @@ public class JRBandDataDataSource implements JRDataSource {
             value = currentBand.getData().get(jrField.getName());
         }
 
+        readBands.add(currentBand);
         return value;
     }
 
@@ -84,18 +81,35 @@ public class JRBandDataDataSource implements JRDataSource {
      * and return new datasource with this band as root element.
      */
     public JRBandDataDataSource subDataSource(String bandName) {
-        List<BandData> childrenList = root.getChildrenList();
-        Iterator<BandData> iterator = childrenList.iterator();
+        if (containsVisitedBand(bandName))
+            return null;
 
-        while (iterator.hasNext()) {
-            BandData bandData = iterator.next();
+        BandData newParentBand = createNewBand(bandName);
 
-            if (bandData.getName().equals(bandName)) {
-                visitedBands.put(bandData, iterator);
-                return new JRBandDataDataSource(bandData);
-            }
+        currentBand = root;
+        currentIterator = root.getChildrenList().iterator();
+        visitedBands.put(root, currentIterator);
+
+        return new JRBandDataDataSource(newParentBand);
+    }
+
+    protected BandData createNewBand(String bandName) {
+        BandData newParentBand = new BandData(bandName);
+        List<BandData> childrenList = root.getChildrenByName(bandName);
+        root.getChildrenBands().remove(bandName);
+        newParentBand.addChildren(childrenList);
+        childrenList.forEach(childBand -> childBand.setParentBand(newParentBand));
+
+        visitedBands.put(newParentBand, newParentBand.getChildrenList().iterator());
+        return newParentBand;
+    }
+
+    protected boolean containsVisitedBand(String bandName) {
+        for (Map.Entry<BandData, Iterator<BandData>> entry : visitedBands.entrySet()) {
+            if (entry.getKey().getName().equals(bandName))
+                return true;
         }
 
-        throw new ReportFormattingException("Cannot create sub data source with band: " + bandName);
+        return false;
     }
 }
