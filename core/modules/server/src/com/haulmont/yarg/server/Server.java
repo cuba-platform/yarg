@@ -72,6 +72,13 @@ public class Server {
         get("/generate", (req, res) -> {
             try {
                 Report report = loadReport(req);
+                if (report == null) {
+                    res.type("application/json");
+                    res.status(400);
+                    return "{\"errorMessage\": " +
+                            "\"Report name is not provided or could not find the report.\"}";
+                }
+
                 Map<String, Object> params = parseParameters(req, report);
                 String templateCode = req.queryParams("templateCode");
                 RunParams reportParams = new RunParams(report).params(params);
@@ -88,16 +95,21 @@ public class Server {
         });
 
         internalServerError((req, res) -> {
-            res.type("text/html");
-            return "<html><body><h1>An exception occurred while generating the report.</h1>" +
-                    "<h1>Please see the server logs for the detailed information.</h1></body></html>";
+            res.type("application/json");
+            res.status(500);
+            return "{\"errorMessage\": " +
+                    "\"An exception occurred while generating the report. Please see the server logs for the detailed information.\"}";
         });
     }
 
     protected Report loadReport(Request req) throws IOException {
         String reportName = req.queryParams("report");
-        XmlReader xmlReader = new DefaultXmlReader();
-        return xmlReader.parseXml(FileUtils.readFileToString(new File(String.format("%s/%s.xml", reportsPath, reportName))));
+        if (StringUtils.isBlank(reportName)) {
+            return null;
+        } else {
+            XmlReader xmlReader = new DefaultXmlReader();
+            return xmlReader.parseXml(FileUtils.readFileToString(new File(String.format("%s/%s.xml", reportsPath, reportName))));
+        }
     }
 
     protected Map<String, Object> parseParameters(Request req, Report report) {
