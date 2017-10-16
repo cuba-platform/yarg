@@ -12,6 +12,7 @@ import com.haulmont.yarg.util.converter.ObjectToStringConverter;
 import com.haulmont.yarg.util.converter.ObjectToStringConverterImpl;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -72,7 +73,12 @@ public class Server {
             try {
                 Report report = loadReport(req);
                 Map<String, Object> params = parseParameters(req, report);
-                ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).params(params));
+                String templateCode = req.queryParams("templateCode");
+                RunParams reportParams = new RunParams(report).params(params);
+                if (StringUtils.isNotBlank(templateCode)) {
+                    reportParams.templateCode(templateCode);
+                }
+                ReportOutputDocument reportOutputDocument = reporting.runReport(reportParams);
                 writeResult(res, reportOutputDocument);
                 return "Ok";
             } catch (Exception e) {
