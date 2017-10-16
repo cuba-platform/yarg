@@ -1,4 +1,4 @@
-package com.haulmont.yarg;
+package com.haulmont.yarg.server;
 
 import com.haulmont.yarg.console.ReportEngineCreator;
 import com.haulmont.yarg.reporting.ReportOutputDocument;
@@ -10,9 +10,10 @@ import com.haulmont.yarg.structure.xml.XmlReader;
 import com.haulmont.yarg.structure.xml.impl.DefaultXmlReader;
 import com.haulmont.yarg.util.converter.ObjectToStringConverter;
 import com.haulmont.yarg.util.converter.ObjectToStringConverterImpl;
-import com.haulmont.yarg.util.properties.DefaultPropertiesLoader;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -25,12 +26,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static spark.Spark.get;
+import static spark.Spark.internalServerError;
 
 public class Server {
     protected String reportsPath;
     protected Integer port;
+    protected PropertiesLoader propertiesLoader;
 
     protected static ObjectToStringConverter converter = new ObjectToStringConverterImpl();
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     public Server reportsPath(String reportsPath) {
         this.reportsPath = reportsPath;
@@ -42,13 +46,15 @@ public class Server {
         return this;
     }
 
+    public Server propertiesLoader(PropertiesLoader propertiesLoader) {
+        this.propertiesLoader = propertiesLoader;
+        return this;
+    }
+
     public void init() throws IOException {
         if (port != null) {
             Spark.port(port);
         }
-
-        //todo set log dir
-        //todo exception handling
 
         initPing();
 
@@ -60,15 +66,25 @@ public class Server {
     }
 
     protected void initGenerate() throws IOException {
-        PropertiesLoader propertiesLoader = new DefaultPropertiesLoader(DefaultPropertiesLoader.DEFAULT_PROPERTIES_PATH);
         Reporting reporting = new ReportEngineCreator().createReportingEngine(propertiesLoader);
 
         get("/generate", (req, res) -> {
-            Report report = loadReport(req);
-            Map<String, Object> params = parseParameters(req, report);
-            ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).params(params));
-            writeResult(res, reportOutputDocument);
-            return "Ok";
+            try {
+                Report report = loadReport(req);
+                Map<String, Object> params = parseParameters(req, report);
+                ReportOutputDocument reportOutputDocument = reporting.runReport(new RunParams(report).params(params));
+                writeResult(res, reportOutputDocument);
+                return "Ok";
+            } catch (Exception e) {
+                logger.error(String.format("An error occurred while generating report [%s]", req.queryParams("report")), e);
+                throw new RuntimeException(e);
+            }
+        });
+
+        internalServerError((req, res) -> {
+            res.type("text/html");
+            return "<html><body><h1>An exception occurred while generating the report.</h1>" +
+                    "<h1>Please see the server logs for the detailed information.</h1></body></html>";
         });
     }
 

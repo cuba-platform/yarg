@@ -18,7 +18,7 @@
 
 <report name="report">
     <templates>
-        <template code="DEFAULT" documentName="test.xlsx" documentPath="./modules/server/src/server.xlsx"
+        <template code="DEFAULT" documentName="test.xlsx" documentPath="./modules/server/test/server.xlsx"
                   outputType="xlsx"
                   outputNamePattern="outputNamePattern"/>
     </templates>
