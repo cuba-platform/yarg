@@ -52,9 +52,9 @@ public class ServerRunner {
     private static Options createOptions() {
         Options options = new Options();
         options.addOption(HELP, false, "show help");
-        options.addOption(PROPERTIES_PATH, true, "reporting.properties file path");
-        options.addOption(SERVER_PORT, true, "reporting server port");
-        options.addOption(REPORTS_DIRECTORY, true, "the directory which contains report xml files");
+        options.addOption(PROPERTIES_PATH, true, "reporting.properties file path (default is ./reporting.properties)");
+        options.addOption(SERVER_PORT, true, "reporting server port (default is 4567)");
+        options.addOption(REPORTS_DIRECTORY, true, "the directory which contains report xml files (default is ./reports/)");
         return options;
     }
 }
