@@ -13,6 +13,7 @@ import static com.haulmont.yarg.console.ConsoleRunner.PROPERTIES_PATH;
 public class ServerRunner {
     private static final String SERVER_PORT = "port";
     private static final String REPORTS_DIRECTORY = "dir";
+    private static final String HELP = "help";
 
     protected static Logger logger = LoggerFactory.getLogger(ServerRunner.class);
 
@@ -24,10 +25,16 @@ public class ServerRunner {
         try {
             cmd = parser.parse(options, args);
 
+            if (cmd.hasOption(HELP)) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("yarg-server", options);
+                System.exit(0);
+            }
+
             PropertiesLoader propertiesLoader = new DefaultPropertiesLoader(
                     cmd.getOptionValue(PROPERTIES_PATH, DefaultPropertiesLoader.DEFAULT_PROPERTIES_PATH));
             int port = Integer.valueOf(cmd.getOptionValue(SERVER_PORT, "4567"));
-            String reportsDirectory = cmd.getOptionValue(REPORTS_DIRECTORY, "./");
+            String reportsDirectory = cmd.getOptionValue(REPORTS_DIRECTORY, "./reports/");
 
 
             Server server = new Server()
@@ -44,9 +51,10 @@ public class ServerRunner {
 
     private static Options createOptions() {
         Options options = new Options();
-        options.addOption(PROPERTIES_PATH, true, "reporting properties path");
+        options.addOption(HELP, false, "show help");
+        options.addOption(PROPERTIES_PATH, true, "reporting.properties file path");
         options.addOption(SERVER_PORT, true, "reporting server port");
-        options.addOption(REPORTS_DIRECTORY, true, "reports directory");
+        options.addOption(REPORTS_DIRECTORY, true, "the directory which contains report xml files");
         return options;
     }
 }

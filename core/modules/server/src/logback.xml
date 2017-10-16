@@ -21,7 +21,8 @@
     when logback.configurationFile system property is not set
  -->
 
-<configuration debug="true">
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -57,6 +58,8 @@
         <appender-ref ref="File"/>
         <appender-ref ref="Console"/>
     </root>
+
+    <logger name="ch.qos.logback" level="ERROR"/>
 
     <logger name="org.apache.commons" level="INFO"/>
 
