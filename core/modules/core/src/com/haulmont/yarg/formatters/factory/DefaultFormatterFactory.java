@@ -19,6 +19,8 @@ import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
+import com.haulmont.yarg.formatters.impl.docx.HtmlImportProcessor;
+import com.haulmont.yarg.formatters.impl.docx.HtmlImportProcessorImpl;
 import com.haulmont.yarg.formatters.impl.xls.DocumentConverter;
 import com.haulmont.yarg.formatters.impl.xls.DocumentConverterImpl;
 import com.haulmont.yarg.structure.BandData;
@@ -32,11 +34,13 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected OfficeIntegrationAPI officeIntegration;
     protected DocumentConverter documentConverter;
     protected DefaultFormatProvider defaultFormatProvider;
+    protected HtmlImportProcessor htmlImportProcessor;
     protected String fontsDirectory;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
 
     public DefaultFormatterFactory() {
+        htmlImportProcessor = new HtmlImportProcessorImpl();
         formattersMap.put("xls", factoryInput -> {
             XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
             xlsFormatter.setDocumentConverter(documentConverter);
@@ -66,6 +70,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             DocxFormatter docxFormatter = new DocxFormatter(factoryInput);
             docxFormatter.setDefaultFormatProvider(defaultFormatProvider);
             docxFormatter.setDocumentConverter(documentConverter);
+            docxFormatter.setHtmlImportProcessor(htmlImportProcessor);
             return docxFormatter;
         });
         FormatterCreator xlsxCreator = factoryInput -> {
@@ -87,6 +92,10 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
         this.officeIntegration = officeIntegrationAPI;
         this.documentConverter = new DocumentConverterImpl(officeIntegrationAPI);
+    }
+
+    public void setHtmlImportProcessor(HtmlImportProcessor htmlImportProcessor) {
+        this.htmlImportProcessor = htmlImportProcessor;
     }
 
     public void setDefaultFormatProvider(DefaultFormatProvider defaultFormatProvider) {

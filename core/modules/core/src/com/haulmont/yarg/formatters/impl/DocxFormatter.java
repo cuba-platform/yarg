@@ -17,10 +17,7 @@ package com.haulmont.yarg.formatters.impl;
 
 
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
-import com.haulmont.yarg.formatters.impl.docx.DocumentWrapper;
-import com.haulmont.yarg.formatters.impl.docx.TableManager;
-import com.haulmont.yarg.formatters.impl.docx.TextWrapper;
-import com.haulmont.yarg.formatters.impl.docx.UrlVisitor;
+import com.haulmont.yarg.formatters.impl.docx.*;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
 import com.haulmont.yarg.formatters.impl.xls.DocumentConverter;
 import com.haulmont.yarg.structure.BandData;
@@ -65,6 +62,7 @@ public class DocxFormatter extends AbstractFormatter {
     protected WordprocessingMLPackage wordprocessingMLPackage;
     protected DocumentWrapper documentWrapper;
     protected DocumentConverter documentConverter;
+    protected HtmlImportProcessor htmlImportProcessor;
 
     public DocxFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -74,6 +72,10 @@ public class DocxFormatter extends AbstractFormatter {
 
     public void setDocumentConverter(DocumentConverter documentConverter) {
         this.documentConverter = documentConverter;
+    }
+
+    public void setHtmlImportProcessor(HtmlImportProcessor htmlImportProcessor) {
+        this.htmlImportProcessor = htmlImportProcessor;
     }
 
     @Override
@@ -220,6 +222,7 @@ public class DocxFormatter extends AbstractFormatter {
         saver.save(outputStream);
     }
 
+    @SuppressWarnings("unchecked")
     public void convertAltChunks() throws Docx4JException {
         JaxbXmlPartAltChunkHost mainDocumentPart = wordprocessingMLPackage.getMainDocumentPart();
         List<Object> contentList = ((ContentAccessor) mainDocumentPart).getContent();
@@ -229,30 +232,42 @@ public class DocxFormatter extends AbstractFormatter {
 
         for (AltChunkFinder.LocatedChunk locatedChunk : bf.getAltChunks()) {
             CTAltChunk altChunk = locatedChunk.getAltChunk();
-            AlternativeFormatInputPart afip
+            AlternativeFormatInputPart part
                     = (AlternativeFormatInputPart) mainDocumentPart.getRelationshipsPart().getPart(
                     altChunk.getId());
-            if (afip.getAltChunkType().equals(AltChunkType.Xhtml)) {
+            if (part.getAltChunkType().equals(AltChunkType.Xhtml)) {
                 try {
                     XHTMLImporter xHTMLImporter = new XHTMLImporterImpl(wordprocessingMLPackage);
-                    List results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
-
-                    int index = locatedChunk.getIndex();
-                    locatedChunk.getContentList().remove(index);
-
+                    List results = xHTMLImporter.convert(
+                            htmlImportProcessor.processHtml(toString(part.getBuffer())), null);
+                    locatedChunk.getContentList().remove(locatedChunk.getIndex());
                     Object chunkParent = locatedChunk.getAltChunk().getParent();
-                    R parentRun = (R) chunkParent;//always should be R
-                    P parentParagraph = (P) parentRun.getParent();
+                    R run = (R) chunkParent;//always should be R
+                    P paragraph = (P) run.getParent();
 
-                    for (Object result : results) {
-                        if (result instanceof P) {
-                            P resultParagraph = (P) result;
-                            parentParagraph.getContent().addAll(resultParagraph.getContent());
+                    if (results.size() == 1 && results.get(0) instanceof P) {
+                        P resultP = (P)results.get(0);
+                        paragraph.getContent().addAll(resultP.getContent());
+                    } else {
+                        if (paragraph.getParent() instanceof ArrayListWml) {
+                            ArrayListWml parent = (ArrayListWml) paragraph.getParent();
+                            parent.addAll(parent.indexOf(paragraph), results);
+                            if (results.get(0) instanceof P) {
+                                P resultParagraph = (P) results.get(0);
+                                resultParagraph.setPPr(paragraph.getPPr());
+                            }
+                            parent.remove(paragraph);
+                        } else {
+                            for (Object result : results) {
+                                if (result instanceof P) {
+                                    P resultParagraph = (P) result;
+                                    paragraph.getContent().addAll(resultParagraph.getContent());
+                                }
+                            }
                         }
                     }
                 } catch (Exception e) {
-                    log.error("An error occurred while converting HTML parts of DOCX document for PDF render");
-                    log.error(e.getMessage(), e);
+                    log.error("An error occurred while converting HTML parts of DOCX document:", e);
                 }
             }
         }

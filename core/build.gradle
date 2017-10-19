@@ -218,8 +218,8 @@ configure(core) {
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }
-        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.5')
-        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.1.5') {
+        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.7')
+        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.1.7') {
             exclude(group: 'org.bouncycastle', module: 'bctsp-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcmail-jdk14')
@@ -227,23 +227,24 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile(group: "org.docx4j", name: "docx4j", version: "3.3.5") {
+        compile(group: "org.docx4j", name: "docx4j", version: "3.3.6") {
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
         }
-        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.3.4") {
+        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.3.6") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
         }
-        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "3.3.4") {
+        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "3.3.6") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
         }
+        compile(group: "org.jsoup", name: "jsoup", version: "1.10.3")
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "2.1.0")
         compile(group: "com.opencsv", name: "opencsv", version: "3.10")
         compile group: 'org.olap4j', name: 'olap4j', version: '1.2.0'
