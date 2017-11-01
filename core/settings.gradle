@@ -1,7 +1,8 @@
-include(':yarg-api', ':yarg', ':yarg-console')
+include(':yarg-api', ':yarg', ':yarg-console', 'yarg-server')
 
 rootProject.name = 'yarg-all'
 
 project(':yarg-api').projectDir = new File(settingsDir, './modules/api')
 project(':yarg').projectDir = new File(settingsDir, './modules/core')
 project(':yarg-console').projectDir = new File(settingsDir, './modules/console')
+project(':yarg-server').projectDir = new File(settingsDir, './modules/server')

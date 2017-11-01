@@ -18,6 +18,7 @@ def isSnapshot = artifactVersion.endsWith('-SNAPSHOT')
 def api = project(':yarg-api')
 def core = project(':yarg')
 def console = project(':yarg-console')
+def server = project(':yarg-server')
 
 def repositoryUser = System.getenv('HAULMONT_REPOSITORY_USER')
 def repositoryPassword, repositoryUrl, workRepositoryUrl;
@@ -33,7 +34,7 @@ if (repositoryUser) {//for internal users
     workRepositoryUrl = "$repositoryUrl/groups/work"
 }
 
-configure([api, core, console]) {
+configure([api, core, console, server]) {
     apply(plugin: 'maven')
     apply(plugin: 'signing')
 
@@ -272,6 +273,40 @@ configure(core) {
     }
 }
 
+configure(server) {
+    apply(plugin: 'application')
+
+    dependencies {
+        compile(api)
+        compile(core)
+        compile(console)
+        compile(group: 'com.sparkjava', name: 'spark-core', version: '2.6.0')
+        testCompile(group: 'junit', name: 'junit', version: '4.5')
+    }
+
+    mainClassName = "com.haulmont.yarg.server.ServerRunner"
+
+    configurations.archives.artifacts.removeAll {
+        it.file =~ 'tar' || it.file =~ 'zip'
+    }
+
+    installDist {
+        doLast {
+            def outputDir = destinationDir
+            copy {
+                from "./../../reporting.properties"
+                into "$outputDir/bin"
+            }
+        }
+    }
+
+    test {
+        maxHeapSize = "512m"
+        jvmArgs '-XX:MaxPermSize=256m'
+        workingDir = new File('../..')
+    }
+}
+
 configure(console) {
     apply(plugin: 'application')
 
@@ -290,20 +325,11 @@ configure(console) {
         it.file =~ 'tar' || it.file =~ 'zip'
     }
 
-    startScripts {
-        doLast {
-            copy {
-                from "reporting.properties"
-                into outputDir
-            }
-        }
-    }
-
     installDist {
         doLast {
             def outputDir = destinationDir
             copy {
-                from "reporting.properties"
+                from "./../../reporting.properties"
                 into "$outputDir/bin"
             }
         }
