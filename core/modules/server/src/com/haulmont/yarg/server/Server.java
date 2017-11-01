@@ -62,6 +62,10 @@ public class Server {
         initGenerate();
     }
 
+    public void stop() {
+        Spark.stop();
+    }
+
     protected void initPing() {
         get("/ping", (req, res) -> "pong");
     }
