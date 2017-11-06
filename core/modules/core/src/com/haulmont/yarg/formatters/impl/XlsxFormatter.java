@@ -606,7 +606,18 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
-        previousRangesRightOffset = 0;
+        //if this band is first rendered band of all its siblings
+        if (isNotRenderedYet(band.getParentBand().getChildrenList())) {
+            BandData parentBandData = band.getParentBand();
+            if (parentBandData != null) {
+                Range parentRenderedRange = bandsForRanges.resultForBand(parentBandData);
+                Range parentTemplateRange = bandsForRanges.templateForBand(parentBandData);
+                Offset parentOffset = calculateOffset(parentTemplateRange, parentRenderedRange);
+                previousRangesRightOffset = parentOffset.rightOffset;
+            } else {
+                previousRangesRightOffset = 0;
+            }
+        }
 
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
         if (lastRenderedRange != null) {//this band has been already rendered at least once
@@ -622,6 +633,17 @@ public class XlsxFormatter extends AbstractFormatter {
             firstRow = findNextRowForFirstRender(templateRange, resultSheetRows);
         }
         return firstRow;
+    }
+
+    protected boolean isNotRenderedYet(List<BandData> bandDataList) {
+        if(CollectionUtils.isNotEmpty(bandDataList)) {
+            for (BandData bandData : bandDataList) {
+                if (bandsForRanges.resultForBand(bandData) != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     protected Row findNextRowForChildBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
