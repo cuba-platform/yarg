@@ -20,7 +20,7 @@ import java.util.Random;
  * @author degtyarjov
  * @version $Id$
  */
-public class XlsxSpecificTest extends AbstractFormatSpecificTest{
+public class XlsxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testXlsxCharts() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
@@ -271,5 +271,38 @@ public class XlsxSpecificTest extends AbstractFormatSpecificTest{
 
         IOUtils.closeQuietly(outputStream);
     }
+
+
+    @Test
+    public void testCollapsedGroups() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        root.addChild(new BandData("Header", root, BandOrientation.HORIZONTAL));
+
+        for (int i = 1; i <= 10; i++) {
+            BandData band1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+            band1.addData("name", i);
+            root.addChild(band1);
+            for (int j = 0; j < 10; j++) {
+                BandData band2 = new BandData("Band2", band1, BandOrientation.HORIZONTAL);
+                band2.setData(new RandomMap());
+                band1.addChild(band2);
+            }
+
+            for (int k = 0; k < 3; k++) {
+                BandData band3 = new BandData("Band3", band1, BandOrientation.VERTICAL);
+                band3.setData(new RandomMap());
+                band1.addChild(band3);
+            }
+        }
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/collapsed_groups.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/collapsed_groups.xlsx", "./modules/core/test/smoketest/collapsed_groups.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
+
 
 }

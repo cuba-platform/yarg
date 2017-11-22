@@ -102,6 +102,7 @@ public class XlsxFormatter extends AbstractFormatter {
             writeBand(childBand);
         }
 
+        updateOutlines();
         updateMergeRegions();
         updateCharts();
         updateFormulas();
@@ -191,6 +192,17 @@ public class XlsxFormatter extends AbstractFormatter {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    protected void updateOutlines() {
+        for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
+            Worksheet resultWorksheet = sheetWrapper.getWorksheet().getJaxbElement();
+            Worksheet templateWorksheet = template.getSheetByName(sheetWrapper.getName());
+
+            if (templateWorksheet.getSheetFormatPr() != null) {
+                resultWorksheet.setSheetFormatPr(XmlUtils.deepCopy(templateWorksheet.getSheetFormatPr(), Context.jcSML));
             }
         }
     }
@@ -804,6 +816,8 @@ public class XlsxFormatter extends AbstractFormatter {
                 resultColumn = XmlUtils.deepCopy(templateColumn, Context.jcSML);
                 resultColumn.setMin(newRef.getColumn());
                 resultColumn.setMax(newRef.getColumn());
+                resultColumn.setOutlineLevel(templateColumn.getOutlineLevel());
+
                 resultWorksheet.getCols().get(0).getCol().add(resultColumn);
             }
 
@@ -850,6 +864,8 @@ public class XlsxFormatter extends AbstractFormatter {
             resultWorksheetRowBreaks.setCount(rowBreaksCount);
             resultWorksheetRowBreaks.setManualBreakCount(rowBreaksCount);
         }
+
+        newRow.setOutlineLevel(templateRow.getOutlineLevel());
     }
 
     protected void updateCell(WorksheetPart worksheetPart, BandData bandData, Cell newCell) {
