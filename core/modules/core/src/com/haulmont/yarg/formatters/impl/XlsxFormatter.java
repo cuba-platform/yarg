@@ -64,13 +64,14 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BandsForRanges bandsForRanges = new BandsForRanges();
     protected LinkedHashMultimap<Range, Range> rangeVerticalIntersections = LinkedHashMultimap.create();
 
-    protected Set<CellWithBand> innerFormulas = new HashSet<CellWithBand>();
-    protected Set<CellWithBand> outerFormulas = new HashSet<CellWithBand>();
+    protected Set<CellWithBand> innerFormulas = new HashSet<>();
+    protected Set<CellWithBand> outerFormulas = new HashSet<>();
 
-    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<String, Range>();
-    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<Worksheet, Long>();
+    protected Map<String, Range> lastRenderedRangeForBandName = new HashMap<>();
+    protected Map<Worksheet, Long> lastRowForSheet = new HashMap<>();
     protected XslxHintProcessor hintProcessor = new XslxHintProcessor();
 
+    protected BandData previousRangeBandData;
     protected int previousRangesRightOffset;
 
     protected Unmarshaller unmarshaller;
@@ -594,8 +595,10 @@ public class XlsxFormatter extends AbstractFormatter {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
 
-        if (isFirstLevelBand) {//we suppose that when we render HORIZONTAL first level band, it should not be any right offset
-            previousRangesRightOffset = 0;
+        //we suppose that when we render HORIZONTAL first level band, it should not be any right offset
+        if (isFirstLevelBand ||
+                (previousRangeBandData != null && !previousRangeBandData.getParentBand().equals(band.getParentBand()))) {
+            setPreviousRangeVerticalOffset(0, null);
         }
 
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
@@ -615,16 +618,21 @@ public class XlsxFormatter extends AbstractFormatter {
         return firstRow;
     }
 
+    private void setPreviousRangeVerticalOffset(int previousRangesRightOffset, BandData previousRangeBandData) {
+        this.previousRangesRightOffset = previousRangesRightOffset;
+        this.previousRangeBandData = previousRangeBandData;
+    }
+
     protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
-        previousRangesRightOffset = 0;
+        setPreviousRangeVerticalOffset(0, null);
 
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
         if (lastRenderedRange != null) {//this band has been already rendered at least once
             int shiftBetweenTemplateRangeAndLastRenderedRange = lastRenderedRange.getFirstColumn() - templateRange.getFirstColumn();
             int widthOfTheRange = templateRange.getLastColumn() - templateRange.getFirstColumn() + 1;
-            previousRangesRightOffset = shiftBetweenTemplateRangeAndLastRenderedRange + widthOfTheRange;
+            setPreviousRangeVerticalOffset(shiftBetweenTemplateRangeAndLastRenderedRange + widthOfTheRange, band);
             if (resultSheetRows.size() > lastRenderedRange.getFirstRow() - 1) {//get current row
                 firstRow = resultSheetRows.get(lastRenderedRange.getFirstRow() - 1);
             }

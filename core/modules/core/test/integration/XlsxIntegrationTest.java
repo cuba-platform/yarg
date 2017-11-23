@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.xlsx4j.sml.Cell;
 import org.xlsx4j.sml.Row;
 import smoketest.ConstantMap;
+import smoketest.RandomMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -432,6 +433,40 @@ public class XlsxIntegrationTest {
         compareFiles("./result/integration/result-horizontal-after-vertical.xlsx",
                 "./modules/core/test/integration/etalon-horizontal-after-vertical.xlsx");
     }
+
+    @Test
+    public void testXlsxSecondLevelVertical() throws Exception {
+        BandData root = createBand("Root", null, BandOrientation.HORIZONTAL);
+        root.addChild(createBand("Header", root, BandOrientation.HORIZONTAL));
+
+        for (int i = 1; i <= 10; i++) {
+            BandData band1 = createBand("Band1", root, BandOrientation.HORIZONTAL);
+            band1.addData("name", i);
+            root.addChild(band1);
+            for (int j = 0; j < 10; j++) {
+                BandData band2 = createBand("Band2", band1, BandOrientation.HORIZONTAL);
+                band1.addChild(band2);
+
+                for (int k = 0; k < 3; k++) {
+                    BandData band3 = createBand("Band3", band2, BandOrientation.VERTICAL);
+                    band2.addChild(band3);
+                }
+            }
+        }
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-second-level-vertical.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/integration/test-second-level-vertical.xlsx",
+                        "./modules/core/test/integration/test-second-level-vertical.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+
+        compareFiles("./result/integration/result-second-level-vertical.xlsx",
+                "./modules/core/test/integration/etalon-second-level-vertical.xlsx");
+    }
+
 
     private BandData createBand(String name, BandData root, BandOrientation horizontal) {
         BandData hor11 = new BandData(name, root, horizontal);
