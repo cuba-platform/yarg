@@ -130,6 +130,7 @@ public class DocxFormatter extends AbstractFormatter {
 
     protected void saveAndClose() {
         try {
+            checkThreadInterrupted();
             if (ReportOutputType.docx.equals(outputType)) {
                 convertAltChunks();
                 writeToOutputStream(wordprocessingMLPackage, outputStream);
@@ -178,6 +179,7 @@ public class DocxFormatter extends AbstractFormatter {
 
     protected void fillTables() {
         for (TableManager resultingTable : documentWrapper.getTables()) {
+            checkThreadInterrupted();
             Tr rowWithAliases = resultingTable.getRowWithAliases();
             if (rowWithAliases != null) {
                 List<BandData> bands = rootBand.findBandsRecursively(resultingTable.getBandName());

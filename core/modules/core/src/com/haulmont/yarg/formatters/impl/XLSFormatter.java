@@ -154,6 +154,7 @@ public class XLSFormatter extends AbstractFormatter {
 
     protected void processDocument() {
         for (BandData childBand : rootBand.getChildrenList()) {
+            checkThreadInterrupted();
             writeBand(childBand);
         }
 
@@ -168,6 +169,7 @@ public class XLSFormatter extends AbstractFormatter {
     }
 
     protected void outputDocument() {
+        checkThreadInterrupted();
         if (ReportOutputType.xls.equals(outputType)) {
             try {
                 resultWorkbook.write(outputStream);
@@ -590,6 +592,7 @@ public class XLSFormatter extends AbstractFormatter {
      * @param band         - band
      */
     private HSSFCell copyCellFromTemplate(HSSFCell templateCell, HSSFRow resultRow, int resultColumn, BandData band) {
+        checkThreadInterrupted();
         if (templateCell == null) return null;
 
         HSSFCell resultCell = resultRow.createCell(resultColumn);

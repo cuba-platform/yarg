@@ -216,6 +216,7 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     protected void fillCell(BandData band, XCell xCell) throws NoSuchElementException, WrappedTargetException {
+        checkThreadInterrupted();
         XText xText = as(XText.class, xCell);
         String cellText = xText.getString();
         cellText = cellText.replace("\r\n", "\n");//just a workaround for Windows \r\n break symbol
@@ -282,6 +283,7 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     protected void insertValue(XText text, XTextRange textRange, BandData band, String parameterName) {
+        checkThreadInterrupted();
         String fullParameterName = band.getName() + "." + parameterName;
         Object paramValue = band.getParameterValue(parameterName);
 

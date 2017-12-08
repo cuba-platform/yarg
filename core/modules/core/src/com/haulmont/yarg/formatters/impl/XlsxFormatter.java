@@ -100,6 +100,7 @@ public class XlsxFormatter extends AbstractFormatter {
         result.clearWorkbook();
 
         for (BandData childBand : rootBand.getChildrenList()) {
+            checkThreadInterrupted();
             writeBand(childBand);
         }
 
@@ -123,6 +124,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void saveAndClose() {
         try {
+            checkThreadInterrupted();
             if (ReportOutputType.xlsx.equals(outputType)) {
                 writeToOutputStream(result.getPackage(), outputStream);
                 outputStream.flush();
@@ -787,6 +789,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
         Worksheet resultWorksheet = getWorksheet(newRow);
         for (Cell templateCell : templateCells) {
+            checkThreadInterrupted();
             Cell newCell = copyCell(templateCell);
 
             if (newCell.getF() != null) {
@@ -954,6 +957,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
                 boolean emptyRow = true;
                 for (int i = 0; i < cells.size(); i++) {
+                    checkThreadInterrupted();
                     Cell cell = cells.get(i);
                     String value = cell.getV();
                     rows[i] = value;

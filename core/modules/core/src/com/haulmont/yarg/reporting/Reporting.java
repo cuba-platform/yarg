@@ -17,6 +17,7 @@ package com.haulmont.yarg.reporting;
 
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.haulmont.yarg.exception.ValidationException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
@@ -102,6 +103,9 @@ public class Reporting implements ReportingAPI {
 
             String outputName = resolveOutputFileName(report, reportTemplate, outputType, rootBand);
             return createReportOutputDocument(report, finalOutputType, outputName, rootBand);
+        } catch (ReportingInterruptedException e) {
+            logReport("Report is canceled by user request. Report [%s] with parameters [%s].", report, params);
+            throw e;
         } catch (ReportingException e) {
             logReport("An error occurred while running report [%s] with parameters [%s].", report, params);
             logException(e);

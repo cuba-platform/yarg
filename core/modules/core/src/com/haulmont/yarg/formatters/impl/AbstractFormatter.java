@@ -17,6 +17,8 @@ package com.haulmont.yarg.formatters.impl;
 
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.ReportFormattingException;
+import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
@@ -80,6 +82,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     @Override
     public byte[] createDocument() {
         Preconditions.checkArgument(supportedOutputTypes.contains(outputType), String.format("%s formatter doesn't support %s output type", getClass(), outputType));
+        checkThreadInterrupted();
         outputStream = new ByteArrayOutputStream();
         renderDocument();
         return ((ByteArrayOutputStream) outputStream).toByteArray();
@@ -98,6 +101,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected String unwrapParameterName(String nameWithAlias) {
+        checkThreadInterrupted();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(nameWithAlias);
         if (matcher.find()) {
             return matcher.group(1);
@@ -111,6 +115,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected String formatValue(Object value, String parameterName, String fullParameterName, String stringFunction) {
+        checkThreadInterrupted();
         if (value == null) {
             return "";
         }
@@ -189,6 +194,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected String inlineParameterValue(String template, String parameterName, String value) {
+        checkThreadInterrupted();
         String parameterRegex = UNIVERSAL_ALIAS_REGEXP.replace(ALIAS_GROUP, parameterName);
         return template.replaceAll(parameterRegex, Matcher.quoteReplacement(value));
     }
@@ -232,8 +238,12 @@ public abstract class AbstractFormatter implements ReportFormatter {
         }
     }
 
-    protected ReportFormattingException wrapWithReportingException(String message, Exception e) {
-        return new ReportFormattingException(message + ". Template name [" + reportTemplate.getDocumentName() + "]", e);
+    protected ReportingException wrapWithReportingException(String message, Exception e) {
+        if (e instanceof ReportingInterruptedException) {
+            return (ReportingInterruptedException) e;
+        } else {
+            return new ReportFormattingException(message + ". Template name [" + reportTemplate.getDocumentName() + "]", e);
+        }
     }
 
     protected ReportFormattingException wrapWithReportingException(String message) {
@@ -260,6 +270,12 @@ public abstract class AbstractFormatter implements ReportFormatter {
             }
         }
         return null;
+    }
+
+    public void checkThreadInterrupted() {
+        if (Thread.interrupted()) {
+            throw new ReportingInterruptedException("Formatting interrupted");
+        }
     }
 
     public static class BandPathAndParameterName {

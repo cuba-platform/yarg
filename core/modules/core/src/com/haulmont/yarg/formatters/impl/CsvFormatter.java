@@ -79,6 +79,7 @@ public class CsvFormatter extends AbstractFormatter {
     }
 
     protected void readTemplateData() {
+        checkThreadInterrupted();
         InputStream documentContent = reportTemplate.getDocumentContent();
         BufferedReader in = new BufferedReader(new InputStreamReader(documentContent));
 
@@ -86,6 +87,7 @@ public class CsvFormatter extends AbstractFormatter {
         try {
             String line;
             while((line = in.readLine()) != null) {
+                checkThreadInterrupted();
                 Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(line);
                 if (!matcher.find())
                     headerData.append(line);
