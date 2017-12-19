@@ -1,0 +1,28 @@
+name: Root
+children:
+  - name: header
+    orientation: H
+    children:
+      - name: dynamic_header
+        orientation: V
+        queries:
+          - name: dynamic_header
+            sql: select name as month_name , id as month_id from months;
+  - name: master_data
+    orientation: H
+    queries:
+      - name: master_data
+        sql: select id as user_id , login from users;
+    children:
+      - name: data
+        orientation: V
+        queries:
+          - name: data
+            sql: "select sum(e.time_in_minutes) as hours
+                 from users u
+                   CROSS JOIN months m
+                   left join time_entry e on u.id = e.user_id and m.id = month(e.date_)
+                  where u.id = ${master_data.user_id}
+                group by u.id, m.id;"
+
+

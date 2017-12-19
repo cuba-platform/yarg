@@ -1,0 +1,45 @@
+name: Root
+children:
+  - name: crosstab
+    orientation: C
+    queries:
+      - #Horizontal tab
+        name: crosstab_dynamic_header
+        groovy: " return [[
+                     id: 1,
+                     name: 'Test 1'
+                   ], [
+                     id: 2,
+                     name: 'Test 2'
+                   ]] "
+      - #Vertical tab
+        name: crosstab_master_data
+        groovy: " return [[
+                      id: 'user1',
+                      name: 'User 1',
+                      value: 5
+                    ], [
+                      id: 'user2',
+                      name: 'User 2',
+                      value: 7
+                    ]] "
+      - #Cross data tab - one execution for all intersections
+        name: data
+        groovy: "return [[
+                     crosstab_dynamic_header_id: 1,
+                     crosstab_master_data_id: 'user1',
+                     value: 10
+                  ], [
+                     crosstab_dynamic_header_id: 2,
+                     crosstab_master_data_id: 'user1',
+                     value: 12
+                 ], [
+                     crosstab_dynamic_header_id: 1,
+                     crosstab_master_data_id: 'user2',
+                     value: 10
+                  ], [
+                     crosstab_dynamic_header_id: 2,
+                     crosstab_master_data_id: 'user2',
+                     value: 12
+                 ]]"
+

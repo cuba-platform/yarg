@@ -16,35 +16,51 @@
 
 package com.haulmont.yarg.reporting;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Multimap;
-import com.haulmont.yarg.exception.DataLoadingException;
-import com.haulmont.yarg.exception.ValidationException;
-import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
+import com.haulmont.yarg.reporting.extraction.DefaultExtractionContextFactory;
+import com.haulmont.yarg.reporting.extraction.DefaultExtractionControllerFactory;
+import com.haulmont.yarg.reporting.extraction.ExtractionContextFactory;
+import com.haulmont.yarg.reporting.extraction.ExtractionControllerFactory;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.Report;
 import com.haulmont.yarg.structure.ReportBand;
-import com.haulmont.yarg.structure.ReportQuery;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DataExtractorImpl implements DataExtractor {
-    protected static final Map<String, Object> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<String, Object>());
+    protected static final Map<String, Object> EMPTY_MAP = Collections.emptyMap();
 
     protected ReportLoaderFactory loaderFactory;
+    protected ExtractionContextFactory contextFactory;
+    protected ExtractionControllerFactory controllerFactory;
 
     protected boolean putEmptyRowIfNoDataSelected = true;
 
     public DataExtractorImpl(ReportLoaderFactory loaderFactory) {
-        Preconditions.checkNotNull(loaderFactory, "\"loaderFactory\" parameter can not be null");
+        checkNotNull(loaderFactory, "\"loaderFactory\" parameter can not be null");
+
         this.loaderFactory = loaderFactory;
+        this.contextFactory = createContextFactory();
+        this.controllerFactory = createControllerFactory();
+    }
+
+    protected ExtractionContextFactory createContextFactory() {
+        return new DefaultExtractionContextFactory(this);
+    }
+
+    protected ExtractionControllerFactory createControllerFactory() {
+        return new DefaultExtractionControllerFactory(loaderFactory);
     }
 
     public void extractData(Report report, Map<String, Object> params, BandData rootBand) {
-        List<Map<String, Object>> rootBandData = getBandData(report.getRootBand(), null, params);
+        List<Map<String, Object>> rootBandData = controllerFactory.defaultController().extractData(
+                contextFactory.context(report.getRootBand(), null, params)
+        );
         if (CollectionUtils.isNotEmpty(rootBandData)) {
             rootBand.getData().putAll(rootBandData.get(0));
         }
@@ -63,126 +79,23 @@ public class DataExtractorImpl implements DataExtractor {
         this.putEmptyRowIfNoDataSelected = putEmptyRowIfNoDataSelected;
     }
 
+    @Override
     public boolean getPutEmptyRowIfNoDataSelected() {
         return putEmptyRowIfNoDataSelected;
     }
 
-    protected List<BandData> createBands(ReportBand definition, BandData parentBand, Map<String, Object> params) {
-        List<Map<String, Object>> outputData = getBandData(definition, parentBand, params);
-        return createBandsList(definition, parentBand, outputData, params);
+    public ExtractionControllerFactory getExtractionControllerFactory() {
+        return controllerFactory;
     }
 
-    protected List<BandData> createBandsList(ReportBand definition, BandData parentBand, List<Map<String, Object>> outputData, Map<String, Object> params) {
-        List<BandData> bandsList = new ArrayList<BandData>();
-        for (Map<String, Object> data : outputData) {
-            BandData band = new BandData(definition.getName(), parentBand, definition.getBandOrientation());
-            band.setData(data);
-            Collection<ReportBand> childrenBandDefinitions = definition.getChildren();
-            if (childrenBandDefinitions != null) {
-                for (ReportBand childDefinition : childrenBandDefinitions) {
-                    List<BandData> childBands = createBands(childDefinition, band, params);
-                    band.addChildren(childBands);
-                }
-            }
-            bandsList.add(band);
-        }
-        return bandsList;
+    public void setExtractionControllerFactory(ExtractionControllerFactory controllerFactory) {
+        checkNotNull(controllerFactory, "\"controllerFactory\" parameter can not be null");
+
+        this.controllerFactory = controllerFactory;
     }
 
-    protected List<Map<String, Object>> getBandData(ReportBand band, BandData parentBand, Map<String, Object> params) {
-        Collection<ReportQuery> reportQueries = band.getReportQueries();
-        if (CollectionUtils.isEmpty(reportQueries)) {
-            return Collections.singletonList(params);
-        }
-
-        List<Map<String, Object>> result = null;
-        if (!isEmptyBand(parentBand)) {
-            result = getQueriesResult(band, parentBand, params, reportQueries);
-
-            if (result != null) {
-                //add input params to band
-                //todo eude - probably we need to get rid of the following logic, because leads to errors while logging report
-                for (Map<String, Object> map : result) {
-                    map = new HashMap<>(map);
-                    for (Map.Entry<String, Object> paramEntry : params.entrySet()) {
-                        if ( !(paramEntry.getValue() instanceof Collection)
-                                && !(paramEntry.getValue() instanceof  Map)
-                                && !(paramEntry.getValue() instanceof Multimap)) {
-                            map.put(paramEntry.getKey(), paramEntry.getValue());
-                        }
-                    }
-                }
-            }
-        }
-
-        if (result == null) {
-            result = Collections.emptyList();
-        }
-
-        if (getPutEmptyRowIfNoDataSelected() && CollectionUtils.isEmpty(result)) {
-            result = new ArrayList<Map<String, Object>>();
-            result.add(EMPTY_MAP);
-        }
-
-        return result;
-    }
-
-    protected List<Map<String, Object>> getQueriesResult(ReportBand band, BandData parentBand, Map<String, Object> params, Collection<ReportQuery> reportQueries) {
-        List<Map<String, Object>> result;
-        Iterator<ReportQuery> queryIterator = reportQueries.iterator();
-        ReportQuery firstReportQuery = queryIterator.next();
-
-        //gets data from first dataset
-        result = getQueryData(parentBand, band, firstReportQuery, params);
-
-        //adds data from second and following datasets to result
-        while (queryIterator.hasNext()) {
-            ReportQuery reportQuery = queryIterator.next();
-            List<Map<String, Object>> currentQueryData = getQueryData(parentBand, band, reportQuery, params);
-            String link = reportQuery.getLinkParameterName();
-            if (StringUtils.isNotBlank(link)) {
-                for (Map<String, Object> currentRow : currentQueryData) {
-                    Object linkObj = currentRow.get(link);
-                    if (linkObj != null) {
-                        for (Map<String, Object> resultRow : result) {
-                            Object linkObj2 = resultRow.get(link);
-                            if (linkObj2 != null) {
-                                if (linkObj.equals(linkObj2)) {
-                                    resultRow.putAll(currentRow);
-                                    break;
-                                }
-                            } else {
-                                throw new DataLoadingException(String.format("An error occurred while loading data for band [%s]." +
-                                        " Query defines link parameter [%s] but result does not contain such field. Query [%s].", band.getName(), link, firstReportQuery.getName()));
-                            }
-                        }
-                    } else {
-                        throw new DataLoadingException(String.format("An error occurred while loading data for band [%s]." +
-                                " Query defines link parameter [%s] but result does not contain such field. Query [%s].", band.getName(), link, reportQuery.getName()));
-                    }
-                }
-            } else {
-                for (int j = 0; (j < result.size()) && (j < currentQueryData.size()); j++) {
-                    result.get(j).putAll(currentQueryData.get(j));
-                }
-            }
-        }
-
-        return result;
-    }
-
-    protected boolean isEmptyBand(BandData parentBand) {
-        return parentBand != null && parentBand.getData() == EMPTY_MAP;
-    }
-
-    protected List<Map<String, Object>> getQueryData(BandData parentBand, ReportBand band, ReportQuery reportQuery, Map<String, Object> paramsMap) {
-        try {
-            ReportDataLoader dataLoader = loaderFactory.createDataLoader(reportQuery.getLoaderType());
-            return dataLoader.loadData(reportQuery, parentBand, paramsMap);
-        } catch (ValidationException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DataLoadingException(String.format("An error occurred while loading data for band [%s] and query [%s].", band.getName(), reportQuery.getName()), e);
-        }
+    protected List<BandData> createBands(ReportBand definition, BandData parentBandData, Map<String, Object> params) {
+        return controllerFactory.controllerBy(definition.getBandOrientation())
+                .extract(contextFactory.context(definition, parentBandData, params));
     }
 }

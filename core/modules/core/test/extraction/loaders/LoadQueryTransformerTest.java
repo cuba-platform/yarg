@@ -8,7 +8,7 @@
  *
  * $Id$
  */
-package loaders;
+package extraction.loaders;
 
 import com.haulmont.yarg.loaders.impl.AbstractDbDataLoader;
 import com.haulmont.yarg.structure.BandData;

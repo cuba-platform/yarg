@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package loaders;
+package extraction.loaders;
 
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
@@ -49,7 +49,7 @@ public class DataExtractorTest {
         Report report = createReport();
         BandData rootBand = rootBand();
 
-        dataExtractor.extractData(report, new HashMap<String, Object>(), rootBand);
+        dataExtractor.extractData(report, new HashMap<>(), rootBand);
         System.out.println(rootBand);
         Assert.assertEquals(1, rootBand.getChildrenList().size());
 
@@ -62,7 +62,7 @@ public class DataExtractorTest {
 
         dataExtractor.setPutEmptyRowIfNoDataSelected(false);
         rootBand = rootBand();
-        dataExtractor.extractData(report, new HashMap<String, Object>(), rootBand);
+        dataExtractor.extractData(report, new HashMap<>(), rootBand);
         System.out.println(rootBand);
 
         Assert.assertEquals(0, rootBand.getChildrenList().size());

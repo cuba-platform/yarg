@@ -1,0 +1,23 @@
+name: Root
+children:
+  - name: crosstab
+    orientation: C
+    queries:
+      - #Horizontal tab
+        name: crosstab_dynamic_header
+        sql: select name as month_name , id as month_id from months;
+      - #Vertical tab
+        name: crosstab_master_data
+        sql: select id as user_id , login from users;
+      - #Cross data tab - one execution for all intersections
+        name: data
+        sql: "select
+                	te.user_id as crosstab_master_data@user_id,
+                	month(te.date_) as crosstab_dynamic_header@month_id,
+                	sum(te.TIME_IN_MINUTES) / 60 as hours
+                from time_entry te
+                where te.user_id in (${crosstab_master_data@user_id})
+                  and month(te.date_) in (${crosstab_dynamic_header@month_id})
+                group by te.user_id, month(te.date_)
+                order by te.user_id, month(te.date_)"
+

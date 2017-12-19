@@ -21,7 +21,7 @@ def console = project(':yarg-console')
 def server = project(':yarg-server')
 
 def repositoryUser = System.getenv('HAULMONT_REPOSITORY_USER')
-def repositoryPassword, repositoryUrl, workRepositoryUrl;
+def repositoryPassword, repositoryUrl, workRepositoryUrl
 
 if (repositoryUser) {//for internal users
     repositoryPassword = System.getenv('HAULMONT_REPOSITORY_PASSWORD')
@@ -172,11 +172,11 @@ configure(api) {
 configure(core) {
 
     assemble {
-        new File("result").mkdir();
-        new File("result/integration").mkdir();
-        new File("result/smoke").mkdir();
-        new File("result/sample").mkdir();
-        new File("result/console").mkdir();
+        new File("result").mkdir()
+        new File("result/integration").mkdir()
+        new File("result/smoke").mkdir()
+        new File("result/sample").mkdir()
+        new File("result/console").mkdir()
     }
 
     dependencies {
@@ -261,9 +261,12 @@ configure(core) {
         }
 
         testCompile(group: 'junit', name: 'junit', version: '4.5')
-        testCompile(group: 'org.hsqldb', name: 'hsqldb', version: '2.3.3')
+        testCompile(group: 'com.h2database', name: 'h2', version: '1.4.196')
         testCompile(group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3')
         testCompile(group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4')
+        testCompile(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.2')
+        testCompile(group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.2')
+
     }
 
     test {

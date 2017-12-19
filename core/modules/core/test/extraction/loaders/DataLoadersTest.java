@@ -1,4 +1,4 @@
-package loaders;
+package extraction.loaders;
 
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.JsonDataLoader;

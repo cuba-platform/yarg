@@ -17,9 +17,12 @@ package com.haulmont.yarg.structure;
 
 public enum BandOrientation {
     HORIZONTAL("H"),
-    VERTICAL("V");
+    VERTICAL("V"),
+    CROSS("C"),
+    UNDEFINED("U"),
+    ;
 
-    private BandOrientation(String id) {
+    BandOrientation(String id) {
         this.id = id;
     }
 
@@ -32,6 +35,10 @@ public enum BandOrientation {
             }
         }
 
-        return null;
+        return UNDEFINED;
+    }
+
+    public static BandOrientation defaultIfNull(BandOrientation orientation) {
+        return orientation == null ? UNDEFINED : orientation;
     }
 }

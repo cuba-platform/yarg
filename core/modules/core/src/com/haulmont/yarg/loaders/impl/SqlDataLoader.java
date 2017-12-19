@@ -52,21 +52,18 @@ public class SqlDataLoader extends AbstractDbDataLoader {
 
     @Override
     public List<Map<String, Object>> loadData(ReportQuery reportQuery, BandData parentBand, Map<String, Object> params) {
-        List resList;
-        final List<OutputValue> outputValues = new ArrayList<OutputValue>();
-
-        String query = reportQuery.getScript();
-        if (StringUtils.isBlank(query)) {
-            return Collections.emptyList();
-        }
-
         try {
+            String query = reportQuery.getScript();
+            if (StringUtils.isBlank(query)) {
+                return Collections.emptyList();
+            }
+            final List<OutputValue> outputValues = new ArrayList<>();
             if (Boolean.TRUE.equals(reportQuery.getProcessTemplate())) {
                 query = processQueryTemplate(query, parentBand, params);
             }
             final QueryPack pack = prepareQuery(query, parentBand, params);
 
-            ArrayList<Object> resultingParams = new ArrayList<Object>();
+            List<Object> resultingParams = new ArrayList<>();
             QueryParameter[] queryParameters = pack.getParams();
             for (QueryParameter queryParameter : queryParameters) {
                 if (queryParameter.isSingleValue()) {
@@ -76,10 +73,10 @@ public class SqlDataLoader extends AbstractDbDataLoader {
                 }
             }
 
-            resList = runQuery(reportQuery, pack.getQuery(), resultingParams.toArray(), new ResultSetHandler<List>() {
+            List resList = runQuery(reportQuery, pack.getQuery(), resultingParams.toArray(), new ResultSetHandler<List>() {
                 @Override
                 public List handle(ResultSet rs) throws SQLException {
-                    List<Object[]> resList = new ArrayList<Object[]>();
+                    List<Object[]> resList = new ArrayList<>();
 
                     while (rs.next()) {
                         ResultSetMetaData metaData = rs.getMetaData();
@@ -109,13 +106,12 @@ public class SqlDataLoader extends AbstractDbDataLoader {
                     }
                 }
             });
+            return fillOutputData(resList, outputValues);
         } catch (DataLoadingException e) {
             throw e;
         } catch (Throwable e) {
             throw new DataLoadingException(String.format("An error occurred while loading data for data set [%s]", reportQuery.getName()), e);
         }
-
-        return fillOutputData(resList, outputValues);
     }
 
     protected List runQuery(ReportQuery reportQuery, String queryString, Object[] params, ResultSetHandler<List> handler) throws SQLException {

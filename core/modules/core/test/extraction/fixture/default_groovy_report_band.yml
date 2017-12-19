@@ -1,0 +1,45 @@
+name: Root
+children:
+  - name: header
+    orientation: H
+    children:
+      - name: dynamic_header
+        orientation: V
+        queries:
+          - name: dynamic_header
+            groovy: " return [[
+                id: 1,
+                name: 'Test 1'
+              ], [
+                id: 2,
+                name: 'Test 2'
+              ]] "
+  - name: master_data
+    orientation: H
+    queries:
+      - name: master_data
+        groovy: " return [[
+            id: 'user1',
+            name: 'User 1',
+            value: 5
+          ], [
+            id: 'user2',
+            name: 'User 2',
+            value: 7
+          ]] "
+    children:
+      - name: data
+        orientation: V
+        queries:
+          - name: data
+            groovy: "return [[
+                 header_id: 1,
+                 user_id: parentBand.data.id,
+                 value: parentBand.data.value
+              ], [
+                header_id: 2,
+                user_id: parentBand.data.id,
+                value: parentBand.data.value
+             ]]"
+
+
