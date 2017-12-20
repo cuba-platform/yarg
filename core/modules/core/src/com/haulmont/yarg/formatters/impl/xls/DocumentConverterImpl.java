@@ -17,6 +17,7 @@
 package com.haulmont.yarg.formatters.impl.xls;
 
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.haulmont.yarg.formatters.impl.doc.OfficeOutputStream;
 import com.haulmont.yarg.formatters.impl.doc.connector.NoFreePortsException;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
@@ -56,10 +57,15 @@ public class DocumentConverterImpl implements DocumentConverter {
     protected void convertWithRetry(String convertPattern, final byte[] documentBytes, final OutputStream outputStream) {
         try {
             convertOnes(convertPattern, documentBytes, outputStream);
+        } catch (ReportingInterruptedException e) {
+            throw e;
         } catch (Exception e) {
             log.warn("An error occurred while converting. System will retry to generate report again.", e);
             for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
                 try {
+                    if (Thread.interrupted()) {
+                        throw new ReportingInterruptedException("Document conversation task interrupted");
+                    }
                     convertOnes(convertPattern, documentBytes, outputStream);
                     return;
                 } catch (NoFreePortsException e1) {

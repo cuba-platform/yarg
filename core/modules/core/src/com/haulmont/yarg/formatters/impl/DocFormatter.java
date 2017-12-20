@@ -18,6 +18,7 @@ package com.haulmont.yarg.formatters.impl;
 import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.haulmont.yarg.exception.ReportingException;
+import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.doc.OfficeComponent;
 import com.haulmont.yarg.formatters.impl.doc.OfficeOutputStream;
@@ -85,11 +86,14 @@ public class DocFormatter extends AbstractFormatter {
     public void renderDocument() {
         try {
             doCreateDocument(outputStream);
+        }  catch (ReportingInterruptedException ie) {
+            throw ie;
         } catch (Exception e) {//just try again if any exceptions occurred
             log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report again.", reportTemplate.getDocumentName()), e);
 
             for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
                 try {
+                    checkThreadInterrupted();
                     doCreateDocument(outputStream);
                     return;
                 } catch (NoFreePortsException e1) {
@@ -106,22 +110,19 @@ public class DocFormatter extends AbstractFormatter {
     }
 
     protected void doCreateDocument(final OutputStream outputStream) throws NoFreePortsException {
-        OfficeTask officeTask = new OfficeTask() {
-            @Override
-            public void processTaskInOpenOffice(OfficeResourceProvider ooResourceProvider) {
-                try {
-                    loadDocument(ooResourceProvider);
+        OfficeTask officeTask = ooResourceProvider -> {
+            try {
+                loadDocument(ooResourceProvider);
 
-                    // Handling tables
-                    fillTables(ooResourceProvider.getXDispatchHelper());
-                    // Handling text
-                    replaceAllAliasesInDocument();
-                    replaceAllAliasesInDocument();//we do it second time to handle several open office bugs (page breaks in html, etc). Do not remove.
-                    // Saving document to output stream and closing
-                    saveAndClose(ooResourceProvider, xComponent, outputType, outputStream);
-                } catch (Exception e) {
-                    throw wrapWithReportingException("An error occurred while running task in Open Office server", e);
-                }
+                // Handling tables
+                fillTables(ooResourceProvider.getXDispatchHelper());
+                // Handling text
+                replaceAllAliasesInDocument();
+                replaceAllAliasesInDocument();//we do it second time to handle several open office bugs (page breaks in html, etc). Do not remove.
+                // Saving document to output stream and closing
+                saveAndClose(ooResourceProvider, xComponent, outputType, outputStream);
+            } catch (Exception e) {
+                throw wrapWithReportingException("An error occurred while running task in Open Office server", e);
             }
         };
 

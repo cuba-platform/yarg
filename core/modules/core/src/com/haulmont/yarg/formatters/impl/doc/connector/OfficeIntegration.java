@@ -17,9 +17,9 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.haulmont.yarg.exception.OpenOfficeException;
+import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.sun.star.comp.helper.BootstrapException;
 
-import java.lang.RuntimeException;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -76,22 +76,33 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
         final OfficeConnection connection = acquireConnection();
         Future future = null;
         try {
-            Callable<Void> task = new Callable<Void>() {
-                @Override
-                public Void call() throws java.lang.Exception {
-                    connection.open();
-                    officeTask.processTaskInOpenOffice(connection.getOOResourceProvider());
-                    return null;
-                }
+            Callable<Void> task = () -> {
+                connection.open();
+                officeTask.processTaskInOpenOffice(connection.getOOResourceProvider());
+                return null;
             };
             future = executor.submit(task);
             future.get(timeoutInSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            throw new ReportingInterruptedException("Open office task interrupted");
         } catch (ExecutionException ex) {
             connection.close();
             if (ex.getCause() instanceof BootstrapException) {
                 throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
             }
             throw new RuntimeException(ex.getCause());
+        } catch (TimeoutException tex) {
+            try {
+                if (Thread.interrupted()) {
+                    throw new ReportingInterruptedException("Open office task interrupted");
+                }
+            } finally {
+                connection.close();
+            }
+            if (tex.getCause() instanceof BootstrapException) {
+                throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, tex);
+            }
+            throw new OpenOfficeException(tex);
         } catch (Throwable ex) {
             connection.close();
             if (ex.getCause() instanceof BootstrapException) {
