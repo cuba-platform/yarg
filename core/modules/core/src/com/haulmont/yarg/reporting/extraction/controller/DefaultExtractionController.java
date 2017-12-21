@@ -2,6 +2,7 @@ package com.haulmont.yarg.reporting.extraction.controller;
 
 import com.google.common.collect.Multimap;
 import com.haulmont.yarg.exception.DataLoadingException;
+import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.haulmont.yarg.exception.ValidationException;
 import com.haulmont.yarg.loaders.ReportDataLoader;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
@@ -140,9 +141,15 @@ public class DefaultExtractionController implements ExtractionController {
             String link = reportQuery.getLinkParameterName();
             if (StringUtils.isNotBlank(link)) {
                 for (Map<String, Object> currentRow : currentQueryData) {
+                    if (Thread.interrupted()) {
+                        throw new ReportingInterruptedException("Data extraction interrupted");
+                    }
                     Object linkObj = currentRow.get(link);
                     if (linkObj != null) {
                         for (Map<String, Object> resultRow : result) {
+                            if (Thread.interrupted()) {
+                                throw new ReportingInterruptedException("Data extraction interrupted");
+                            }
                             Object linkObj2 = resultRow.get(link);
                             if (linkObj2 != null) {
                                 if (linkObj.equals(linkObj2)) {
