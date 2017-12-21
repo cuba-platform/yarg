@@ -367,11 +367,11 @@ public class XlsxIntegrationTest {
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(
                 new FormatterFactoryInput("xlsx", rootBand,
                     new ReportTemplateImpl("", "./modules/core/test/integration/test-crosstab-feature.xlsx",
-                            "./modules/core/test/integration/test-crosstab.xlsx", ReportOutputType.xlsx), outputStream));
+                            "./modules/core/test/integration/test-crosstab-feature.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
-        compareFiles("./result/integration/result-crosstab-feature.xlsx", "./modules/core/test/integration/etalon-crosstab.xlsx");
+        compareFiles("./result/integration/result-crosstab-feature.xlsx", "./modules/core/test/integration/etalon-crosstab-feature.xlsx");
     }
 
     @Ignore("Fails on Travis CI")

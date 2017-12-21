@@ -8,13 +8,13 @@ children:
         sql: select distinct date_ as date from xlsx_integration_income_entry order by date_;
       - #Vertical tab (name must starts with band name)
         name: crosstab_master_data
-        sql: select id as user_id, name from xlsx_integration_users order by id;
+        sql: select id as user_id, name as name from xlsx_integration_users order by name_order;
       - #Cross data tab - one execution for all intersections (name and count of cross datasets does not matter - for xlsx template will be used name of band)
         name: data
         sql: "select
                 	e.user_id as crosstab_master_data@user_id,
                 	e.date_ as crosstab_dynamic_header@date,
-                	e.income
+                	e.income as income
                 from xlsx_integration_income_entry e
                 where e.user_id in (${crosstab_master_data@user_id})
                   and date_ in (${crosstab_dynamic_header@date})
