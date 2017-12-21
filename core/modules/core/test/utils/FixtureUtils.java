@@ -16,7 +16,7 @@ public class FixtureUtils {
 
     public static void loadDb(DataSource ds, String file) throws IOException, SQLException, URISyntaxException {
         checkNotNull(ds);
-        String sql = FileUtils.readFileToString(FileLoader.load(file), "UTF-8").replaceAll("--.*\n+", "");
+        String sql = FileUtils.readFileToString(FileLoader.load(file), "UTF-8").replaceAll("--.*\r?\n+", "");
         if (StringUtils.isEmpty(sql)) return;
         try (Connection connection = ds.getConnection()) {
             connection.setAutoCommit(false);

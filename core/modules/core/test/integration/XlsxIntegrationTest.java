@@ -371,7 +371,7 @@ public class XlsxIntegrationTest {
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);
-        compareFiles("./result/integration/result-crosstab.xlsx", "./modules/core/test/integration/etalon-crosstab.xlsx");
+        compareFiles("./result/integration/result-crosstab-feature.xlsx", "./modules/core/test/integration/etalon-crosstab.xlsx");
     }
 
     @Ignore("Fails on Travis CI")
