@@ -4,28 +4,72 @@ import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.xlsx.Document;
+import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
+import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
+import com.haulmont.yarg.loaders.impl.JsonDataLoader;
+import com.haulmont.yarg.loaders.impl.SqlDataLoader;
+import com.haulmont.yarg.reporting.extraction.DefaultExtractionContextFactory;
+import com.haulmont.yarg.reporting.extraction.DefaultExtractionControllerFactory;
+import com.haulmont.yarg.reporting.extraction.ExtractionContextFactory;
+import com.haulmont.yarg.reporting.extraction.controller.CrossTabExtractionController;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
+import com.haulmont.yarg.structure.ReportBand;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
+import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.xlsx4j.sml.Cell;
 import org.xlsx4j.sml.Row;
 import smoketest.ConstantMap;
-import smoketest.RandomMap;
+import utils.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.*;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 public class XlsxIntegrationTest {
+    static TestDatabase database = new TestDatabase();
+    static DefaultLoaderFactory loaderFactory = new DefaultLoaderFactory();
+    DefaultExtractionControllerFactory controllerFactory
+            = new DefaultExtractionControllerFactory(loaderFactory);
+
+    ExtractionContextFactory contextFactory = new DefaultExtractionContextFactory(ExtractionUtils.emptyExtractor());
+
+    @BeforeClass
+    public static void construct() throws Exception {
+        database.setUpDatabase();
+
+        loaderFactory.setSqlDataLoader(new SqlDataLoader(database.getDs()));
+        loaderFactory.setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()));
+        loaderFactory.setJsonDataLoader(new JsonDataLoader());
+
+        FixtureUtils.loadDb(database.getDs(), "integration/fixture/xlsx_integration_test.sql");
+    }
+    @AfterClass
+    public static void destroy() throws SQLException, IOException, URISyntaxException {
+        database.stop();
+    }
+
+
+    @Before
+    public void configure() {
+        controllerFactory.register(BandOrientation.CROSS, CrossTabExtractionController::new);
+    }
+
     @Test
     public void testXlsx() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
@@ -191,7 +235,7 @@ public class XlsxIntegrationTest {
         File result = new File("./result/integration/result_xlsx.csv");
         boolean isTwoEqual = FileUtils.contentEqualsIgnoreEOL(sample, result, null);
 
-        org.junit.Assert.assertTrue("Files are not equal", isTwoEqual);
+        assertTrue("Files are not equal", isTwoEqual);
     }
 
     @Test
@@ -290,6 +334,40 @@ public class XlsxIntegrationTest {
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
         ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
                 new ReportTemplateImpl("", "./modules/core/test/integration/test-crosstab.xlsx", "./modules/core/test/integration/test-crosstab.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+        compareFiles("./result/integration/result-crosstab.xlsx", "./modules/core/test/integration/etalon-crosstab.xlsx");
+    }
+
+    @Test
+    public void testXlsxCrosstabFeature() throws Exception {
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-crosstab-feature.xlsx");
+        ReportBand band = YmlDataUtil.bandFrom(FileLoader.load("integration/fixture/cross_sql_report_band.yml"));
+        BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
+        rootBand.setData(new HashMap<>());
+        rootBand.setFirstLevelBandDefinitionNames(new HashSet<>());
+
+        for (ReportBand definition : band.getChildren()) {
+            List<BandData> data = controllerFactory.controllerBy(definition.getBandOrientation())
+                    .extract(contextFactory.context(definition, rootBand, new HashMap<>()));
+
+            assertNotNull(data);
+
+            data.forEach(b-> {
+                assertNotNull(b);
+                assertTrue(StringUtils.isNotEmpty(b.getName()));
+            });
+
+            rootBand.addChildren(data);
+            rootBand.getFirstLevelBandDefinitionNames().add(definition.getName());
+        }
+
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(
+                new FormatterFactoryInput("xlsx", rootBand,
+                    new ReportTemplateImpl("", "./modules/core/test/integration/test-crosstab-feature.xlsx",
+                            "./modules/core/test/integration/test-crosstab.xlsx", ReportOutputType.xlsx), outputStream));
         formatter.renderDocument();
 
         IOUtils.closeQuietly(outputStream);

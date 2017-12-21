@@ -3,13 +3,13 @@ children:
   - name: crosstab
     orientation: C
     queries:
-      - #Horizontal tab
+      - #Horizontal tab (name must starts with band name)
         name: crosstab_dynamic_header
         sql: select name as month_name , id as month_id from months;
-      - #Vertical tab
+      - #Vertical tab (name must starts with band name)
         name: crosstab_master_data
         sql: select id as user_id , login from users;
-      - #Cross data tab - one execution for all intersections
+      - #Cross data tab - one execution for all intersections (name and count of cross datasets does not matter - for xlsx template will be used name of band)
         name: data
         sql: "select
                 	te.user_id as crosstab_master_data@user_id,

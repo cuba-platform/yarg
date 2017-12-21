@@ -3,7 +3,7 @@ children:
   - name: crosstab
     orientation: C
     queries:
-      - #Horizontal tab
+      - #Horizontal tab (name must starts with band name)
         name: crosstab_dynamic_header
         groovy: " return [[
                      id: 1,
@@ -12,7 +12,7 @@ children:
                      id: 2,
                      name: 'Test 2'
                    ]] "
-      - #Vertical tab
+      - #Vertical tab (name must starts with band name)
         name: crosstab_master_data
         groovy: " return [[
                       id: 'user1',
@@ -23,7 +23,7 @@ children:
                       name: 'User 2',
                       value: 7
                     ]] "
-      - #Cross data tab - one execution for all intersections
+      - #Cross data tab - one execution for all intersections (name and count of cross datasets does not matter - for xlsx template will be used name of band)
         name: data
         groovy: "return [[
                      crosstab_dynamic_header_id: 1,
