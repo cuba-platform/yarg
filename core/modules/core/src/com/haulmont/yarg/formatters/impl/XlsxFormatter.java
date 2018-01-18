@@ -41,6 +41,7 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
+import org.docx4j.openpackaging.parts.SpreadsheetML.PivotCacheDefinition;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -505,7 +506,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void updatePivotTables() {
-        result.getPivotCacheDefinitions().forEach(pivotCacheDefinition -> {
+        for (PivotCacheDefinition pivotCacheDefinition : result.getPivotCacheDefinitions()) {
             try {
                 Optional.ofNullable(pivotCacheDefinition.getContents())
                         .map(CTPivotCacheDefinition::getCacheSource)
@@ -530,7 +531,7 @@ public class XlsxFormatter extends AbstractFormatter {
             } catch (Docx4JException e) {
                 throw wrapWithReportingException("The pivot table could not be updated", e);
             }
-        });
+        }
     }
 
     protected void updateMergeRegions() {
