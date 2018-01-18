@@ -86,7 +86,8 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
             throw new ReportingInterruptedException("Open office task interrupted");
         } catch (ExecutionException ex) {
             connection.close();
-            if (ex.getCause() instanceof BootstrapException) {
+            if (ex.getCause() instanceof BootstrapException
+                    || ex.getCause() instanceof com.sun.star.comp.helper.BootstrapException) {
                 throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
             }
             throw new RuntimeException(ex.getCause());
@@ -98,13 +99,15 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
             } finally {
                 connection.close();
             }
-            if (tex.getCause() instanceof BootstrapException) {
+            if (tex.getCause() instanceof BootstrapException
+                    || tex.getCause() instanceof com.sun.star.comp.helper.BootstrapException) {
                 throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, tex);
             }
             throw new OpenOfficeException(tex);
         } catch (Throwable ex) {
             connection.close();
-            if (ex.getCause() instanceof BootstrapException) {
+            if (ex.getCause() instanceof BootstrapException
+                    || ex.getCause() instanceof com.sun.star.comp.helper.BootstrapException) {
                 throw new OpenOfficeException("Failed to connect to open office. Please check open office path " + openOfficePath, ex);
             }
             throw new OpenOfficeException(ex);
