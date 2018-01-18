@@ -19,7 +19,6 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 import com.sun.star.bridge.UnoUrlResolver;
 import com.sun.star.bridge.XUnoUrlResolver;
 import com.sun.star.comp.helper.Bootstrap;
-import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.connection.ConnectionSetupException;
 import com.sun.star.connection.NoConnectException;
 import com.sun.star.frame.XDesktop;
@@ -120,7 +119,7 @@ public class BootstrapConnector {
                     // Wait 500 ms, then try to connect again, but do not wait
                     // longer than 5 sec total:
                     if (i == 10) {
-                        throw new BootstrapException(ex.toString());
+                        throw new BootstrapException(ex);
                     }
                     Thread.sleep(500);
                 }

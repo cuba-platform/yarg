@@ -16,7 +16,6 @@
 
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
-import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.lib.util.NativeLibraryLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

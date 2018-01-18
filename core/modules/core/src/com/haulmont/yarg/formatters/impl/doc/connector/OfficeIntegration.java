@@ -18,7 +18,6 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.haulmont.yarg.exception.ReportingInterruptedException;
-import com.sun.star.comp.helper.BootstrapException;
 
 import java.util.Set;
 import java.util.concurrent.*;
