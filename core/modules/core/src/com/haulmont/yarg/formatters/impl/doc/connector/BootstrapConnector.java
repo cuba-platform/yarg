@@ -91,7 +91,7 @@ public class BootstrapConnector {
      * @param   oooConnectionString   The connection string
      * @return                        The component context
      */
-    public XComponentContext connect(String oooConnectionString) throws BootstrapException {
+    public XComponentContext connect(String oooConnectionString) throws Throwable {
 
         this.oooConnectionString = oooConnectionString;
 
@@ -124,10 +124,8 @@ public class BootstrapConnector {
                     Thread.sleep(500);
                 }
             }
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
             throw e;
-        } catch (Exception e) {
-            throw new BootstrapException(e);
         }
         return xContext;
     }
