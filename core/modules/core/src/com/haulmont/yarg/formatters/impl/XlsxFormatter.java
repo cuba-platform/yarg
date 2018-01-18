@@ -28,7 +28,9 @@ import com.haulmont.yarg.structure.BandVisitor;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.util.docx4j.XmlCopyUtils;
 import com.opencsv.CSVWriter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.*;
@@ -108,6 +110,7 @@ public class XlsxFormatter extends AbstractFormatter {
         updateMergeRegions();
         updateCharts();
         updateFormulas();
+        updatePivotTables();
         updateConditionalFormatting();
         updateHeaderAndFooter();
         updateSheetNames();
@@ -499,6 +502,35 @@ public class XlsxFormatter extends AbstractFormatter {
         int downOffset = to.getFirstRow() - from.getFirstRow();
         int rightOffset = to.getFirstColumn() - from.getFirstColumn();
         return new Offset(downOffset, rightOffset);
+    }
+
+    protected void updatePivotTables() {
+        result.getPivotCacheDefinitions().forEach(pivotCacheDefinition -> {
+            try {
+                Optional.ofNullable(pivotCacheDefinition.getContents())
+                        .map(CTPivotCacheDefinition::getCacheSource)
+                        .map(CTCacheSource::getWorksheetSource)
+                        .ifPresent(ws -> {
+                            if (StringUtils.isNotBlank(ws.getRef())) {
+                                Range pivotRange = Range.fromRange(ws.getSheet(), ws.getRef());
+                                for (Range templateRange : rangeDependencies.templates()) {
+                                    if (pivotRange.contains(templateRange)) {
+                                        List<Range> resultRanges = rangeDependencies.resultsForTemplate(templateRange);
+                                        if (CollectionUtils.isNotEmpty(resultRanges)) {
+                                            Range lastResultRange = resultRanges.get(resultRanges.size() - 1);
+                                            Offset offset = calculateOffset(templateRange, lastResultRange);
+                                            pivotRange.grow(offset.downOffset, offset.rightOffset);
+                                            ws.setRef(pivotRange.toRange());
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+            } catch (Docx4JException e) {
+                throw wrapWithReportingException("The pivot table could not be updated", e);
+            }
+        });
     }
 
     protected void updateMergeRegions() {

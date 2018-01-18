@@ -25,6 +25,7 @@ import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.SpreadsheetML.PivotCacheDefinition;
 import org.docx4j.openpackaging.parts.SpreadsheetML.SharedStrings;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -41,6 +42,7 @@ public class Document {
     protected Workbook workbook;
     protected SharedStrings sharedStrings;
     protected StyleSheet styleSheet;
+    protected List<PivotCacheDefinition> pivotCacheDefinitions = new ArrayList<>();
     protected HashSet<Part> handled = new HashSet<Part>();
 
     public static Document create(SpreadsheetMLPackage thePackage) {
@@ -66,6 +68,10 @@ public class Document {
 
     public List<SheetWrapper> getWorksheets() {
         return worksheets;
+    }
+
+    public List<PivotCacheDefinition> getPivotCacheDefinitions() {
+        return pivotCacheDefinitions;
     }
 
     public Worksheet getSheetByName(String name) {
@@ -220,6 +226,8 @@ public class Document {
                 }
             } else if (part instanceof SharedStrings) {
                 sharedStrings = (SharedStrings) part;
+            } else if (part instanceof PivotCacheDefinition) {
+                pivotCacheDefinitions.add((PivotCacheDefinition) part);
             }
 
             handled.add(part);

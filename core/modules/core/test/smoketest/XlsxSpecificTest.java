@@ -305,4 +305,35 @@ public class XlsxSpecificTest extends AbstractFormatSpecificTest {
     }
 
 
+    @Test
+    public void testPivot() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        root.addChild(new BandData("Header", root, BandOrientation.HORIZONTAL));
+
+        for (int i = 1; i <= 10; i++) {
+            BandData band1 = new BandData("Data", root, BandOrientation.HORIZONTAL);
+            band1.addData("number", "Item #" + i);
+            band1.addData("count", i);
+            band1.addData("price", i * 100);
+            root.addChild(band1);
+        }
+
+        root.addChild(new BandData("Header2", root, BandOrientation.HORIZONTAL));
+
+        for (int i = 1; i <= 5; i++) {
+            BandData band1 = new BandData("Data2", root, BandOrientation.HORIZONTAL);
+            band1.addData("number", "Item #" + i);
+            band1.addData("count", i);
+            band1.addData("price", i * 100);
+            root.addChild(band1);
+        }
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/pivot.xlsx");
+        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
+        ReportFormatter formatter = defaultFormatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/pivot.xlsx", "./modules/core/test/smoketest/pivot.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+    }
 }
