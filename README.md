@@ -2,6 +2,7 @@ YARG
 ====
 
 [![license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/cuba-platform/yarg.svg?branch=master)](https://travis-ci.org/cuba-platform/yarg) [ ![Download](https://api.bintray.com/packages/cuba-platform/main/yarg/images/download.svg) ](https://bintray.com/cuba-platform/main/yarg/_latestVersion)
+[![Open Source Helpers](https://www.codetriage.com/cuba-platform/yarg/badges/users.svg)](https://www.codetriage.com/cuba-platform/yarg)
 
 YARG is an open source reporting library for Java, developed by [Haulmont](http://www.haulmont.com/).
 
