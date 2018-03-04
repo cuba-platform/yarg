@@ -116,14 +116,20 @@ public abstract class AbstractFormatter implements ReportFormatter {
 
     protected String formatValue(Object value, String parameterName, String fullParameterName, String stringFunction) {
         checkThreadInterrupted();
-        if (value == null) {
-            return "";
-        }
-
         String valueString;
         String formatString = getFormatString(parameterName, fullParameterName);
         if (formatString != null) {
-            if (value instanceof Number) {
+            if (formatString.startsWith("class:")) {
+                String className = formatString.replaceFirst("class:", "");
+                try {
+                    ValueFormat valueFormat = (ValueFormat) Class.forName(className).newInstance();
+                    valueString = valueFormat.format(value);
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    throw new ReportingException("An error occurred while applying custom format", e);
+                }
+            } else if (value == null) {
+                valueString =  "";
+            } else if (value instanceof Number) {
                 DecimalFormat decimalFormat = new DecimalFormat(formatString);
                 valueString = decimalFormat.format(value);
             } else if (value instanceof Date) {

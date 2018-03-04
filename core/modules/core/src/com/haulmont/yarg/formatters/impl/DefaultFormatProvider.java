@@ -15,6 +15,5 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
-public interface DefaultFormatProvider {
-    String format(Object o);
+public interface DefaultFormatProvider extends ValueFormat {
 }
