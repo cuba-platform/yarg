@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<report name="report">
+    <templates>
+        <template code="DEFAULT"
+                  documentName="postProcessor.xlsx"
+                  documentPath="./modules/core/test/sample/postprocessor/postProcessor.xlsx"
+                  outputType="xlsx"
+                  outputNamePattern="postProcessor.xlsx"
+                  postProcessor=""/>
+    </templates>
+    <rootBand name="Root" orientation="H">
+        <bands>
+            <band name="Header" orientation="H"/>
+            <band name="Incomes" orientation="H">
+                <queries>
+                    <query name="Data_set_1" type="groovy">
+                        <script>
+                            return [['month':'Jan', 'profit':10000], ['month': 'Feb', 'profit': 12000], ['month': 'March', 'profit': 15000], ['month': 'Apr', 'profit': 12000]]
+                        </script>
+                    </query>
+                </queries>
+            </band>
+            <band name="Footer" orientation="H"/>
+            <band name="Chart" orientation="H"/>
+        </bands>
+        <queries/>
+    </rootBand>
+</report>

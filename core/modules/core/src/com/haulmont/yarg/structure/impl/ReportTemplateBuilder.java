@@ -51,6 +51,11 @@ public class ReportTemplateBuilder {
         return this;
     }
 
+    public ReportTemplateBuilder documentPostProcessor(String postProcessor) {
+        reportTemplate.postProcessor = postProcessor;
+        return this;
+    }
+
     public ReportTemplateBuilder readFileFromPath() throws IOException {
         Preconditions.checkNotNull(reportTemplate.documentPath, "\"documentPath\" parameter is null. Can not load data from null path");
         reportTemplate.documentContent = FileUtils.readFileToByteArray(new File(reportTemplate.documentPath));

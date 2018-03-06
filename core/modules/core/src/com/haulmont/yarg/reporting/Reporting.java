@@ -72,9 +72,19 @@ public class Reporting implements ReportingAPI {
         this.objectToStringConverter = objectToStringConverter;
     }
 
+    //TODO: @bondarchuk - outputstream gets closed we need somehow separate formatter logic
+    //TODO: and apply postProcessor after we got array of bytes
     @Override
     public ReportOutputDocument runReport(RunParams runParams, OutputStream outputStream) {
-        return runReport(runParams.report, runParams.reportTemplate, runParams.outputType, runParams.params, outputStream);
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        ReportOutputDocument reportOutputDocument =  runReport(runParams.report, runParams.reportTemplate, runParams.outputType, runParams.params, result);
+        try {
+            result.writeTo(outputStream);
+        } catch (IOException e) {
+            throw new ReportingException("Cannot save report to output stream", e);
+        }
+        reportOutputDocument.setContent(result.toByteArray());
+        return reportOutputDocument;
     }
 
     @Override

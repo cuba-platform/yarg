@@ -58,6 +58,11 @@ public class XlsxFormulaUpdateTest {
         public CustomReport getCustomReport() {
             return null;
         }
+
+        @Override
+        public String getPostProcessor() {
+            return null;
+        }
     };
 
     //todo test formulas grows

@@ -57,4 +57,9 @@ public interface ReportTemplate extends Serializable {
      * @return implementation of custom report logic.
      */
     CustomReport getCustomReport();
+
+    /**
+     * @return fully-qualified name of a class implementing PostProcessor interface.
+     */
+    String getPostProcessor();
 }

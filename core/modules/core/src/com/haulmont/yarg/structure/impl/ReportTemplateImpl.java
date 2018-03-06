@@ -31,6 +31,7 @@ public class ReportTemplateImpl implements ReportTemplate {
     protected byte[] documentContent;
     protected ReportOutputType reportOutputType;
     protected String outputNamePattern;
+    protected String postProcessor;
 
     protected CustomReport customReport;
     protected boolean custom = false;
@@ -100,5 +101,10 @@ public class ReportTemplateImpl implements ReportTemplate {
     @Override
     public CustomReport getCustomReport() {
         return customReport;
+    }
+
+    @Override
+    public String getPostProcessor() {
+        return postProcessor;
     }
 }

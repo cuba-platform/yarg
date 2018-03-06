@@ -104,6 +104,7 @@ public class DefaultXmlReader implements XmlReader {
             String documentPath = template.attribute("documentPath").getText();
             String outputType = template.attribute("outputType").getText();
             String outputNamePattern = template.attribute("outputNamePattern").getText();
+            String postProcessor = template.attribute("postProcessor").getText();
 
             ReportTemplate reportTemplate = new ReportTemplateBuilder()
                     .code(code)
@@ -111,7 +112,9 @@ public class DefaultXmlReader implements XmlReader {
                     .documentPath(documentPath)
                     .documentContent(getDocumentContent(documentPath))
                     .outputType(ReportOutputType.getOutputTypeById(outputType))
-                    .outputNamePattern(outputNamePattern).build();
+                    .outputNamePattern(outputNamePattern)
+                    .documentPostProcessor(postProcessor)
+                    .build();
 
 
             templateMap.put(reportTemplate.getCode(), reportTemplate);

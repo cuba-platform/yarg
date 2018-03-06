@@ -51,6 +51,7 @@
         <xs:attribute name="documentPath" type="xs:string"/>
         <xs:attribute name="outputType" type="xs:string" use="required"/>
         <xs:attribute name="outputNamePattern" type="xs:string" use="required"/>
+        <xs:attribute name="postProcessor" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="band">
