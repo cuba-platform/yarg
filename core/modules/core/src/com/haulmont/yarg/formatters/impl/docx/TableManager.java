@@ -5,9 +5,7 @@ import com.haulmont.yarg.formatters.impl.DocxFormatterDelegate;
 import com.haulmont.yarg.structure.BandData;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
-import org.docx4j.wml.Tbl;
-import org.docx4j.wml.Text;
-import org.docx4j.wml.Tr;
+import org.docx4j.wml.*;
 
 import java.util.regex.Matcher;
 
@@ -72,6 +70,19 @@ public class TableManager {
                 if (hasTableAliases) {
                     String resultString = docxFormatter.insertBandDataToString(band, textValue);
                     text.setValue(resultString);
+
+                    R run = (R) text.getParent();//always should be R
+                    P paragraph = (P) run.getParent();
+
+                    final ObjectFactory objectFactory = new ObjectFactory();
+                    final R newR = objectFactory.createR();
+                    newR.setParent(paragraph);
+                    final Br newBr = objectFactory.createBr();
+                    newBr.setParent(newR);
+                    newBr.setType(STBrType.PAGE);
+
+                    paragraph.getContent().add(newR);
+                    newR.getContent().add(newBr);
                 }
                 text.setSpace("preserve");
             }

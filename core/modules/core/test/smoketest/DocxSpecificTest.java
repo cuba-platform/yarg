@@ -94,6 +94,27 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     }
 
     @Test
+    public void testControlTables3() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<>();
+        root.setData(rootData);
+
+        BandData band1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band1.setData(new RandomMap());
+        BandData band2 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
+        band2.setData(new RandomMap());
+        root.addChild(band1);
+        root.addChild(band2);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/smoke/control-table-3.docx");
+        ReportFormatter formatter = new DefaultFormatterFactory().createFormatter(new FormatterFactoryInput("docx", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/control-tables-3.docx", "./modules/core/test/smoketest/control-tables-3.docx",
+                        ReportOutputType.docx), outputStream));
+        formatter.renderDocument();
+        IOUtils.closeQuietly(outputStream);
+    }
+
+    @Test
     public void testControlTables2() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
         HashMap<String, Object> rootData = new HashMap<String, Object>();
