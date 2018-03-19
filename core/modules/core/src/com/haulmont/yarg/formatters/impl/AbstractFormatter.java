@@ -128,7 +128,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
                     throw new ReportingException("An error occurred while applying custom format", e);
                 }
             } else if (value == null) {
-                valueString =  "";
+                valueString = "";
             } else if (value instanceof Number) {
                 DecimalFormat decimalFormat = new DecimalFormat(formatString);
                 valueString = decimalFormat.format(value);
@@ -148,7 +148,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
             valueString = applyStringFunction(valueString, stringFunction);
         }
 
-        return valueString;
+        return valueString != null ? valueString : "";
     }
 
     protected String getFormatString(String parameterName, String fullParameterName) {
