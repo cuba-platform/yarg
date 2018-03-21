@@ -154,16 +154,20 @@ public class HtmlFormatter extends AbstractFormatter {
                     String lower = name.toLowerCase();
                     return lower.endsWith(".otf") || lower.endsWith(".ttf");
                 });
-                for (File file : files) {
-                    try {
-                        converter.addFont(file);
-                    } catch (IOException e) {
-                        if (StringUtils.contains(e.getMessage(), "cannot be embedded due to licensing restrictions")) {
-                            log.debug(e.getMessage());
-                        } else {
-                            log.warn(e.getMessage());
+                if (files != null && files.length > 0) {
+                    for (File file : files) {
+                        try {
+                            converter.addFont(file);
+                        } catch (IOException e) {
+                            if (StringUtils.contains(e.getMessage(), "cannot be embedded due to licensing restrictions")) {
+                                log.debug(e.getMessage());
+                            } else {
+                                log.warn(e.getMessage());
+                            }
                         }
                     }
+                } else {
+                    log.debug("Fonts directory is empty: " + fontsDir.getPath());
                 }
             } else {
                 log.warn(format("File %s is not a directory", fontsDir.getAbsolutePath()));
