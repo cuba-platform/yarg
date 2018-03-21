@@ -18,9 +18,9 @@ package com.haulmont.yarg.formatters.impl;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
+import com.haulmont.yarg.formatters.factory.HtmlToPdfConverterFactory;
 import com.haulmont.yarg.formatters.impl.pdf.ITextPdfConverter;
-import com.haulmont.yarg.formatters.impl.pdf.OpenHtmlToPdfConverter;
-import com.haulmont.yarg.formatters.impl.pdf.PdfConverter;
+import com.haulmont.yarg.formatters.impl.pdf.HtmlToPdfConverter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
 import freemarker.cache.StringTemplateLoader;
@@ -52,7 +52,7 @@ public class HtmlFormatter extends AbstractFormatter {
     protected BeansWrapper beansWrapper = new BeansWrapper();
     protected ObjectWrapper objectWrapper;
     protected String fontsDirectory;
-    protected boolean openHtmlForPdfConversion;
+    protected HtmlToPdfConverterFactory pdfConverterFactory;
 
     public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -93,8 +93,8 @@ public class HtmlFormatter extends AbstractFormatter {
         this.fontsDirectory = fontsDirectory;
     }
 
-    public void setOpenHtmlForPdfConversion(boolean openHtmlForPdfConversion) {
-        this.openHtmlForPdfConversion = openHtmlForPdfConversion;
+    public void setPdfConverterFactory(HtmlToPdfConverterFactory pdfConverterFactory) {
+        this.pdfConverterFactory = pdfConverterFactory;
     }
 
     protected void renderPdfDocument(String htmlContent, OutputStream outputStream) {
@@ -105,7 +105,7 @@ public class HtmlFormatter extends AbstractFormatter {
             dataOutputStream.write(htmlContent.getBytes(StandardCharsets.UTF_8));
             dataOutputStream.close();
 
-            PdfConverter converter = createPdfConverter();
+            HtmlToPdfConverter converter = pdfConverterFactory == null ? new ITextPdfConverter() : pdfConverterFactory.createHtmlToPdfConverter();
             loadFonts(converter);
 
             String url = temporaryFile.toURI().toURL().toString();
@@ -118,13 +118,9 @@ public class HtmlFormatter extends AbstractFormatter {
         }
     }
 
-    protected PdfConverter createPdfConverter() {
-        return openHtmlForPdfConversion ? new OpenHtmlToPdfConverter() : new ITextPdfConverter();
-    }
-
     /**
      * @deprecated
-     * @see #loadFonts(PdfConverter)
+     * @see #loadFonts(HtmlToPdfConverter)
      */
     @Deprecated
     protected void loadFonts(ITextRenderer renderer) {
@@ -133,21 +129,21 @@ public class HtmlFormatter extends AbstractFormatter {
 
     /**
      * @deprecated
-     * @see #loadFontsFromDirectory(PdfConverter, java.io.File)
+     * @see #loadFontsFromDirectory(HtmlToPdfConverter, java.io.File)
      */
     @Deprecated
     protected void loadFontsFromDirectory(ITextRenderer renderer, File fontsDir) {
         loadFontsFromDirectory(new ITextPdfConverter(renderer), fontsDir);
     }
 
-    protected void loadFonts(PdfConverter converter) {
+    protected void loadFonts(HtmlToPdfConverter converter) {
         if (StringUtils.isNotBlank(fontsDirectory)) {
             File systemFontsDir = new File(fontsDirectory);
             loadFontsFromDirectory(converter, systemFontsDir);
         }
     }
 
-    protected void loadFontsFromDirectory(PdfConverter converter, File fontsDir) {
+    protected void loadFontsFromDirectory(HtmlToPdfConverter converter, File fontsDir) {
         if (fontsDir.exists()) {
             if (fontsDir.isDirectory()) {
                 File[] files = fontsDir.listFiles((dir, name) -> {

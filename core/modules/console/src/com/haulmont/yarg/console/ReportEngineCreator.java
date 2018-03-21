@@ -29,7 +29,7 @@ public class ReportEngineCreator {
                 properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPEN_HTML_FOR_PDF_CONVERSION));
 
         formatterFactory.setFontsDirectory(fontsDirectory);
-        formatterFactory.setOpenHtmlForPdfConversion(openHtmlForPdfConversion);
+        formatterFactory.getHtmlToPdfConverterFactory().setOpenHtmlForPdfConversion(openHtmlForPdfConversion);
         if (StringUtils.isNotBlank(openOfficePath) && StringUtils.isNotBlank(openOfficePorts)) {
             String[] portsStr = openOfficePorts.split("[,|]");
             Integer[] ports = new Integer[portsStr.length];

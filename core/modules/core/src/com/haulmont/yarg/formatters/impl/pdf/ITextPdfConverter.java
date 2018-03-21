@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class ITextPdfConverter implements PdfConverter {
+public class ITextPdfConverter implements HtmlToPdfConverter {
     protected ITextRenderer renderer;
 
     public ITextPdfConverter() {

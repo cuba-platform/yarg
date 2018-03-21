@@ -35,13 +35,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected DocumentConverter documentConverter;
     protected DefaultFormatProvider defaultFormatProvider;
     protected HtmlImportProcessor htmlImportProcessor;
+    protected HtmlToPdfConverterFactory htmlToPdfConverterFactory;
     protected String fontsDirectory;
-    protected boolean openHtmlForPdfConversion;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
 
     public DefaultFormatterFactory() {
         htmlImportProcessor = new HtmlImportProcessorImpl();
+        htmlToPdfConverterFactory = new HtmlToPdfConverterFactory();
         formattersMap.put("xls", factoryInput -> {
             XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
             xlsFormatter.setDocumentConverter(documentConverter);
@@ -63,7 +64,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             HtmlFormatter htmlFormatter = new HtmlFormatter(factoryInput);
             htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
             htmlFormatter.setFontsDirectory(getFontsDirectory());
-            htmlFormatter.setOpenHtmlForPdfConversion(openHtmlForPdfConversion);
+            htmlFormatter.setPdfConverterFactory(htmlToPdfConverterFactory);
             return htmlFormatter;
         };
         formattersMap.put("ftl", ftlCreator);
@@ -112,12 +113,12 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         this.fontsDirectory = fontsDirectory;
     }
 
-    public boolean isOpenHtmlForPdfConversion() {
-        return openHtmlForPdfConversion;
+    public HtmlToPdfConverterFactory getHtmlToPdfConverterFactory() {
+        return htmlToPdfConverterFactory;
     }
 
-    public void setOpenHtmlForPdfConversion(boolean openHtmlForPdfConversion) {
-        this.openHtmlForPdfConversion = openHtmlForPdfConversion;
+    public void setHtmlToPdfConverterFactory(HtmlToPdfConverterFactory htmlToPdfConverterFactory) {
+        this.htmlToPdfConverterFactory = htmlToPdfConverterFactory;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {

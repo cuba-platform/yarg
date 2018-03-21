@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public interface PdfConverter {
+public interface HtmlToPdfConverter {
 
     void addFont(File file) throws IOException;
 

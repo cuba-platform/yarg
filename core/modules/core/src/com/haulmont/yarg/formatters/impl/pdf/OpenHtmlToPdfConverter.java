@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class OpenHtmlToPdfConverter implements PdfConverter {
+public class OpenHtmlToPdfConverter implements HtmlToPdfConverter {
     protected PdfRendererBuilder builder;
 
     public OpenHtmlToPdfConverter() {
