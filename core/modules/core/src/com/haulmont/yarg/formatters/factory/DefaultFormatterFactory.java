@@ -36,6 +36,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected DefaultFormatProvider defaultFormatProvider;
     protected HtmlImportProcessor htmlImportProcessor;
     protected String fontsDirectory;
+    protected boolean openHtmlForPdfConversion;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
 
@@ -62,6 +63,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             HtmlFormatter htmlFormatter = new HtmlFormatter(factoryInput);
             htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
             htmlFormatter.setFontsDirectory(getFontsDirectory());
+            htmlFormatter.setOpenHtmlForPdfConversion(openHtmlForPdfConversion);
             return htmlFormatter;
         };
         formattersMap.put("ftl", ftlCreator);
@@ -108,6 +110,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setFontsDirectory(String fontsDirectory) {
         this.fontsDirectory = fontsDirectory;
+    }
+
+    public boolean isOpenHtmlForPdfConversion() {
+        return openHtmlForPdfConversion;
+    }
+
+    public void setOpenHtmlForPdfConversion(boolean openHtmlForPdfConversion) {
+        this.openHtmlForPdfConversion = openHtmlForPdfConversion;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {

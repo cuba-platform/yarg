@@ -19,6 +19,7 @@ import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.pdf.ITextPdfConverter;
+import com.haulmont.yarg.formatters.impl.pdf.OpenHtmlToPdfConverter;
 import com.haulmont.yarg.formatters.impl.pdf.PdfConverter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
@@ -51,6 +52,7 @@ public class HtmlFormatter extends AbstractFormatter {
     protected BeansWrapper beansWrapper = new BeansWrapper();
     protected ObjectWrapper objectWrapper;
     protected String fontsDirectory;
+    protected boolean openHtmlForPdfConversion;
 
     public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -91,6 +93,10 @@ public class HtmlFormatter extends AbstractFormatter {
         this.fontsDirectory = fontsDirectory;
     }
 
+    public void setOpenHtmlForPdfConversion(boolean openHtmlForPdfConversion) {
+        this.openHtmlForPdfConversion = openHtmlForPdfConversion;
+    }
+
     protected void renderPdfDocument(String htmlContent, OutputStream outputStream) {
         File temporaryFile = null;
         try {
@@ -113,7 +119,7 @@ public class HtmlFormatter extends AbstractFormatter {
     }
 
     protected PdfConverter createPdfConverter() {
-        return new ITextPdfConverter();
+        return openHtmlForPdfConversion ? new OpenHtmlToPdfConverter() : new ITextPdfConverter();
     }
 
     /**
