@@ -118,24 +118,6 @@ public class HtmlFormatter extends AbstractFormatter {
         }
     }
 
-    /**
-     * @deprecated
-     * @see #loadFonts(HtmlToPdfConverter)
-     */
-    @Deprecated
-    protected void loadFonts(ITextRenderer renderer) {
-        loadFonts(new ITextPdfConverter(renderer));
-    }
-
-    /**
-     * @deprecated
-     * @see #loadFontsFromDirectory(HtmlToPdfConverter, java.io.File)
-     */
-    @Deprecated
-    protected void loadFontsFromDirectory(ITextRenderer renderer, File fontsDir) {
-        loadFontsFromDirectory(new ITextPdfConverter(renderer), fontsDir);
-    }
-
     protected void loadFonts(HtmlToPdfConverter converter) {
         if (StringUtils.isNotBlank(fontsDirectory)) {
             File systemFontsDir = new File(fontsDirectory);
