@@ -179,7 +179,7 @@ public class Reporting implements ReportingAPI {
     }
 
     protected boolean isPostProcessorSet(ReportTemplate reportTemplate) {
-        return StringUtils.isNotEmpty(reportTemplate.getPostProcessor());
+        return StringUtils.isNotBlank(reportTemplate.getPostProcessor());
     }
 
     protected BandData loadBandData(Report report, Map<String, Object> handledParams) {

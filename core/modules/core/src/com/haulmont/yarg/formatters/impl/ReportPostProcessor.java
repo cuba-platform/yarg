@@ -18,7 +18,7 @@ package com.haulmont.yarg.formatters.impl;
 import com.haulmont.yarg.structure.BandData;
 
 /**
- * @param <T> the type of the object converted/extracted from byte array
+ * @param <T> the type of the object converted/extracted from the byte array
  *           by calling method {@link #fromByteArray(byte[] reportContent)}.
  *
  */
@@ -26,9 +26,9 @@ import com.haulmont.yarg.structure.BandData;
 public interface ReportPostProcessor<T> {
 
     /**
-     * @param source - object of any type suitable for processing converted/extracted from byte array
-     *           by calling method {@link #fromByteArray(byte[] reportContent)}.
-     * @return - updated report content as byte array
+     * @param source - object of any type suitable for processing converted/extracted from byte array report
+     *           ( by calling method {@link #fromByteArray(byte[] reportContent)} ).
+     * @return - updated report content as a byte array
      */
     byte[] postProcess(T source, BandData rootBand);
 
