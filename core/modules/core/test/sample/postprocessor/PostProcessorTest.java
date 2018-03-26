@@ -30,6 +30,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.commons.io.FileUtils.readFileToString;
 
@@ -51,7 +53,12 @@ public class PostProcessorTest {
                 new DefaultLoaderFactory()
                         .setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl())));
 
-        ReportOutputDocument reportOutputDocument = reporting.runReport(
-                new RunParams(report), new FileOutputStream("./result/sample/postProcessor.xlsx"));
+        Map<String, Object> params = new HashMap<>();
+        params.put("key 1","value 1");
+        params.put("key 2","value 2");
+        RunParams runParams = new RunParams(report);
+        runParams.params(params);
+
+        reporting.runReport(runParams, new FileOutputStream("./result/sample/postProcessor.xlsx"));
     }
 }

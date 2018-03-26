@@ -13,18 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.haulmont.yarg.formatters.impl;
+
+import com.haulmont.yarg.structure.BandData;
+
+/**
+ * @param <T> the type of the object converted/extracted from byte array
+ *           by calling method {@link #fromByteArray(byte[] reportContent)}.
+ *
+ */
 
 public interface ReportPostProcessor<T> {
 
-    void postProcess(T source);
+    /**
+     * @param source - object of any type suitable for processing converted/extracted from byte array
+     *           by calling method {@link #fromByteArray(byte[] reportContent)}.
+     * @return - updated report content as byte array
+     */
+    byte[] postProcess(T source, BandData rootBand);
 
-    T fromByteArray(byte[] bytes);
+    /**
+     * @param reportContent - original report content as byte array
+     * @return - object of any type suitable for processing in context of a report format
+     */
+    T fromByteArray(byte[] reportContent);
 
-    //TODO to big data ?
-    default void postProcessReport(byte[] bytes){
-        T source = fromByteArray(bytes);
-        postProcess(source);
+    default byte[] postProcessReport(byte[] reportContent, BandData rootBand){
+        T source = fromByteArray(reportContent);
+        return postProcess(source, rootBand);
     }
 }

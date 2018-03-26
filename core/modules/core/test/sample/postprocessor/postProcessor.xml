@@ -7,7 +7,7 @@
                   documentPath="./modules/core/test/sample/postprocessor/postProcessor.xlsx"
                   outputType="xlsx"
                   outputNamePattern="postProcessor.xlsx"
-                  postProcessor=""/>
+                  postProcessor="sample.postprocessor.TestPostProcessor"/>
     </templates>
     <rootBand name="Root" orientation="H">
         <bands>

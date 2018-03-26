@@ -22,6 +22,7 @@ import com.haulmont.yarg.exception.ValidationException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.factory.ReportFormatterFactory;
+import com.haulmont.yarg.formatters.impl.ReportPostProcessor;
 import com.haulmont.yarg.loaders.factory.ReportLoaderFactory;
 import com.haulmont.yarg.structure.*;
 import com.haulmont.yarg.util.converter.ObjectToStringConverter;
@@ -72,19 +73,9 @@ public class Reporting implements ReportingAPI {
         this.objectToStringConverter = objectToStringConverter;
     }
 
-    //TODO: @bondarchuk - outputstream gets closed we need somehow separate formatter logic
-    //TODO: and apply postProcessor after we got array of bytes
     @Override
     public ReportOutputDocument runReport(RunParams runParams, OutputStream outputStream) {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        ReportOutputDocument reportOutputDocument =  runReport(runParams.report, runParams.reportTemplate, runParams.outputType, runParams.params, result);
-        try {
-            result.writeTo(outputStream);
-        } catch (IOException e) {
-            throw new ReportingException("Cannot save report to output stream", e);
-        }
-        reportOutputDocument.setContent(result.toByteArray());
-        return reportOutputDocument;
+        return runReport(runParams.report, runParams.reportTemplate, runParams.outputType, runParams.params, outputStream);
     }
 
     @Override
@@ -137,11 +128,58 @@ public class Reporting implements ReportingAPI {
             } catch (IOException e) {
                 throw new ReportingException(format("An error occurred while processing custom template [%s].", reportTemplate.getDocumentName()), e);
             }
+        } else if (isPostProcessorSet(reportTemplate)) {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            renderDocumentToOutputStream(extension, rootBand, reportTemplate, outputType, result);
+            byte[] bytes = result.toByteArray();
+            String postProcessorName = reportTemplate.getPostProcessor();
+            bytes = applyPostProcessor(bytes, postProcessorName, rootBand);
+
+            try {
+                outputStream.write(bytes);
+            } catch (IOException e) {
+                throw new ReportingException("Cannot save report to output stream", e);
+            } finally {
+                IOUtils.closeQuietly(outputStream);
+            }
+
         } else {
-            FormatterFactoryInput factoryInput = new FormatterFactoryInput(extension, rootBand, reportTemplate, outputType, outputStream);
-            ReportFormatter formatter = formatterFactory.createFormatter(factoryInput);
-            formatter.renderDocument();
+            renderDocumentToOutputStream(extension, rootBand, reportTemplate, outputType, outputStream);
         }
+    }
+
+    private void renderDocumentToOutputStream(String templateExtension, BandData rootBand, ReportTemplate reportTemplate,
+                                              ReportOutputType outputType, OutputStream outputStream) {
+        FormatterFactoryInput factoryInput = new FormatterFactoryInput(templateExtension, rootBand, reportTemplate,
+                                                                        outputType, outputStream);
+        ReportFormatter formatter = formatterFactory.createFormatter(factoryInput);
+        formatter.renderDocument();
+    }
+
+    protected byte[] applyPostProcessor(byte[] bytes, String postProcessorClassName, BandData rootBand) {
+        try {
+            Class<?> aClass = Class.forName(postProcessorClassName);
+
+            if (ReportPostProcessor.class.isAssignableFrom(aClass)) {
+                ReportPostProcessor postProcessor = (ReportPostProcessor) aClass.newInstance();
+                bytes = postProcessor.postProcessReport(bytes, rootBand);
+            } else {
+                throw new ReportingException(
+                        String.format("Class %s does not implement ReportPostProcessor interface.", postProcessorClassName));
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new ReportingException(String.format("Class %s not found.\nPlease ensure that you entered a " +
+                    "fully qualified class for report post processor name and that you class exists in class path", postProcessorClassName), e);
+        } catch (IllegalAccessException | InstantiationException e) {
+            throw new RuntimeException(String.format("An error occurred while instantiating class %s.", postProcessorClassName), e);
+        }
+
+        return bytes;
+    }
+
+    protected boolean isPostProcessorSet(ReportTemplate reportTemplate) {
+        return StringUtils.isNotEmpty(reportTemplate.getPostProcessor());
     }
 
     protected BandData loadBandData(Report report, Map<String, Object> handledParams) {
