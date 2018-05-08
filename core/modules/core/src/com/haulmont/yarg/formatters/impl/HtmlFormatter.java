@@ -18,10 +18,11 @@ package com.haulmont.yarg.formatters.impl;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
+import com.haulmont.yarg.formatters.factory.HtmlToPdfConverterFactory;
+import com.haulmont.yarg.formatters.impl.pdf.ITextPdfConverter;
+import com.haulmont.yarg.formatters.impl.pdf.HtmlToPdfConverter;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportOutputType;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.BaseFont;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.beans.MapModel;
@@ -29,10 +30,11 @@ import freemarker.template.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,9 +47,12 @@ import static java.lang.String.format;
  * Document formatter for '.html' and '.ftl' file types
  */
 public class HtmlFormatter extends AbstractFormatter {
+    private static final Logger log = LoggerFactory.getLogger(HtmlFormatter.class);
+
     protected BeansWrapper beansWrapper = new BeansWrapper();
     protected ObjectWrapper objectWrapper;
     protected String fontsDirectory;
+    protected HtmlToPdfConverterFactory pdfConverterFactory;
 
     public HtmlFormatter(FormatterFactoryInput formatterFactoryInput) {
         super(formatterFactoryInput);
@@ -88,22 +93,24 @@ public class HtmlFormatter extends AbstractFormatter {
         this.fontsDirectory = fontsDirectory;
     }
 
+    public void setPdfConverterFactory(HtmlToPdfConverterFactory pdfConverterFactory) {
+        this.pdfConverterFactory = pdfConverterFactory;
+    }
+
     protected void renderPdfDocument(String htmlContent, OutputStream outputStream) {
-        ITextRenderer renderer = new ITextRenderer();
         File temporaryFile = null;
         try {
             temporaryFile = File.createTempFile("htmlReport", ".htm");
             DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(temporaryFile));
-            dataOutputStream.write(htmlContent.getBytes(Charset.forName("UTF-8")));
+            dataOutputStream.write(htmlContent.getBytes(StandardCharsets.UTF_8));
             dataOutputStream.close();
 
-            loadFonts(renderer);
+            HtmlToPdfConverter converter = pdfConverterFactory == null ? new ITextPdfConverter() : pdfConverterFactory.createHtmlToPdfConverter();
+            loadFonts(converter);
 
             String url = temporaryFile.toURI().toURL().toString();
-            renderer.setDocument(url);
+            converter.convert(url, outputStream);
 
-            renderer.layout();
-            renderer.createPDF(outputStream);
         } catch (Exception e) {
             throw wrapWithReportingException("", e);
         } finally {
@@ -111,37 +118,59 @@ public class HtmlFormatter extends AbstractFormatter {
         }
     }
 
+    /**
+     * @deprecated
+     * @see #loadFonts(HtmlToPdfConverter)
+     */
+    @Deprecated
     protected void loadFonts(ITextRenderer renderer) {
+        loadFonts(new ITextPdfConverter(renderer));
+    }
+
+    /**
+     * @deprecated
+     * @see #loadFontsFromDirectory(HtmlToPdfConverter, java.io.File)
+     */
+    @Deprecated
+    protected void loadFontsFromDirectory(ITextRenderer renderer, File fontsDir) {
+        loadFontsFromDirectory(new ITextPdfConverter(renderer), fontsDir);
+    }
+
+
+    protected void loadFonts(HtmlToPdfConverter converter) {
         if (StringUtils.isNotBlank(fontsDirectory)) {
             File systemFontsDir = new File(fontsDirectory);
-            loadFontsFromDirectory(renderer, systemFontsDir);
+            loadFontsFromDirectory(converter, systemFontsDir);
         }
     }
 
-    protected void loadFontsFromDirectory(ITextRenderer renderer, File fontsDir) {
+    protected void loadFontsFromDirectory(HtmlToPdfConverter converter, File fontsDir) {
         if (fontsDir.exists()) {
             if (fontsDir.isDirectory()) {
                 File[] files = fontsDir.listFiles((dir, name) -> {
                     String lower = name.toLowerCase();
                     return lower.endsWith(".otf") || lower.endsWith(".ttf");
                 });
-                for (File file : files) {
-                    try {
-                        // Usage of some fonts may be not permitted
-                        renderer.getFontResolver().addFont(file.getAbsolutePath(), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-                    } catch (IOException | DocumentException e) {
-                        if (StringUtils.contains(e.getMessage(), "cannot be embedded due to licensing restrictions")) {
-                            e.printStackTrace();//todo log message
-                        } else {
-                            e.printStackTrace();//todo log message
+                if (files != null && files.length > 0) {
+                    for (File file : files) {
+                        try {
+                            converter.addFont(file);
+                        } catch (IOException e) {
+                            if (StringUtils.contains(e.getMessage(), "cannot be embedded due to licensing restrictions")) {
+                                log.debug(e.getMessage());
+                            } else {
+                                log.warn(e.getMessage());
+                            }
                         }
                     }
+                } else {
+                    log.debug("Fonts directory is empty: " + fontsDir.getPath());
                 }
             } else {
-                //todo log message
+                log.warn(format("File %s is not a directory", fontsDir.getAbsolutePath()));
             }
         } else {
-            //todo log message
+            log.debug("Fonts directory does not exist: " + fontsDir.getPath());
         }
     }
 

@@ -10,6 +10,7 @@ import com.haulmont.yarg.reporting.DataExtractorImpl;
 import com.haulmont.yarg.reporting.Reporting;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import com.haulmont.yarg.util.properties.PropertiesLoader;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -24,8 +25,11 @@ public class ReportEngineCreator {
         String openOfficePath = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PATH);
         String openOfficePorts = properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPENOFFICE_PORTS);
         String fontsDirectory = properties.getProperty(PropertiesLoader.CUBA_REPORTING_FONTS_DIRECTORY);
+        boolean openHtmlForPdfConversion = BooleanUtils.toBoolean(
+                properties.getProperty(PropertiesLoader.CUBA_REPORTING_OPEN_HTML_FOR_PDF_CONVERSION));
 
         formatterFactory.setFontsDirectory(fontsDirectory);
+        formatterFactory.getHtmlToPdfConverterFactory().setOpenHtmlForPdfConversion(openHtmlForPdfConversion);
         if (StringUtils.isNotBlank(openOfficePath) && StringUtils.isNotBlank(openOfficePorts)) {
             String[] portsStr = openOfficePorts.split("[,|]");
             Integer[] ports = new Integer[portsStr.length];

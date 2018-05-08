@@ -35,12 +35,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected DocumentConverter documentConverter;
     protected DefaultFormatProvider defaultFormatProvider;
     protected HtmlImportProcessor htmlImportProcessor;
+    protected HtmlToPdfConverterFactory htmlToPdfConverterFactory;
     protected String fontsDirectory;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
 
     public DefaultFormatterFactory() {
         htmlImportProcessor = new HtmlImportProcessorImpl();
+        htmlToPdfConverterFactory = new HtmlToPdfConverterFactory();
         formattersMap.put("xls", factoryInput -> {
             XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
             xlsFormatter.setDocumentConverter(documentConverter);
@@ -62,6 +64,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             HtmlFormatter htmlFormatter = new HtmlFormatter(factoryInput);
             htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
             htmlFormatter.setFontsDirectory(getFontsDirectory());
+            htmlFormatter.setPdfConverterFactory(htmlToPdfConverterFactory);
             return htmlFormatter;
         };
         formattersMap.put("ftl", ftlCreator);
@@ -108,6 +111,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setFontsDirectory(String fontsDirectory) {
         this.fontsDirectory = fontsDirectory;
+    }
+
+    public HtmlToPdfConverterFactory getHtmlToPdfConverterFactory() {
+        return htmlToPdfConverterFactory;
+    }
+
+    public void setHtmlToPdfConverterFactory(HtmlToPdfConverterFactory htmlToPdfConverterFactory) {
+        this.htmlToPdfConverterFactory = htmlToPdfConverterFactory;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {
