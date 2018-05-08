@@ -32,6 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -116,6 +117,25 @@ public class HtmlFormatter extends AbstractFormatter {
             FileUtils.deleteQuietly(temporaryFile);
         }
     }
+
+    /**
+     * @deprecated
+     * @see #loadFonts(HtmlToPdfConverter)
+     */
+    @Deprecated
+    protected void loadFonts(ITextRenderer renderer) {
+        loadFonts(new ITextPdfConverter(renderer));
+    }
+
+    /**
+     * @deprecated
+     * @see #loadFontsFromDirectory(HtmlToPdfConverter, java.io.File)
+     */
+    @Deprecated
+    protected void loadFontsFromDirectory(ITextRenderer renderer, File fontsDir) {
+        loadFontsFromDirectory(new ITextPdfConverter(renderer), fontsDir);
+    }
+
 
     protected void loadFonts(HtmlToPdfConverter converter) {
         if (StringUtils.isNotBlank(fontsDirectory)) {
