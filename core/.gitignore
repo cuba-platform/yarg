@@ -3,7 +3,7 @@ out/
 build/
 db/
 result/
-modules/*/build
 *.iml
 *.ipr
 *.iws
+.idea/
