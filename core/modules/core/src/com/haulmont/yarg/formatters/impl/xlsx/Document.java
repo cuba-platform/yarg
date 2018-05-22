@@ -36,14 +36,14 @@ import java.util.*;
 
 public class Document {
     protected SpreadsheetMLPackage thePackage;
-    protected List<SheetWrapper> worksheets = new ArrayList<SheetWrapper>();
+    protected List<SheetWrapper> worksheets = new ArrayList<>();
 
-    protected Map<Range, ChartWrapper> chartSpaces = new HashMap<Range, ChartWrapper>();
+    protected Map<Range, ChartWrapper> chartSpaces = new HashMap<>();
     protected Workbook workbook;
     protected SharedStrings sharedStrings;
     protected StyleSheet styleSheet;
     protected List<PivotCacheDefinition> pivotCacheDefinitions = new ArrayList<>();
-    protected HashSet<Part> handled = new HashSet<Part>();
+    protected HashSet<Part> handled = new HashSet<>();
 
     public static Document create(SpreadsheetMLPackage thePackage) {
         Document document = new Document();
@@ -77,17 +77,24 @@ public class Document {
     public Worksheet getSheetByName(String name) {
         for (Document.SheetWrapper sheetWrapper : worksheets) {
             if (sheetWrapper.getName().equals(name)) {
-                return sheetWrapper.getWorksheet().getJaxbElement();
+                return getWorksheetContents(sheetWrapper);
             }
         }
 
         return null;
     }
 
+    public Worksheet getWorksheetContents(Document.SheetWrapper wrapper) {
+        try {
+            return wrapper.getWorksheet().getContents();
+        } catch (Docx4JException e) {
+            throw new RuntimeException("Unable to get worksheet contents", e);
+        }
+    }
 
     public String getSheetName(Worksheet worksheet) {
         for (Document.SheetWrapper sheetWrapper : worksheets) {
-            if (worksheet == sheetWrapper.getWorksheet().getJaxbElement()) {
+            if (worksheet == getWorksheetContents(sheetWrapper)) {
                 return sheetWrapper.getName();
             }
         }
@@ -98,7 +105,14 @@ public class Document {
     public String getCellValue(Cell cell) {
         if (cell.getV() == null) return null;
         if (cell.getT().equals(STCellType.S)) {
-            CTRst ctRst = sharedStrings.getJaxbElement().getSi().get(Integer.parseInt(cell.getV()));
+            CTSst jaxbElement;
+            try {
+                jaxbElement = sharedStrings.getContents();
+            } catch (Docx4JException e) {
+                throw new RuntimeException("Unable to get strings contents", e);
+            }
+
+            CTRst ctRst = jaxbElement.getSi().get(Integer.parseInt(cell.getV()));
             String value = null;
 
             if (ctRst.getT() != null) {
@@ -138,7 +152,7 @@ public class Document {
         Worksheet sheet = getSheetByName(range.getSheet());
         SheetData data = sheet.getSheetData();
 
-        Map<CellReference, Cell> result = new LinkedHashMap<CellReference, Cell>();
+        Map<CellReference, Cell> result = new LinkedHashMap<>();
         for (int i = 1; i <= data.getRow().size(); i++) {
             Row row = data.getRow().get(i - 1);
             if (range.getFirstRow() <= row.getR() && row.getR() <= range.getLastRow()) {
@@ -182,11 +196,21 @@ public class Document {
             }
 
             if (part instanceof JaxbXmlPart) {
-                Object o = ((JaxbXmlPart) part).getJaxbElement();
+                Object o;
+                try {
+                    o = ((JaxbXmlPart) part).getContents();
+                } catch (Docx4JException e) {
+                    throw new RuntimeException("Unable to get part contents", e);
+                }
 
                 if (o instanceof CTChartSpace) {
                     Drawing drawing = (Drawing) parent;
-                    CTDrawing ctDrawing = drawing.getJaxbElement();
+                    CTDrawing ctDrawing;
+                    try {
+                        ctDrawing = drawing.getContents();
+                    } catch (Docx4JException e) {
+                        throw new RuntimeException("Unable to get drawing contents", e);
+                    }
                     Object anchorObj = ctDrawing.getEGAnchor().get(chartNum++);
 
                     Range range = null;
@@ -240,8 +264,8 @@ public class Document {
 
     public void clearWorkbook() {
         for (SheetWrapper sheet : worksheets) {
-            sheet.worksheet.getJaxbElement().getSheetData().getRow().clear();
-            CTMergeCells mergeCells = sheet.worksheet.getJaxbElement().getMergeCells();
+            getWorksheetContents(sheet).getSheetData().getRow().clear();
+            CTMergeCells mergeCells = getWorksheetContents(sheet).getMergeCells();
             if (mergeCells != null && mergeCells.getMergeCell() != null) {
                 mergeCells.getMergeCell().clear();
             }

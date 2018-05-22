@@ -96,7 +96,12 @@ public class DocxFormatter extends AbstractFormatter {
     protected void updateTableOfContents() {
         try {
             MainDocumentPart documentPart = wordprocessingMLPackage.getMainDocumentPart();
-            Document wmlDocumentEl = documentPart.getJaxbElement();
+            Document wmlDocumentEl;
+            try {
+                wmlDocumentEl = documentPart.getContents();
+            } catch (Docx4JException e) {
+                throw new RuntimeException("Unable to get document content", e);
+            }
             Body body =  wmlDocumentEl.getBody();
 
             TocFinder finder = new TocFinder();

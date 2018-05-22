@@ -76,18 +76,18 @@ public class XLSFormatter extends AbstractFormatter {
     protected int rowsAddedByVerticalBand = 0;
     protected int rowsAddedByHorizontalBand = 0;
 
-    protected Map<String, List<SheetRange>> mergeRegionsForRangeNames = new HashMap<String, List<SheetRange>>();
-    protected Map<HSSFSheet, HSSFSheet> templateToResultSheetsMapping = new HashMap<HSSFSheet, HSSFSheet>();
-    protected Map<String, Bounds> templateBounds = new HashMap<String, Bounds>();
+    protected Map<String, List<SheetRange>> mergeRegionsForRangeNames = new HashMap<>();
+    protected Map<HSSFSheet, HSSFSheet> templateToResultSheetsMapping = new HashMap<>();
+    protected Map<String, Bounds> templateBounds = new HashMap<>();
 
     protected AreaDependencyManager areaDependencyManager = new AreaDependencyManager();
     protected Map<Area, List<Area>> areasDependency = areaDependencyManager.getAreasDependency();
 
-    protected List<Integer> orderedPicturesId = new ArrayList<Integer>();
-    protected Map<String, EscherAggregate> sheetToEscherAggregate = new HashMap<String, EscherAggregate>();
+    protected List<Integer> orderedPicturesId = new ArrayList<>();
+    protected Map<String, EscherAggregate> sheetToEscherAggregate = new HashMap<>();
 
-    protected Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<HSSFSheet, HSSFPatriarch>();
-    protected List<XlsHint> hints = new ArrayList<XlsHint>();
+    protected Map<HSSFSheet, HSSFPatriarch> drawingPatriarchsMap = new HashMap<>();
+    protected List<XlsHint> hints = new ArrayList<>();
 
     protected DocumentConverter documentConverter;
 
@@ -304,7 +304,7 @@ public class XLSFormatter extends AbstractFormatter {
         if (crefs != null) {
             addRangeBounds(band, crefs);
 
-            ArrayList<HSSFRow> resultRows = new ArrayList<HSSFRow>();
+            ArrayList<HSSFRow> resultRows = new ArrayList<>();
 
             int currentRowNum = -1;
             int currentRowCount = -1;
@@ -388,7 +388,7 @@ public class XLSFormatter extends AbstractFormatter {
         String rangeName = band.getName();
         CellReference[] crefs = getRangeContent(templateWorkbook, rangeName);
 
-        Set<Integer> addedRowNumbers = new HashSet<Integer>();
+        Set<Integer> addedRowNumbers = new HashSet<>();
 
         if (crefs != null) {
             addRangeBounds(band, crefs);
@@ -501,7 +501,7 @@ public class XLSFormatter extends AbstractFormatter {
                         String name = aNamedRange.getNameName();
                         SheetRange sheetRange = new SheetRange(mergedRegion, currentSheet.getSheetName());
                         if (mergeRegionsForRangeNames.get(name) == null) {
-                            ArrayList<SheetRange> list = new ArrayList<SheetRange>();
+                            ArrayList<SheetRange> list = new ArrayList<>();
                             list.add(sheetRange);
                             mergeRegionsForRangeNames.put(name, list);
                         } else {

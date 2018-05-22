@@ -30,6 +30,7 @@ import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -38,6 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class AbstractFormatter implements ReportFormatter {
     public static final String SIMPLE_ALIAS_REGEXP = "\\$\\{([A-z0-9_]+?)\\}";
@@ -57,21 +60,22 @@ public abstract class AbstractFormatter implements ReportFormatter {
     protected ReportTemplate reportTemplate;
     protected ReportOutputType outputType;
     protected OutputStream outputStream;
-    protected Set<ReportOutputType> supportedOutputTypes = new HashSet<ReportOutputType>();
+    protected Set<ReportOutputType> supportedOutputTypes = new HashSet<>();
     protected DefaultFormatProvider defaultFormatProvider;
 
     /**
      * Chain of responsibility for content inliners
      */
-    protected List<ContentInliner> contentInliners = new ArrayList<ContentInliner>();
+    protected List<ContentInliner> contentInliners = new ArrayList<>();
 
     protected AbstractFormatter(FormatterFactoryInput formatterFactoryInput) {
-        Preconditions.checkNotNull("\"rootBand\" parameter can not be null", formatterFactoryInput.getRootBand());
-        Preconditions.checkNotNull("\"reportTemplate\" parameter can not be null", formatterFactoryInput.getReportTemplate());
+        checkNotNull(formatterFactoryInput.getRootBand(), "\"rootBand\" parameter can not be null");
+        checkNotNull(formatterFactoryInput.getReportTemplate(), "\"reportTemplate\" parameter can not be null");
 
         this.rootBand = formatterFactoryInput.getRootBand();
         this.reportTemplate = formatterFactoryInput.getReportTemplate();
-        this.outputType = (formatterFactoryInput.getOutputType() != null) ? formatterFactoryInput.getOutputType() : reportTemplate.getOutputType();
+        this.outputType = (formatterFactoryInput.getOutputType() != null)
+                ? formatterFactoryInput.getOutputType() : reportTemplate.getOutputType();
         this.outputStream = formatterFactoryInput.getOutputStream();
 
         this.contentInliners.add(new BitmapContentInliner());
@@ -121,12 +125,14 @@ public abstract class AbstractFormatter implements ReportFormatter {
         if (formatString != null) {
             if (formatString.startsWith("class:")) {
                 String className = formatString.replaceFirst("class:", "");
+                ValueFormat valueFormat;
                 try {
-                    ValueFormat valueFormat = (ValueFormat) Class.forName(className).newInstance();
-                    valueString = valueFormat.format(value);
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    Class<?> valueFormatterClass = Class.forName(className);
+                    valueFormat = (ValueFormat) ConstructorUtils.invokeConstructor(valueFormatterClass);
+                } catch (ReflectiveOperationException e) {
                     throw new ReportingException("An error occurred while applying custom format", e);
                 }
+                valueString = valueFormat.format(value);
             } else if (value == null) {
                 valueString = "";
             } else if (value instanceof Number) {
@@ -185,7 +191,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected String insertBandDataToString(BandData bandData, String resultStr) {
-        List<String> parametersToInsert = new ArrayList<String>();
+        List<String> parametersToInsert = new ArrayList<>();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(resultStr);
         while (matcher.find()) {
             parametersToInsert.add(unwrapParameterName(matcher.group()));
@@ -223,7 +229,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     }
 
     protected BandPathAndParameterName separateBandNameAndParameterName(String alias) {
-        List<String> bandPathList = new ArrayList<String>();
+        List<String> bandPathList = new ArrayList<>();
         String[] pathParts = alias.split("\\.");
         BandData currentBand = rootBand;
         for (String pathPart : pathParts) {

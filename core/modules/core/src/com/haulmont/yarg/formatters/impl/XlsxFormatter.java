@@ -205,7 +205,12 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void updateOutlines() {
         for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
-            Worksheet resultWorksheet = sheetWrapper.getWorksheet().getJaxbElement();
+            Worksheet resultWorksheet;
+            try {
+                resultWorksheet = sheetWrapper.getWorksheet().getContents();
+            } catch (Docx4JException e) {
+                throw new RuntimeException("Unable to get worksheet contents");
+            }
             Worksheet templateWorksheet = template.getSheetByName(sheetWrapper.getName());
 
             if (templateWorksheet.getSheetFormatPr() != null) {
@@ -312,14 +317,20 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void updateConditionalFormatting() {
         for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
-            Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
+            Worksheet worksheet;
+            try {
+                worksheet = sheetWrapper.getWorksheet().getContents();
+            } catch (Docx4JException e) {
+                throw new RuntimeException("Unable to get worksheet contents");
+            }
+
             for (CTConditionalFormatting ctConditionalFormatting : worksheet.getConditionalFormatting()) {
-                List<String> references = new ArrayList<String>();
+                List<String> references = new ArrayList<>();
                 for (String ref : ctConditionalFormatting.getSqref()) {
                     Range formulaRange = Range.fromRange(sheetWrapper.getName(), ref);
                     for (Range templateRange : rangeDependencies.templates()) {
                         if (templateRange.contains(formulaRange)) {
-                            List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.resultsForTemplate(templateRange));
+                            List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
                             for (Range resultRange : resultRanges) {
                                 Offset offset = calculateOffset(templateRange, resultRange);
                                 Range shift = formulaRange.copy().shift(offset.downOffset, offset.rightOffset);
@@ -360,8 +371,8 @@ public class XlsxFormatter extends AbstractFormatter {
 
             for (Range templateRange : rangeDependencies.templates()) {
                 if (templateRange.containsAny(formulaRanges)) {
-                    List<Range> resultRanges = new ArrayList<Range>(rangeDependencies.resultsForTemplate(templateRange));
-                    List<Range> newRanges = new ArrayList<Range>();
+                    List<Range> resultRanges = new ArrayList<>(rangeDependencies.resultsForTemplate(templateRange));
+                    List<Range> newRanges = new ArrayList<>();
                     for (Range resultRange : resultRanges) {
                         BandData bandData = bandsForRanges.bandForResultRange(resultRange);
                         boolean hasSameFormulaBand = false;
@@ -464,7 +475,11 @@ public class XlsxFormatter extends AbstractFormatter {
         try {
             CalcChain part = (CalcChain) result.getPackage().getParts().get(new PartName("/xl/calcChain.xml"));
             if (part != null) {
-                calculationChain = part.getJaxbElement();
+                try {
+                    calculationChain = part.getContents();
+                } catch (Docx4JException e) {
+                    throw new RuntimeException("Unable to get contents of part", e);
+                }
                 calculationChain.getC().clear();
             }
         } catch (InvalidFormatException e) {
@@ -473,7 +488,8 @@ public class XlsxFormatter extends AbstractFormatter {
         return calculationChain;
     }
 
-    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange, CTCalcChain calculationChain, int formulaCount) {
+    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange,
+                                 CTCalcChain calculationChain, int formulaCount) {
         CTCellFormula formula = cellWithFormula.getF();
         formula.setValue(formula.getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
         if (originalFormulaRange.isOneCellRange() && formulaRange.isOneCellRange()) {
@@ -726,13 +742,13 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected List<Cell> copyCells(BandData band, Range templateRange, List<Row> resultSheetRows, Row firstRow, Worksheet resultSheet) {
-        List<Cell> resultCells = new ArrayList<Cell>();
+        List<Cell> resultCells = new ArrayList<>();
         for (int i = 0; i <= templateRange.getLastRow() - templateRange.getFirstRow(); i++) {
             Range oneRowRange = new Range(templateRange.getSheet(),
                     templateRange.getFirstColumn(), templateRange.getFirstRow() + i,
                     templateRange.getLastColumn(), templateRange.getFirstRow() + i);
             Map<CellReference, Cell> cellsForOneRowRange = template.getCellsByRange(oneRowRange);
-            List<Cell> templateCells = new ArrayList<Cell>(cellsForOneRowRange.values());
+            List<Cell> templateCells = new ArrayList<>(cellsForOneRowRange.values());
             Row templateRow = !templateCells.isEmpty() ?
                     (Row) templateCells.get(0).getParent() :
                     resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow() - 1);
@@ -771,13 +787,10 @@ public class XlsxFormatter extends AbstractFormatter {
                 }
             }
 
-            Collections.sort(templateCells, new Comparator<Cell>() {
-                @Override
-                public int compare(Cell o1, Cell o2) {
-                    CellReference cellReference1 = referencesToCells.inverse().get(o1);
-                    CellReference cellReference2 = referencesToCells.inverse().get(o2);
-                    return cellReference1.compareTo(cellReference2);
-                }
+            templateCells.sort((o1, o2) -> {
+                CellReference cellReference1 = referencesToCells.inverse().get(o1);
+                CellReference cellReference2 = referencesToCells.inverse().get(o2);
+                return cellReference1.compareTo(cellReference2);
             });
         }
     }
@@ -846,7 +859,14 @@ public class XlsxFormatter extends AbstractFormatter {
 
             WorksheetPart worksheetPart = null;
             for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
-                if (sheetWrapper.getWorksheet().getJaxbElement() == resultWorksheet) {
+                Worksheet contents;
+                try {
+                    contents = sheetWrapper.getWorksheet().getContents();
+                } catch (Docx4JException e) {
+                    throw new RuntimeException("Unable to get worksheet contents", e);
+                }
+
+                if (contents == resultWorksheet) {
                     worksheetPart = sheetWrapper.getWorksheet();
                 }
             }
@@ -1012,7 +1032,12 @@ public class XlsxFormatter extends AbstractFormatter {
 
     protected void updateHeaderAndFooter() {
         for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
-            Worksheet worksheet = sheetWrapper.getWorksheet().getJaxbElement();
+            Worksheet worksheet;
+            try {
+                worksheet = sheetWrapper.getWorksheet().getContents();
+            } catch (Docx4JException e) {
+                throw new RuntimeException("Unable to get contents of worksheet", e);
+            }
             if (worksheet.getHeaderFooter() != null) {
                 CTHeaderFooter headerFooter = worksheet.getHeaderFooter();
                 if (headerFooter.getOddHeader() != null) {
@@ -1037,7 +1062,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected String insertBandDataToString(String resultStr) {
-        List<String> parametersToInsert = new ArrayList<String>();
+        List<String> parametersToInsert = new ArrayList<>();
         Matcher matcher = UNIVERSAL_ALIAS_PATTERN.matcher(resultStr);
         while (matcher.find()) {
             parametersToInsert.add(unwrapParameterName(matcher.group()));

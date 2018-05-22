@@ -230,7 +230,8 @@ public abstract class AbstractInliner implements ContentInliner {
     }
 
     @Override
-    public void inlineToDoc(OfficeComponent officeComponent, XTextRange textRange, XText destination, Object paramValue, Matcher paramsMatcher) throws Exception {
+    public void inlineToDoc(OfficeComponent officeComponent, XTextRange textRange, XText destination, Object paramValue,
+                            Matcher paramsMatcher) throws Exception {
         try {
             if (paramValue != null) {
                 Image image = new Image(paramValue, paramsMatcher);
@@ -322,7 +323,7 @@ public abstract class AbstractInliner implements ContentInliner {
         java.util.List<SectionWrapper> sectionWrappers = wordPackage.getDocumentModel().getSections();
         for (SectionWrapper sw : sectionWrappers) {
             HeaderFooterPolicy hfp = sw.getHeaderFooterPolicy();
-            List<Part> parts = Arrays.<Part>asList(hfp.getFirstHeader(), hfp.getDefaultHeader(), hfp.getEvenHeader(),
+            List<Part> parts = Arrays.asList(hfp.getFirstHeader(), hfp.getDefaultHeader(), hfp.getEvenHeader(),
                     hfp.getFirstFooter(), hfp.getDefaultFooter(), hfp.getEvenFooter());
             for (Part part : parts) {
                 TextMatchCallback callback = new TextMatchCallback(text);

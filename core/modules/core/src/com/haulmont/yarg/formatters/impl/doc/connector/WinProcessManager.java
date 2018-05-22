@@ -18,13 +18,13 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,7 +69,7 @@ public class WinProcessManager extends JavaProcessManager implements ProcessMana
             List r = IOUtils.readLines(process.getInputStream());
             for (Object output : r) {
                 NetStatInfo info = new NetStatInfo((String) output);
-                if (info.localPort == port && ObjectUtils.equals(host, info.localAddress))
+                if (info.localPort == port && Objects.equals(host, info.localAddress))
                     return Collections.singletonList(info.pid);
             }
         } catch (IOException e) {
