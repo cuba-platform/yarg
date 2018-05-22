@@ -15,7 +15,6 @@
  */
 package com.haulmont.yarg.formatters.impl;
 
-import com.google.common.base.Preconditions;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.ReportingInterruptedException;
@@ -55,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.haulmont.yarg.formatters.impl.doc.UnoConverter.as;
 
 /**
@@ -76,7 +76,7 @@ public class DocFormatter extends AbstractFormatter {
 
     public DocFormatter(FormatterFactoryInput formatterFactoryInput, OfficeIntegrationAPI officeIntegration) {
         super(formatterFactoryInput);
-        Preconditions.checkNotNull("\"officeIntegration\" parameter can not be null", officeIntegration);
+        checkNotNull(officeIntegration, "\"officeIntegration\" parameter can not be null");
 
         this.officeIntegration = officeIntegration;
         supportedOutputTypes.add(ReportOutputType.doc);
@@ -321,7 +321,7 @@ public class DocFormatter extends AbstractFormatter {
         if (cellText != null) {
             return cellText.replace("\r", "");
         } else {
-            return cellText;
+            return null;
         }
     }
 

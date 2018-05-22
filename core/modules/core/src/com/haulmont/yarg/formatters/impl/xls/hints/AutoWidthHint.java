@@ -16,10 +16,6 @@
 
 package com.haulmont.yarg.formatters.impl.xls.hints;
 
-/**
- * @author artamonov
- * @version $Id$
- */
 public class AutoWidthHint extends AbstractHint {
     public AutoWidthHint() {
         super("##autoWidth");

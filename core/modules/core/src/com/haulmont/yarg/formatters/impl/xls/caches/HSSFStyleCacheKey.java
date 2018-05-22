@@ -21,10 +21,6 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 
 import java.io.Serializable;
 
-/**
- * @author artamonov
- * @version $Id$
- */
 public class HSSFStyleCacheKey implements Serializable {
 
     private static final long serialVersionUID = 3327348050407288508L;

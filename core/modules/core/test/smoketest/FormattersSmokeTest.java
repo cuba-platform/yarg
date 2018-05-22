@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Haulmont
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package smoketest;
 
 import com.haulmont.yarg.formatters.ReportFormatter;
@@ -6,7 +21,6 @@ import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
-import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
@@ -16,15 +30,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-/**
- * @author degtyarjov
- * @version $Id$
- */
+import java.util.*;
 
 public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
@@ -42,7 +48,6 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
                 bandData.addData("theStyle", "red");
             }
         }
-
 
         FileOutputStream outputStream = new FileOutputStream("./result/smoke/result.xls");
 
@@ -73,7 +78,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocx() throws Exception {
         BandData root = createRootBand();
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -110,7 +115,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxToHtml() throws Exception {
         BandData root = createRootBand();
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -128,7 +133,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxToHtml_OfficeIntegration() throws Exception {
         BandData root = createRootBand();
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -148,7 +153,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
     public void testOdt() throws Exception {
         BandData root = createRootBand();
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -168,7 +173,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
     public void testDoc() throws Exception {
         BandData root = createRootBand();
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+        root.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
 
         BandData footer = root.getChildByName("Footer");
         BandData footerChild = new BandData("FooterChild", footer);
@@ -207,7 +212,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
         root.addChild(second);
 
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
-        split.setData(new HashMap<String, Object>());
+        split.setData(new HashMap<>());
         split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
         root.addChild(split);
 
@@ -241,7 +246,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
         root.addChild(second);
 
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
-        split.setData(new HashMap<String, Object>());
+        split.setData(new HashMap<>());
         split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
         root.addChild(split);
 
@@ -275,7 +280,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
         root.addChild(second);
 
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
-        split.setData(new HashMap<String, Object>());
+        split.setData(new HashMap<>());
         split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
         root.addChild(split);
 
@@ -311,7 +316,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
         root.addChild(second);
 
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
-        split.setData(new HashMap<String, Object>());
+        split.setData(new HashMap<>());
         split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
         root.addChild(split);
 
@@ -328,7 +333,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
     @Test
     public void testHtml() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
 
@@ -409,7 +414,7 @@ public class FormattersSmokeTest extends AbstractFormatSpecificTest {
         root.addChild(second);
 
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
-        split.setData(new HashMap<String, Object>());
+        split.setData(new HashMap<>());
         split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
         root.addChild(split);
 

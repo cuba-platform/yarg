@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Haulmont
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package smoketest;
 
 import com.haulmont.yarg.formatters.ReportFormatter;
@@ -20,10 +35,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
 public class DocSpecificTest extends AbstractFormatSpecificTest{
     @Test
     public void testTableOdt() throws Exception {
@@ -52,12 +63,12 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
     @Test
     public void testDocWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData letterTable = new BandData("letterTable", root, BandOrientation.HORIZONTAL);
         BandData creatorInfo = new BandData("creatorInfo", root, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> letterTableData = new HashMap<String, Object>();
+        HashMap<String, Object> letterTableData = new HashMap<>();
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
@@ -78,7 +89,7 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
         html += "</body></html>";
         letterTableData.put("html", html);
         letterTable.setData(letterTableData);
-        HashMap<String, Object> creatorInfoData = new HashMap<String, Object>();
+        HashMap<String, Object> creatorInfoData = new HashMap<>();
         creatorInfoData.put("name", "12345");
         creatorInfoData.put("phone", "54321");
         creatorInfo.setData(creatorInfoData);
@@ -110,7 +121,7 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
             public void run() {
                 try {
                     BandData root = createRootBand();
-                    root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+                    root.addReportFieldFormats(Arrays.asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -134,7 +145,7 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
             public void run() {
                 try {
                     BandData root = createRootBand();
-                    root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+                    root.addReportFieldFormats(Arrays.asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -159,7 +170,7 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
             public void run() {
                 try {
                     BandData root = createRootBand();
-                    root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
+                    root.addReportFieldFormats(Arrays.asList(new ReportFieldFormatImpl("Band1.col2", "${html}")));
                     BandData footer = root.getChildByName("Footer");
                     BandData footerChild = new BandData("FooterChild", footer);
                     footerChild.addData("nestedData", "NESTED_DATA");
@@ -181,5 +192,4 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
         countDownLatch.await();
         System.out.println();
     }
-
 }

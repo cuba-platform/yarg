@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Haulmont
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package smoketest;
 
 import com.haulmont.yarg.structure.BandData;
@@ -11,10 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
 public abstract class AbstractFormatSpecificTest {
     protected String openOfficePath = System.getenv("YARG_OPEN_OFFICE_PATH");
     protected String fontsDirectory = System.getenv("YARG_FONTS_DIRECTORY");
@@ -35,9 +46,9 @@ public abstract class AbstractFormatSpecificTest {
 
     protected BandData createRootBand(List<BandData> bands) {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(new ReportFieldFormatImpl("Root.param1", "%16s")));
+        root.addReportFieldFormats(Arrays.asList(new ReportFieldFormatImpl("Root.param1", "%16s")));
 
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData band1_1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
@@ -45,9 +56,9 @@ public abstract class AbstractFormatSpecificTest {
         BandData band1_3 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
         BandData footer = new BandData("Footer", root, BandOrientation.HORIZONTAL);
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
-        split.setData(new HashMap<String, Object>());
+        split.setData(new HashMap<>());
 
-        Map<String, Object> datamap = new HashMap<String, Object>();
+        Map<String, Object> datamap = new HashMap<>();
         datamap.put("col1", 111);
         datamap.put("col2", "<html><body><b>html text</b></body></html>");
         datamap.put("col3", 333);
@@ -57,7 +68,7 @@ public abstract class AbstractFormatSpecificTest {
         datamap.put("theStyle", "theTest");
         band1_1.setData(datamap);
 
-        Map<String, Object> datamap2 = new HashMap<String, Object>();
+        Map<String, Object> datamap2 = new HashMap<>();
         datamap2.put("col1", 444);
         datamap2.put("col2", "<html><body><b>html text</b></body></html>");
         datamap2.put("col3", 666);
@@ -66,7 +77,7 @@ public abstract class AbstractFormatSpecificTest {
         datamap2.put("cwidth", 10000);
         band1_2.setData(datamap2);
 
-        Map<String, Object> datamap3 = new HashMap<String, Object>();
+        Map<String, Object> datamap3 = new HashMap<>();
         datamap3.put("col1", 777);
         datamap3.put("col2", "<html><body><b>html text</b></body></html>");
         datamap3.put("col3", 999);
@@ -79,21 +90,21 @@ public abstract class AbstractFormatSpecificTest {
         BandData band2_1 = new BandData("Band2", root, BandOrientation.HORIZONTAL);
         BandData band2_2 = new BandData("Band2", root, BandOrientation.HORIZONTAL);
 
-        Map<String, Object> datamap4 = new HashMap<String, Object>();
+        Map<String, Object> datamap4 = new HashMap<>();
         datamap4.put("col1", 111);
         datamap4.put("col2", 222);
         datamap4.put("col3", 333);
         datamap4.put("col4", 444);
         band2_1.setData(datamap4);
 
-        Map<String, Object> datamap5 = new HashMap<String, Object>();
+        Map<String, Object> datamap5 = new HashMap<>();
         datamap5.put("col1", 555);
         datamap5.put("col2", 666);
         datamap5.put("col3", 777);
         datamap5.put("col4", 888);
         band2_2.setData(datamap5);
 
-        Map<String, Object> datamap6 = new HashMap<String, Object>();
+        Map<String, Object> datamap6 = new HashMap<>();
         datamap6.put("col1", 123);
         datamap6.put("col2", 456);
         datamap6.put("col3", 789);
@@ -113,14 +124,14 @@ public abstract class AbstractFormatSpecificTest {
         root.addChild(band2_2);
         root.addChild(split);
         root.addChild(footer);
-        root.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        root.setFirstLevelBandDefinitionNames(new HashSet<>());
         root.getFirstLevelBandDefinitionNames().add("Band1");
         root.getFirstLevelBandDefinitionNames().add("Band2");
         root.getFirstLevelBandDefinitionNames().add("Split");
         root.getFirstLevelBandDefinitionNames().add("Footer");
 
 
-        root.addReportFieldFormats(Arrays.<ReportFieldFormat>asList(
+        root.addReportFieldFormats(Arrays.asList(
                 new ReportFieldFormatImpl("Root.html", "${html}"),
                 new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"),
                 new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));

@@ -26,19 +26,15 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
 public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
     public static final Pattern COMMON_PARAM_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
 
     protected List<Map<String, Object>> fillOutputData(List resList, List<OutputValue> parametersNames) {
-        List<Map<String, Object>> outputData = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> outputData = new ArrayList<>();
 
         for (Object resultRecordObject : resList) {
-            Map<String, Object> outputValues = new HashMap<String, Object>();
+            Map<String, Object> outputValues = new HashMap<>();
             if (resultRecordObject instanceof Object[]) {
                 Object[] resultRecord = (Object[]) resultRecordObject;
 
@@ -71,7 +67,7 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
     }
 
     protected QueryPack prepareQuery(String query, BandData parentBand, Map<String, Object> reportParams) {
-        Map<String, Object> currentParams = new HashMap<String, Object>();
+        Map<String, Object> currentParams = new HashMap<>();
         if (reportParams != null) {
             currentParams.putAll(reportParams);
         }
@@ -82,9 +78,9 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             parentBand = parentBand.getParentBand();
         }
 
-        List<QueryParameter> queryParameters = new ArrayList<QueryParameter>();
+        List<QueryParameter> queryParameters = new ArrayList<>();
         HashSet<String> paramNames = findParameterNames(query);
-        Map<String, String> paramsToRemoveFromQuery = new LinkedHashMap<String, String>();
+        Map<String, String> paramsToRemoveFromQuery = new LinkedHashMap<>();
 
         for (String paramName : paramNames) {
             Object paramValue = currentParams.get(paramName);
@@ -176,15 +172,13 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
                 parentBand = parentBand.getParentBand();
             }
             return engine.createTemplate(query).make(bindings).toString();
-        } catch (ClassNotFoundException e) {
-            throw new DataLoadingException(String.format("An error occurred while loading processing query template [%s]", query), e);
-        } catch (IOException e) {
+        } catch (ClassNotFoundException | IOException e) {
             throw new DataLoadingException(String.format("An error occurred while loading processing query template [%s]", query), e);
         }
     }
 
     protected HashSet<String> findParameterNames(String query) {
-        HashSet<String> paramsStr = new LinkedHashSet<String>();
+        HashSet<String> paramsStr = new LinkedHashSet<>();
         Matcher paramMatcher = COMMON_PARAM_PATTERN.matcher(query);
         while (paramMatcher.find()) {
             String paramName = paramMatcher.group(1);

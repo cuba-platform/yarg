@@ -21,18 +21,13 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * <p>$Id$</p>
- *
- * @author artamonov
- */
 public class XlsStyleCache {
 
-    private Map<HSSFStyleCacheKey, HSSFCellStyle> cellStyles = new HashMap<HSSFStyleCacheKey, HSSFCellStyle>();
+    private Map<HSSFStyleCacheKey, HSSFCellStyle> cellStyles = new HashMap<>();
 
-    private Map<HSSFStyleCacheKey, HSSFCellStyle> namedCellStyles = new HashMap<HSSFStyleCacheKey, HSSFCellStyle>();
+    private Map<HSSFStyleCacheKey, HSSFCellStyle> namedCellStyles = new HashMap<>();
 
-    private Map<String, HSSFCellStyle> styleMap = new HashMap<String, HSSFCellStyle>();
+    private Map<String, HSSFCellStyle> styleMap = new HashMap<>();
 
     public HSSFCellStyle processCellStyle(HSSFCellStyle cellStyle) {
         HSSFCellStyle cachedCellStyle = cellStyles.get(new HSSFStyleCacheKey(cellStyle));

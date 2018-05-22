@@ -21,10 +21,6 @@ import org.apache.poi.hssf.usermodel.HSSFFont;
 
 import java.io.Serializable;
 
-/**
- * @author artamonov
- * @version $Id$
- */
 public class HSSFFontCacheKey implements Serializable {
 
     private static final long serialVersionUID = 7503724004378911912L;
@@ -35,7 +31,7 @@ public class HSSFFontCacheKey implements Serializable {
     public HSSFFontCacheKey(HSSFFont font) {
         this.font = font;
         if (font != null) {
-            this.fontRecord = (FontRecord) XslStyleHelper.getFieldValue(font, "font");
+            this.fontRecord = XslStyleHelper.getFieldValue(font, "font");
         } else {
             this.fontRecord = null;
         }

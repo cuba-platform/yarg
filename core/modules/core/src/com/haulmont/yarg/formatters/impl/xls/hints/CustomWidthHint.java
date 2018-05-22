@@ -20,10 +20,6 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 
 import java.util.regex.Matcher;
 
-/**
- * @author kozyaikin
- * @version $Id$
- */
 public class CustomWidthHint extends AbstractHint {
     public CustomWidthHint() {
         super("##width=([A-z0-9]+)");

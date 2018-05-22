@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Haulmont
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package smoketest;
 
 import com.haulmont.yarg.formatters.ReportFormatter;
@@ -14,15 +29,11 @@ import org.junit.Test;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
 public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testTableInTable() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         root.setData(rootData);
         BandData ride = new BandData("Customer", root, BandOrientation.HORIZONTAL);
         ride.setData(new RandomMap());
@@ -47,7 +58,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxTableWithSplittedBandAlias() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         root.setData(rootData);
         BandData ride = new BandData("ride", root, BandOrientation.HORIZONTAL);
         ride.setData(new RandomMap());
@@ -66,7 +77,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testControlTables1() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         root.setData(rootData);
 
         BandData band1 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
@@ -96,7 +107,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testControlTables2() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         root.setData(rootData);
 
         BandData mainControl = band("MainControl", root);
@@ -119,7 +130,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testTableOfContents() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         root.setData(rootData);
 
         BandData project = randomBand("Project", root);
@@ -145,7 +156,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
 
     private BandData band(String name, BandData root) {
         BandData band1 = new BandData(name, root, BandOrientation.HORIZONTAL);
-        band1.setData(new HashMap<String, Object>());
+        band1.setData(new HashMap<>());
         root.addChild(band1);
         return band1;
     }
@@ -153,7 +164,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testUrl() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("url", "https://www.google.ru/#newwindow=1&q=YARG");
         rootData.put("urlCaption", "URL");
         root.setData(rootData);
@@ -169,7 +180,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxTableWithAliasInHeader() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         root.setData(rootData);
         BandData price = new BandData("Price", root, BandOrientation.HORIZONTAL);
         price.setData(new RandomMap());
@@ -200,16 +211,16 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxWithSplittedAlias() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData cover = new BandData("Cover", root, BandOrientation.HORIZONTAL);
-        cover.setData(new HashMap<String, Object>());
+        cover.setData(new HashMap<>());
         cover.addData("index", "123");
         cover.addData("volume", "321");
         cover.addData("name", "AAA");
         BandData documents = new BandData("Documents", root, BandOrientation.HORIZONTAL);
-        documents.setData(new HashMap<String, Object>());
+        documents.setData(new HashMap<>());
         root.addChild(cover);
         root.addChild(documents);
 
@@ -225,12 +236,12 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testDocxWithColontitulesAndHtmlPageBreak() throws Exception {
         BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        HashMap<String, Object> rootData = new HashMap<>();
         rootData.put("param1", "AAAAAA");
         root.setData(rootData);
         BandData letterTable = new BandData("letterTable", root, BandOrientation.HORIZONTAL);
         BandData creatorInfo = new BandData("creatorInfo", root, BandOrientation.HORIZONTAL);
-        HashMap<String, Object> letterTableData = new HashMap<String, Object>();
+        HashMap<String, Object> letterTableData = new HashMap<>();
         String html = "<html><body>";
         html += "<table border=\"2px\">";
         for (int i = 0; i < 5; i++) {
@@ -251,7 +262,7 @@ public class DocxSpecificTest extends AbstractFormatSpecificTest {
         html += "</body></html>";
         letterTableData.put("html", html);
         letterTable.setData(letterTableData);
-        HashMap<String, Object> creatorInfoData = new HashMap<String, Object>();
+        HashMap<String, Object> creatorInfoData = new HashMap<>();
         creatorInfoData.put("name", "12345");
         creatorInfoData.put("phone", "54321");
         creatorInfo.setData(creatorInfoData);

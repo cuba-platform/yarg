@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Haulmont
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.haulmont.yarg.reporting;
 
 import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
@@ -10,28 +26,23 @@ import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import junit.framework.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
-
 public class ReportQueriesTest {
 
     @Test
-    public void testDataLinkage() throws Exception {
+    public void testDataLinkage() {
         Report report = createReport();
 
         BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
-        rootBand.setData(new HashMap<String, Object>());
+        rootBand.setData(new HashMap<>());
         rootBand.addReportFieldFormats(report.getReportFieldFormats());
-        rootBand.setFirstLevelBandDefinitionNames(new HashSet<String>());
+        rootBand.setFirstLevelBandDefinitionNames(new HashSet<>());
 
-        new DataExtractorImpl(new DefaultLoaderFactory().setGroovyDataLoader(new GroovyDataLoader(new DefaultScriptingImpl()))).extractData(report, new HashMap<String, Object>(), rootBand);
+        new DataExtractorImpl(new DefaultLoaderFactory().setGroovyDataLoader(
+                new GroovyDataLoader(new DefaultScriptingImpl()))).extractData(report, new HashMap<>(), rootBand);
 
         List<BandData> bands = rootBand.getChildrenByName("Band1");
         for (BandData band : bands) {
@@ -45,10 +56,9 @@ public class ReportQueriesTest {
                 Assert.assertEquals(200, band.getParameterValue("col3"));
             }
         }
-
     }
 
-    private Report createReport() throws IOException {
+    private Report createReport() {
         ReportBuilder report = new ReportBuilder()
                 .band(new BandBuilder()
                         .name("Band1")

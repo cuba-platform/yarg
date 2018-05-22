@@ -57,7 +57,7 @@ public class OfficeInputStream extends ByteArrayInputStream implements XInputStr
         return readBytes(buffer, bufferSize);
     }
 
-    public void skipBytes(int skipLength) throws com.sun.star.io.IOException {
+    public void skipBytes(int skipLength) {
         skip(skipLength);
     }
 
@@ -70,15 +70,15 @@ public class OfficeInputStream extends ByteArrayInputStream implements XInputStr
         }
     }
 
-    public long getLength() throws com.sun.star.io.IOException {
+    public long getLength() {
         return count;
     }
 
-    public long getPosition() throws com.sun.star.io.IOException {
+    public long getPosition() {
         return pos;
     }
 
-    public void seek(long position) throws IllegalArgumentException, com.sun.star.io.IOException {
+    public void seek(long position) throws IllegalArgumentException {
         pos = (int) position;
     }
 }

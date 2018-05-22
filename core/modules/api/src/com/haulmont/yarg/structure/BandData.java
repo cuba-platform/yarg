@@ -19,25 +19,20 @@ package com.haulmont.yarg.structure;
 import java.io.Serializable;
 import java.util.*;
 
-/**
- * @author degtyarjov
- * @version $Id$
- */
-
 @SuppressWarnings({"UnusedDeclaration"})
 public class BandData implements Serializable {
     public static final String ROOT_BAND_NAME = "Root";
 
-    protected Map<String, Object> data = new HashMap<String, Object>();
+    protected Map<String, Object> data = new HashMap<>();
     protected BandData parentBand;
 
-    protected Map<String, List<BandData>> childrenBands = new LinkedHashMap<String, List<BandData>>();
+    protected Map<String, List<BandData>> childrenBands = new LinkedHashMap<>();
 
     protected final String name;
     protected final BandOrientation orientation;
     protected Set<String> firstLevelBandDefinitionNames = null;
     protected int level;
-    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<String, ReportFieldFormat>();
+    protected Map<String, ReportFieldFormat> reportFieldFormats = new HashMap<>();
 
 
     public BandData(String name) {
@@ -120,7 +115,7 @@ public class BandData implements Serializable {
     }
 
     public List<BandData> getChildrenList() {
-        List<BandData> bandList = new ArrayList<BandData>();
+        List<BandData> bandList = new ArrayList<>();
         for (List<BandData> bands : childrenBands.values()) {
             bandList.addAll(bands);
         }
@@ -134,7 +129,7 @@ public class BandData implements Serializable {
         }
 
         List<BandData> children = childrenBands.get(bandName);
-        return children != null ? children : new ArrayList<BandData>();
+        return children != null ? children : new ArrayList<>();
     }
 
     public BandData getChildByName(String bandName) {
@@ -148,7 +143,7 @@ public class BandData implements Serializable {
 
     public void addChild(BandData band) {
         if (!childrenBands.containsKey(band.getName())) {
-            childrenBands.put(band.getName(), new ArrayList<BandData>());
+            childrenBands.put(band.getName(), new ArrayList<>());
         }
         List<BandData> bands = childrenBands.get(band.getName());
         bands.add(band);
@@ -244,4 +239,3 @@ public class BandData implements Serializable {
         }
     }
 }
-

@@ -21,14 +21,8 @@ import org.apache.poi.hssf.usermodel.HSSFFont;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Font cache for XlsFormatter
- * <p>$Id$</p>
- *
- * @author artamonov
- */
 public class XlsFontCache {
-    private Map<HSSFFontCacheKey, HSSFFont> fonts = new HashMap<HSSFFontCacheKey, HSSFFont>();
+    private Map<HSSFFontCacheKey, HSSFFont> fonts = new HashMap<>();
 
     public HSSFFont getFontByTemplate(HSSFFont font){
         return fonts.get(new HSSFFontCacheKey(font));

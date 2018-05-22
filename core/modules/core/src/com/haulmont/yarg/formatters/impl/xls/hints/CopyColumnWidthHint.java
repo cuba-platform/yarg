@@ -16,10 +16,6 @@
 
 package com.haulmont.yarg.formatters.impl.xls.hints;
 
-/**
- * @author artamonov
- * @version $Id$
- */
 public class CopyColumnWidthHint extends AbstractHint {
     public CopyColumnWidthHint() {
         super("##copyColumnWidth");
@@ -28,7 +24,8 @@ public class CopyColumnWidthHint extends AbstractHint {
     @Override
     public void apply() {
         for (DataObject dataObject : data) {
-            dataObject.resultCell.getSheet().setColumnWidth(dataObject.resultCell.getColumnIndex(), dataObject.templateCell.getSheet().getColumnWidth(dataObject.templateCell.getColumnIndex()));
+            dataObject.resultCell.getSheet().setColumnWidth(dataObject.resultCell.getColumnIndex(),
+                    dataObject.templateCell.getSheet().getColumnWidth(dataObject.templateCell.getColumnIndex()));
         }
     }
 }

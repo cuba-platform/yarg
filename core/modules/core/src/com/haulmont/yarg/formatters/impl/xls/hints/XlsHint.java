@@ -19,10 +19,6 @@ package com.haulmont.yarg.formatters.impl.xls.hints;
 import com.haulmont.yarg.structure.BandData;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 
-/**
- * @author artamonov
- * @version $Id$
- */
 public interface XlsHint {
     class CheckResult {
         public final String cellValue;
