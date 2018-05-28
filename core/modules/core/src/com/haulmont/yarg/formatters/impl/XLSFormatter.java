@@ -39,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
 import org.apache.poi.hssf.record.EscherAggregate;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.formula.ptg.AreaPtg;
 import org.apache.poi.ss.formula.ptg.Ptg;
 import org.apache.poi.ss.formula.ptg.RefPtg;
@@ -475,7 +476,7 @@ public class XLSFormatter extends AbstractFormatter {
                 continue;
             }
 
-            AreaReference aref = new AreaReference(refersToFormula);
+            AreaReference aref = new AreaReference(refersToFormula, SpreadsheetVersion.EXCEL97);
             Integer rangeFirstRow = aref.getFirstCell().getRow();
             Integer rangeFirstColumn = (int) aref.getFirstCell().getCol();
             Integer rangeLastRow = aref.getLastCell().getRow();
@@ -528,7 +529,7 @@ public class XLSFormatter extends AbstractFormatter {
         if (rangeNameIdx == -1) return;
 
         HSSFName aNamedRange = templateWorkbook.getNameAt(rangeNameIdx);
-        AreaReference aref = new AreaReference(aNamedRange.getRefersToFormula());
+        AreaReference aref = new AreaReference(aNamedRange.getRefersToFormula(), SpreadsheetVersion.EXCEL97);
         int column = aref.getFirstCell().getCol();
         int row = aref.getFirstCell().getRow();
 
