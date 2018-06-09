@@ -29,6 +29,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 
@@ -127,7 +128,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
                 String className = formatString.replaceFirst("class:", "");
                 ValueFormat valueFormat;
                 try {
-                    Class<?> valueFormatterClass = Class.forName(className);
+                    Class<?> valueFormatterClass = ClassUtils.getClass(className);
                     valueFormat = (ValueFormat) ConstructorUtils.invokeConstructor(valueFormatterClass);
                 } catch (ReflectiveOperationException e) {
                     throw new ReportingException("An error occurred while applying custom format", e);
