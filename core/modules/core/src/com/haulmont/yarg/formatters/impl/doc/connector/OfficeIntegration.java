@@ -15,10 +15,13 @@
  */
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
+import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.haulmont.yarg.exception.ReportingInterruptedException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -128,25 +131,17 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
     }
 
     public String getAvailablePorts() {
-        StringBuilder builder = new StringBuilder();
-
-        Integer[] ports = new Integer[connections.size()];
-        int i = 0;
+        List<Integer> ports = new ArrayList<>(connections.size());
         for (OfficeConnection officeConnection : connectionsQueue) {
-            ports[i] = officeConnection.port;
-        }
-
-
-        if ((ports.length > 0)) {
-            for (Integer port : ports) {
-                if (port != null)
-                    builder.append(Integer.toString(port)).append(" ");
+            if (officeConnection.port != null) {
+                ports.add(officeConnection.port);
             }
-        } else {
-            builder.append("No available ports");
         }
-
-        return builder.toString();
+        if (!ports.isEmpty()) {
+            return Joiner.on(" ").join(ports);
+        } else {
+            return "No available ports";
+        }
     }
 
     public void hardReloadAccessPorts() {
