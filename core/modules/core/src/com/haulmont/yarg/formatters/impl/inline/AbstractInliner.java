@@ -180,14 +180,21 @@ public abstract class AbstractInliner implements ContentInliner {
         try {
             Image image = new Image(paramValue, paramsMatcher);
             if (image.isValid()) {
-                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, resolveTextPartForDOCX(text, wordPackage),
-                        image.imageContent);
-                Inline inline = imagePart.createImageInline("", "", docxUniqueId1++, docxUniqueId2++, false);
-                ImageSize oldSize = imagePart.getImageInfo().getSize();
-                double widthExtent = (double) image.width / oldSize.getWidthPx();
-                double heightExtent = (double) image.height / oldSize.getHeightPx();
-                inline.getExtent().setCx((long) (inline.getExtent().getCx() * widthExtent));
-                inline.getExtent().setCy((long) (inline.getExtent().getCy() * heightExtent));
+                Part part = resolveTextPartForDOCX(text, wordPackage);
+                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, part, image.imageContent);
+                int originalWidth = imagePart.getImageInfo().getSize().getWidthPx();
+                int originalHeight = imagePart.getImageInfo().getSize().getHeightPx();
+
+                double widthScale = (double) image.width / (double) originalWidth;
+                double heightScale = (double) image.height  / (double) originalHeight;
+                double actualScale = Math.min(widthScale, heightScale);
+
+                long targetWidth = Math.round(originalWidth * actualScale);
+                long targetHeight = Math.round(originalHeight * actualScale);
+
+                Inline inline = imagePart.createImageInline("", "", docxUniqueId1++, docxUniqueId2++,
+                        XlsxUtils.convertPxToEmu(targetWidth), XlsxUtils.convertPxToEmu(targetHeight), false);
+
                 org.docx4j.wml.Drawing drawing = new org.docx4j.wml.ObjectFactory().createDrawing();
                 R run = (R) text.getParent();
                 run.getContent().add(drawing);
