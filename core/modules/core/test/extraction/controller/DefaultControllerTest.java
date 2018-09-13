@@ -22,11 +22,15 @@ import com.haulmont.yarg.loaders.factory.DefaultLoaderFactory;
 import com.haulmont.yarg.loaders.impl.GroovyDataLoader;
 import com.haulmont.yarg.loaders.impl.JsonDataLoader;
 import com.haulmont.yarg.loaders.impl.SqlDataLoader;
+import com.haulmont.yarg.reporting.DataExtractorImpl;
 import com.haulmont.yarg.reporting.extraction.DefaultExtractionContextFactory;
 import com.haulmont.yarg.reporting.extraction.DefaultExtractionControllerFactory;
 import com.haulmont.yarg.reporting.extraction.ExtractionContextFactory;
 import com.haulmont.yarg.structure.BandData;
+import com.haulmont.yarg.structure.Report;
 import com.haulmont.yarg.structure.ReportBand;
+import com.haulmont.yarg.structure.impl.BandBuilder;
+import com.haulmont.yarg.structure.impl.ReportBuilder;
 import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
 import org.apache.commons.lang.StringUtils;
 import org.junit.AfterClass;
@@ -161,5 +165,52 @@ public class DefaultControllerTest {
         checkHeader(reportBandMap.get("header"), 2, "name", "id");
         checkMasterData(reportBandMap.get("master_data"), 2, 2,
                 "id", "name", "value", "user_id");
+    }
+
+    @Test
+    public void stressTest() throws IOException, URISyntaxException {
+        int queries = 100;
+        int recordsPerQuery = 10000;
+
+        Report report = createReport(queries, recordsPerQuery);
+
+        BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
+        rootBand.setData(new HashMap<>());
+        rootBand.addReportFieldFormats(report.getReportFieldFormats());
+        rootBand.setFirstLevelBandDefinitionNames(new HashSet<>());
+
+        long start = System.currentTimeMillis();
+        try {
+            new DataExtractorImpl(new DefaultLoaderFactory().setGroovyDataLoader(
+                    new GroovyDataLoader(new DefaultScriptingImpl()))).extractData(report, new HashMap<>(), rootBand);
+        } finally {
+            System.out.println(
+                    String.format("Report processing stress test (%d queries and %d records per query) took %d ms",
+                            queries, recordsPerQuery, System.currentTimeMillis() - start)
+            );
+        }
+    }
+
+    private Report createReport(int queries, int recordsPerQuery) {
+        BandBuilder bandBuilder = new BandBuilder()
+                .name("band");
+        for (int i = 0; i < queries; i++) {
+            String script = "import java.util.*;\n" +
+                    "int i = " + i + ";\n" +
+                    "List result = new ArrayList<>(" + recordsPerQuery + ");\n" +
+                    "for (int j = 0; j < " + recordsPerQuery + "; j++) {\n" +
+                    "   Map<String, Object> record = new LinkedHashMap<>();\n" +
+                    "   record.put(\"col\" + i + j, Integer.toString(i) + Integer.toString(j));\n" +
+                    "   record.put(\"link\", j);\n" +
+                    "   result.add(record);\n" +
+                    "}\n" +
+                    "return result;";
+            bandBuilder.query("q" + i, script, "groovy", "link");
+        }
+
+        return new ReportBuilder()
+                .band(bandBuilder.build())
+                .name("report")
+                .build();
     }
 }

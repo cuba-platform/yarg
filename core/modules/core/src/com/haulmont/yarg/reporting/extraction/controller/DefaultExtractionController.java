@@ -156,27 +156,32 @@ public class DefaultExtractionController implements ExtractionController {
             List<Map<String, Object>> currentQueryData = getQueryData(context, reportQuery);
             String link = reportQuery.getLinkParameterName();
             if (StringUtils.isNotBlank(link)) {
+                Map<Object, Map<String, Object>> cacheMap = new HashMap<>();
+                for (Map<String, Object> resultRow : result) {
+                    if (Thread.interrupted()) {
+                        throw new ReportingInterruptedException("Data extraction interrupted");
+                    }
+                    Object linkObj = resultRow.get(link);
+                    if (linkObj != null) {
+                        if (!cacheMap.containsKey(linkObj)) {
+                            cacheMap.put(linkObj, resultRow);
+                        }
+                    } else {
+                        throw new DataLoadingException(String.format("An error occurred while loading data for band [%s]." +
+                                        " Query defines link parameter [%s] but result does not contain such field. Query [%s].",
+                                context.getBand().getName(), link, firstReportQuery.getName()));
+                    }
+                }
+
                 for (Map<String, Object> currentRow : currentQueryData) {
                     if (Thread.interrupted()) {
                         throw new ReportingInterruptedException("Data extraction interrupted");
                     }
                     Object linkObj = currentRow.get(link);
                     if (linkObj != null) {
-                        for (Map<String, Object> resultRow : result) {
-                            if (Thread.interrupted()) {
-                                throw new ReportingInterruptedException("Data extraction interrupted");
-                            }
-                            Object linkObj2 = resultRow.get(link);
-                            if (linkObj2 != null) {
-                                if (linkObj.equals(linkObj2)) {
-                                    resultRow.putAll(currentRow);
-                                    break;
-                                }
-                            } else {
-                                throw new DataLoadingException(String.format("An error occurred while loading data for band [%s]." +
-                                        " Query defines link parameter [%s] but result does not contain such field. Query [%s].",
-                                        context.getBand().getName(), link, firstReportQuery.getName()));
-                            }
+                        Map<String, Object> resultRow = cacheMap.get(linkObj);
+                        if (resultRow != null) {
+                            resultRow.putAll(currentRow);
                         }
                     } else {
                         throw new DataLoadingException(String.format("An error occurred while loading data for band [%s]." +
