@@ -90,11 +90,21 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             String valueRegexp = "([\\w|\\d|\\.|\\_]+|\'.+?\'|\".+?\"|\\(.+?\\))";//fieldName|literal|list or sub-query
             String andRegexp = "\\s+and\\s+";
             String orRegexp = "\\s+or\\s+";
+            String isNotOperatorRegexp = "(<>|\\snot\\s+like\\s|\\snot\\s+in\\s)";
             String operatorRegexp = "(=|>=|<=|\\slike\\s|>|<|\\sin\\s)";
+
+            String isNotExpression1Rgxp = "\\s*" + valueRegexp + "\\s*" + isNotOperatorRegexp + "\\s*" + paramNameRegexp + "\\s*";
+            String isNotExpression2Rgxp = "\\s*" + paramNameRegexp + "\\s*" + isNotOperatorRegexp + "\\s*" + valueRegexp + "\\s*";
+            String isNotExpressionRgxp = "(" + isNotExpression1Rgxp + "|" + isNotExpression2Rgxp + ")";
 
             String expression1Rgxp = "\\s*" + valueRegexp + "\\s*" + operatorRegexp + "\\s*" + paramNameRegexp + "\\s*";
             String expression2Rgxp = "\\s*" + paramNameRegexp + "\\s*" + operatorRegexp + "\\s*" + valueRegexp + "\\s*";
             String expressionRgxp = "(" + expression1Rgxp + "|" + expression2Rgxp + ")";
+
+            String isNotAndFirstRgxp = andRegexp + isNotExpressionRgxp;
+            String isNotOrFirstRgxp = orRegexp + isNotExpressionRgxp;
+            String isNotAndLastRgxp = isNotExpressionRgxp + andRegexp;
+            String isNotOrLastRgxp = isNotExpressionRgxp + orRegexp;
 
             String andFirstRgxp = andRegexp + expressionRgxp;
             String orFirstRgxp = orRegexp + expressionRgxp;
@@ -106,12 +116,21 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
 
             String boundsRegexp = "\\[\\[.+?" + paramNameRegexp + ".+?\\]\\]";
 
-            if (paramValue == null && reportParams != null && reportParams.containsKey(paramName)) {//if value == null && this is user parameter - remove condition from query
+            boolean isEmpty = paramValue == null || (paramValue instanceof Collection && ((Collection) paramValue).size() == 0);
+
+            if (isEmpty && reportParams != null && reportParams.containsKey(paramName)) {//if value == null && this is user parameter - remove condition from query
+
+                paramsToRemoveFromQuery.put("(?i)" + isNotAndFirstRgxp, " and 1=1 ");
+                paramsToRemoveFromQuery.put("(?i)" + isNotAndLastRgxp, " 1=1 and ");
+                paramsToRemoveFromQuery.put("(?i)" + isNotOrFirstRgxp, " or 1=0 ");
+                paramsToRemoveFromQuery.put("(?i)" + isNotOrLastRgxp, " 1=0 or ");
+
                 paramsToRemoveFromQuery.put("(?i)" + andFirstRgxp, " and 1=1 ");
                 paramsToRemoveFromQuery.put("(?i)" + andLastRgxp, " 1=1 and ");
                 paramsToRemoveFromQuery.put("(?i)" + orFirstRgxp, " or 1=0 ");
                 paramsToRemoveFromQuery.put("(?i)" + orLastRgxp, " 1=0 or ");
 
+                paramsToRemoveFromQuery.put("(?i)" + isNotExpressionRgxp, " 1=1 ");
                 paramsToRemoveFromQuery.put("(?i)" + expressionRgxp, " 1=1 ");
                 paramsToRemoveFromQuery.put("(?i)" + isNullRgxp, " 1=1 ");
                 paramsToRemoveFromQuery.put("(?i)" + isNotNullRgxp, " 1=0 ");
