@@ -163,9 +163,7 @@ public class DefaultExtractionController implements ExtractionController {
                     }
                     Object linkObj = resultRow.get(link);
                     if (linkObj != null) {
-                        if (!cacheMap.containsKey(linkObj)) {
-                            cacheMap.put(linkObj, resultRow);
-                        }
+                        cacheMap.putIfAbsent(linkObj, resultRow);
                     } else {
                         throw new DataLoadingException(String.format("An error occurred while loading data for band [%s]." +
                                         " Query defines link parameter [%s] but result does not contain such field. Query [%s].",
