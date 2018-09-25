@@ -22,10 +22,7 @@ import junit.framework.Assert;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     @Override
@@ -233,6 +230,22 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
         queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
         Assert.assertEquals("where ( 1=1 and ? in (1,2,3)) or 1=0", queryPack.getQuery());
+
+        query = "where filed1 not in ${param1}";
+        params.put("param1", Collections.emptyList());
+        params.put("param2", null);
+        params.put("param3", null);
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where 1=1", queryPack.getQuery());
+
+        query = "where filed1 not like ${param3} and filed2 = ${param2}";
+        params.put("param1", null);
+        params.put("param2", "test");
+        params.put("param3", null);
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("where 1=1 and filed2 = ?", queryPack.getQuery());
     }
 
     private void writeParams(QueryPack queryPack) {
