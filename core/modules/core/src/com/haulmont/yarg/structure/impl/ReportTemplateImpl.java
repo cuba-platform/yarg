@@ -32,6 +32,8 @@ public class ReportTemplateImpl implements ReportTemplate {
     protected ReportOutputType reportOutputType;
     protected String outputNamePattern;
 
+    protected boolean groovy = false;
+
     protected CustomReport customReport;
     protected boolean custom = false;
 
@@ -90,6 +92,11 @@ public class ReportTemplateImpl implements ReportTemplate {
     @Override
     public String getOutputNamePattern() {
         return outputNamePattern;
+    }
+
+    @Override
+    public boolean isGroovy() {
+        return groovy;
     }
 
     @Override

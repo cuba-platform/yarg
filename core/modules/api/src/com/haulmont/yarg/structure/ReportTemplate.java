@@ -48,6 +48,11 @@ public interface ReportTemplate extends Serializable {
     String getOutputNamePattern();
 
     /**
+     * @return if it is groovy html template.
+     */
+    boolean isGroovy();
+
+    /**
      * @return if report is defined by custom class.
      * In this case band data will be passed in com.haulmont.yarg.structure.ReportTemplate#getCustomReport() object and it will generate binary.
      */
