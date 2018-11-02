@@ -62,6 +62,11 @@ public class XlsxFormulaUpdateTest {
         }
 
         @Override
+        public boolean isGroovy() {
+            return false;
+        }
+
+        @Override
         public boolean isCustom() {
             return false;
         }
