@@ -54,6 +54,11 @@ public class ReportTemplateImpl implements ReportTemplate {
         validate();
     }
 
+    public ReportTemplateImpl(String code, String documentName, String documentPath, ReportOutputType reportOutputType, boolean groovy) throws IOException {
+        this(code, documentName, documentPath, reportOutputType);
+        this.groovy = groovy;
+    }
+
     void validate() {
         if (!isCustom()) {
             Preconditions.checkNotNull(this.code, "\"code\" parameter can not be null");
