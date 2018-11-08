@@ -49,7 +49,7 @@ public class XslStyleHelper {
         InternalWorkbook targetWorkbook = getWorkbookFromStyle(target);
         if (targetWorkbook != sourceWorkbook) {
             //Then we need to clone the format string, and update the format record for this
-            short fmt = sourceWorkbook.getFormat(source.getDataFormatString(), true);
+            short fmt = targetWorkbook.getFormat(source.getDataFormatString(), true);
             target.setDataFormat(fmt);
         }
     }
