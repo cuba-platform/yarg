@@ -78,10 +78,6 @@ public abstract class AbstractFormatter implements ReportFormatter {
         this.outputType = (formatterFactoryInput.getOutputType() != null)
                 ? formatterFactoryInput.getOutputType() : reportTemplate.getOutputType();
         this.outputStream = formatterFactoryInput.getOutputStream();
-
-        this.contentInliners.add(new BitmapContentInliner());
-        this.contentInliners.add(new HtmlContentInliner());
-        this.contentInliners.add(new ImageContentInliner());
     }
 
     @Override

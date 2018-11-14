@@ -17,6 +17,8 @@ package com.haulmont.yarg.formatters.factory;
 
 import com.haulmont.yarg.exception.UnsupportedFormatException;
 import com.haulmont.yarg.formatters.ReportFormatter;
+import com.haulmont.yarg.formatters.factory.inline.DefaultInlinersProvider;
+import com.haulmont.yarg.formatters.factory.inline.ReportInlinersProvider;
 import com.haulmont.yarg.formatters.impl.*;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.yarg.formatters.impl.docx.HtmlImportProcessor;
@@ -27,6 +29,7 @@ import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +42,8 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected String fontsDirectory;
 
     protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
+
+    protected ReportInlinersProvider inlinersProvider;
 
     public DefaultFormatterFactory() {
         htmlImportProcessor = new HtmlImportProcessorImpl();
@@ -90,6 +95,9 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         FormatterCreator jasperCreator = JasperFormatter::new;
         formattersMap.put("jasper", jasperCreator);
         formattersMap.put("jrxml", jasperCreator);
+
+        if (inlinersProvider == null)
+            setDefaultInlinersProvider();
     }
 
     public void setOfficeIntegration(OfficeIntegrationAPI officeIntegrationAPI) {
@@ -113,6 +121,10 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
         this.fontsDirectory = fontsDirectory;
     }
 
+    public void setInlinersProvider(ReportInlinersProvider inlinersProvider) {
+        this.inlinersProvider = inlinersProvider;
+    }
+
     public HtmlToPdfConverterFactory getHtmlToPdfConverterFactory() {
         return htmlToPdfConverterFactory;
     }
@@ -132,7 +144,16 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             throw new UnsupportedFormatException(String.format("Unsupported template extension [%s]", templateExtension));
         }
 
-        return formatterCreator.create(factoryInput);
+        ReportFormatter reportFormatter = formatterCreator.create(factoryInput);
+        if (reportFormatter instanceof AbstractFormatter) {
+            ((AbstractFormatter) reportFormatter).setContentInliners(new ArrayList<>(inlinersProvider.getContentInliners()));
+        }
+
+        return reportFormatter;
+    }
+
+    protected void setDefaultInlinersProvider() {
+        inlinersProvider = new DefaultInlinersProvider();
     }
 
     protected static interface FormatterCreator {
