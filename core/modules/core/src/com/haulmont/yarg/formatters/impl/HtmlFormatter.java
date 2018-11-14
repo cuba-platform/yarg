@@ -27,6 +27,8 @@ import freemarker.cache.StringTemplateLoader;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.beans.MapModel;
 import freemarker.template.*;
+import groovy.text.GStringTemplateEngine;
+import groovy.text.Template;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -177,18 +179,31 @@ public class HtmlFormatter extends AbstractFormatter {
     protected void writeHtmlDocument(BandData rootBand, OutputStream outputStream) {
         Map templateModel = getTemplateModel(rootBand);
 
-        Template htmlTemplate = getTemplate();
-        Writer htmlWriter = new OutputStreamWriter(outputStream);
+        if (reportTemplate.isGroovy()) {
+            groovy.text.Template htmlTemplate = getGroovyTemplate();
+            Writer htmlWriter = new OutputStreamWriter(outputStream);
+            try {
+                htmlTemplate.make(templateModel).writeTo(htmlWriter);
+                htmlWriter.close();
+            } catch (ReportingException e) {
+                throw e;
+            } catch (Exception e) {
+                throw wrapWithReportingException("An error occurred while rendering html document.", e);
+            }
+        } else {
+            freemarker.template.Template htmlTemplate = getFreemarkerTemplate();
+            Writer htmlWriter = new OutputStreamWriter(outputStream);
 
-        try {
-            htmlTemplate.process(templateModel, htmlWriter);
-            htmlWriter.close();
-        } catch (TemplateException fmException) {
-            throw wrapWithReportingException("FreeMarkerException: " + fmException.getMessage());
-        } catch (ReportingException e) {
-            throw e;
-        } catch (Exception e) {
-            throw wrapWithReportingException("An error occurred while rendering html document.", e);
+            try {
+                htmlTemplate.process(templateModel, htmlWriter);
+                htmlWriter.close();
+            } catch (TemplateException fmException) {
+                throw wrapWithReportingException("FreeMarkerException: " + fmException.getMessage());
+            } catch (ReportingException e) {
+                throw e;
+            } catch (Exception e) {
+                throw wrapWithReportingException("An error occurred while rendering html document.", e);
+            }
         }
     }
 
@@ -217,7 +232,7 @@ public class HtmlFormatter extends AbstractFormatter {
         return model;
     }
 
-    protected Template getTemplate() {
+    protected freemarker.template.Template getFreemarkerTemplate() {
         try {
             String templateContent = IOUtils.toString(reportTemplate.getDocumentContent(), StandardCharsets.UTF_8);
             StringTemplateLoader stringLoader = new StringTemplateLoader();
@@ -227,11 +242,22 @@ public class HtmlFormatter extends AbstractFormatter {
             fmConfiguration.setTemplateLoader(stringLoader);
             fmConfiguration.setDefaultEncoding("UTF-8");
 
-            Template htmlTemplate = fmConfiguration.getTemplate(reportTemplate.getDocumentName());
+            freemarker.template.Template htmlTemplate = fmConfiguration.getTemplate(reportTemplate.getDocumentName());
             htmlTemplate.setObjectWrapper(objectWrapper);
             return htmlTemplate;
         } catch (Exception e) {
             throw wrapWithReportingException("An error occurred while creating freemarker template", e);
+        }
+    }
+
+    protected groovy.text.Template getGroovyTemplate() {
+        try {
+            GStringTemplateEngine templateEngine = new GStringTemplateEngine();
+            String templateContent = IOUtils.toString(reportTemplate.getDocumentContent(), StandardCharsets.UTF_8);
+            groovy.text.Template htmlTemplate = templateEngine.createTemplate(templateContent);
+            return htmlTemplate;
+        } catch (Exception e) {
+            throw wrapWithReportingException("An error occurred while creating groovy template", e);
         }
     }
 }
