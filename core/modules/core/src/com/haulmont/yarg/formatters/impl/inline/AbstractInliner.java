@@ -35,6 +35,7 @@ import com.sun.star.text.XText;
 import com.sun.star.text.XTextContent;
 import com.sun.star.text.XTextRange;
 import com.sun.star.uno.XComponentContext;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -104,9 +105,13 @@ public abstract class AbstractInliner implements ContentInliner {
     }
 
     private void putImage(WorksheetPart worksheetPart, SpreadsheetMLPackage pkg, BinaryPartAbstractImage imagePart, CTOneCellAnchor anchor) throws Docx4JException {
-        PartName drawingPart = new PartName(worksheetPart.getPartName().getName().replace("worksheets/sheet", "drawings/drawing"));
+        PartName drawingPart = new PartName(StringUtils.replaceIgnoreCase(worksheetPart.getPartName().getName(),
+                "worksheets/sheet", "drawings/drawing"));
         String imagePartName = imagePart.getPartName().getName();
-        Drawing drawing = (Drawing) pkg.getParts().get(drawingPart);
+        Part part = pkg.getParts().get(drawingPart);
+        if (part != null && !(part instanceof Drawing))
+            throw new ReportFormattingException("Wrong Class: not a Drawing");
+        Drawing drawing = (Drawing) part;
         int currentId = 0;
         if (drawing == null) {
             drawing = new Drawing(drawingPart);
