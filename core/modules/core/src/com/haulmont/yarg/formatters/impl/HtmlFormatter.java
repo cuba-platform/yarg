@@ -179,17 +179,18 @@ public class HtmlFormatter extends AbstractFormatter {
     protected void writeHtmlDocument(BandData rootBand, OutputStream outputStream) {
         Map templateModel = getTemplateModel(rootBand);
 
-        if (Boolean.TRUE.equals(reportTemplate.isGroovy())){
+        if (reportTemplate.isGroovy()) {
             groovy.text.Template htmlTemplate = getGroovyTemplate();
             Writer htmlWriter = new OutputStreamWriter(outputStream);
             try {
                 htmlTemplate.make(templateModel).writeTo(htmlWriter);
                 htmlWriter.close();
+            } catch (ReportingException e) {
+                throw e;
             } catch (Exception e) {
-                throw wrapWithReportingException("Unable to write Groovy template content", e);
+                throw wrapWithReportingException("An error occurred while rendering html document.", e);
             }
-        }
-        else {
+        } else {
             freemarker.template.Template htmlTemplate = getFreemarkerTemplate();
             Writer htmlWriter = new OutputStreamWriter(outputStream);
 

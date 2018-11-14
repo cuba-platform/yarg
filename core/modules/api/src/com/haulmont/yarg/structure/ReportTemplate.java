@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 /**
  * This interface describes report template document.
-  */
+ */
 public interface ReportTemplate extends Serializable {
     String DEFAULT_TEMPLATE_CODE = "DEFAULT";
 
@@ -50,7 +50,9 @@ public interface ReportTemplate extends Serializable {
     /**
      * @return if it is groovy html template.
      */
-    boolean isGroovy();
+    default boolean isGroovy() {
+        return false;
+    }
 
     /**
      * @return if report is defined by custom class.
