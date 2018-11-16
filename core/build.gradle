@@ -9,7 +9,7 @@ def projectName = "YARG (Yet another report generator)"
 def projectDescription = "Open source library for report generation. Provided by Haulmont."
 def projectUrl = "https://github.com/cuba-platform/yarg"
 
-def artifactVersion = '2.0-SNAPSHOT'
+def artifactVersion = '2.1-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
@@ -182,10 +182,10 @@ configure(core) {
     dependencies {
         compile(api)
         compile(group: 'commons-logging', name: 'commons-logging', version: '1.2')
-        compile(group: 'org.apache.commons', name: 'commons-lang3', version: '3.4')
-        compile(group: 'commons-io', name: 'commons-io', version: '2.4')
-        compile(group: 'dom4j', name: 'dom4j', version: '1.6.1')
-        compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21')
+        compile(group: 'org.apache.commons', name: 'commons-lang3', version: '3.5')
+        compile(group: 'commons-io', name: 'commons-io', version: '2.5')
+        compile(group: 'org.dom4j', name: 'dom4j', version: '2.1.0')
+        compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25')
         compile(group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.12')
         compile(group: 'antlr', name: 'antlr', version: '2.7.7')
         compile(group: 'org.antlr', name: 'antlr-runtime', version: '3.2')
@@ -195,15 +195,15 @@ configure(core) {
         compile(group: 'org.openoffice', name: 'unoil', version: '3.0.0')
         compile(group: "org.apache.avalon.framework", name: "avalon-framework-api", version: '4.3.1')
         compile(group: "org.apache.avalon.framework", name: "avalon-framework-impl", version: '4.3.1')
-        compile(group: "org.apache.xmlgraphics", name: "fop", version: "2.1")
-        compile(group: "org.apache.xmlgraphics", name: "xmlgraphics-commons", version: "2.1")
+        compile(group: "org.apache.xmlgraphics", name: "fop", version: "2.3")
+        compile(group: "org.apache.xmlgraphics", name: "xmlgraphics-commons", version: "2.3")
         compile(group: "org.plutext", name: "jaxb-svg11", version: "1.0.2")
         compile(group: "org.plutext", name: "jaxb-xslfo", version: "1.0.1")
         compile(group: "org.plutext", name: "jaxb-xmldsig-core", version: "1.0.0")
-        compile(group: "org.apache.xmlgraphics", name: "batik-bridge", version: "1.8")
-        compile(group: "org.apache.xmlgraphics", name: "batik-svggen", version: "1.8")
-        compile(group: "org.apache.xmlgraphics", name: "batik-awt-util", version: "1.8")
-        compile(group: "org.apache.xmlgraphics", name: "batik-css", version: "1.8")
+        compile(group: "org.apache.xmlgraphics", name: "batik-bridge", version: "1.10")
+        compile(group: "org.apache.xmlgraphics", name: "batik-svggen", version: "1.10")
+        compile(group: "org.apache.xmlgraphics", name: "batik-awt-util", version: "1.10")
+        compile(group: "org.apache.xmlgraphics", name: "batik-css", version: "1.10")
         compile(group: "xalan", name: "xalan", version: "2.7.1")
         compile(group: "xalan", name: "serializer", version: "2.7.1")
         compile(group: "com.lowagie", name: "itext", version: "2.1.7") {
@@ -218,8 +218,8 @@ configure(core) {
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }
-        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.7')
-        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.1.7') {
+        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.16')
+        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.1.16') {
             exclude(group: 'org.bouncycastle', module: 'bctsp-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcmail-jdk14')
@@ -227,26 +227,26 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-RC12') {
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-RC15') {
             exclude(group: 'junit', module: 'junit')
         }
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-rtl-support', version: '0.0.1-RC12')
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '0.0.1-RC12') {
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-rtl-support', version: '0.0.1-RC15')
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '0.0.1-RC15') {
             exclude(group: 'junit', module: 'junit')
         }
-        compile(group: "org.docx4j", name: "docx4j", version: "3.3.6") {
+        compile(group: "org.docx4j", name: "docx4j", version: "6.0.1") {
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
         }
-        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "3.3.6") {
+        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "6.0.1") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
         }
-        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "3.3.6") {
+        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "6.0.1") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
@@ -255,7 +255,7 @@ configure(core) {
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "2.1.0")
         compile(group: "com.opencsv", name: "opencsv", version: "3.10")
         compile group: 'org.olap4j', name: 'olap4j', version: '1.2.0'
-        compile(group: "net.sf.jasperreports", name: "jasperreports", version: "6.4.1") {
+        compile(group: "net.sf.jasperreports", name: "jasperreports", version: "6.7.0") {
             exclude(group: 'org.apache.lucene')
             exclude(group: 'commons-beanutils', module: 'commons-beanutils')
             exclude(group: 'com.google.zxing', module: 'core')
@@ -264,6 +264,7 @@ configure(core) {
             exclude(group: 'org.jfree')
             exclude(group: 'org.eclipse.jdt.core.compiler', module: 'ecj')
             exclude(group: 'com.lowagie', module: 'itext')
+            exclude(group: 'org.codehaus.castor', module: 'castor-xml')
         }
 
         testCompile(group: 'org.jmockit', name: 'jmockit', version: '1.15')
