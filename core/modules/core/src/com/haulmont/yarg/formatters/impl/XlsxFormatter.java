@@ -232,67 +232,66 @@ public class XlsxFormatter extends AbstractFormatter {
                         CTChart chart = entry.getValue().getChartSpace().getChart();
                         CTPlotArea plotArea = chart.getPlotArea();
                         List<Object> areaChartOrArea3DChartOrLineChart = plotArea.getAreaChartOrArea3DChartOrLineChart();
-                        for (Object o : areaChartOrArea3DChartOrLineChart) {
-                            if (o instanceof ListSer) {
-                                processSeries((ListSer) o);
-                            }
+                        for (Object series : areaChartOrArea3DChartOrLineChart) {
+                            processSeries(series);
                         }
                     }
                 }
-
             }
         }
     }
 
-    private void processSeries(ListSer o) {
-        List<SerContent> ser = o.getSer();
-        for (SerContent ctBarSer : ser) {
-            CTAxDataSource captions = ctBarSer.getCat();
-            if (captions != null && captions.getStrRef() != null) {
-                Range temlpateCaptionsRange = Range.fromFormula(captions.getStrRef().getF());
-                for (Range bandRange : rangeDependencies.templates()) {
-                    if (bandRange.contains(temlpateCaptionsRange)) {
-                        List<Range> seriesResultRanges = rangeDependencies.resultsForTemplate(bandRange);
+    private void processSeries(Object series) {
+        List areas = ChartUtils.getAreas(series);
+        if (areas != null) {
+            for (Object area : areas) {
+                CTAxDataSource captions = ChartUtils.getAreaCat(area);
+                if (captions != null && captions.getStrRef() != null) {
+                    Range temlpateCaptionsRange = Range.fromFormula(captions.getStrRef().getF());
+                    for (Range bandRange : rangeDependencies.templates()) {
+                        if (bandRange.contains(temlpateCaptionsRange)) {
+                            List<Range> seriesResultRanges = rangeDependencies.resultsForTemplate(bandRange);
 
-                        Range seriesFirstRange = getFirst(seriesResultRanges);
-                        Range seriesLastRange = getLast(seriesResultRanges);
+                            Range seriesFirstRange = getFirst(seriesResultRanges);
+                            Range seriesLastRange = getLast(seriesResultRanges);
 
-                        Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
-                        Offset initialOffset = calculateOffset(temlpateCaptionsRange, bandRange);
-                        temlpateCaptionsRange = temlpateCaptionsRange.shift(
-                                offset.downOffset - initialOffset.downOffset,
-                                offset.rightOffset - initialOffset.rightOffset);
+                            Offset offset = calculateOffset(temlpateCaptionsRange, seriesFirstRange);
+                            Offset initialOffset = calculateOffset(temlpateCaptionsRange, bandRange);
+                            temlpateCaptionsRange = temlpateCaptionsRange.shift(
+                                    offset.downOffset - initialOffset.downOffset,
+                                    offset.rightOffset - initialOffset.rightOffset);
 
-                        Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
-                        temlpateCaptionsRange.grow(grow.downOffset, grow.rightOffset);
+                            Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
+                            temlpateCaptionsRange.grow(grow.downOffset, grow.rightOffset);
 
-                        captions.getStrRef().setF(temlpateCaptionsRange.toFormula());
-                        break;
+                            captions.getStrRef().setF(temlpateCaptionsRange.toFormula());
+                            break;
+                        }
                     }
                 }
-            }
 
-            CTNumDataSource data = ctBarSer.getVal();
-            if (data != null && data.getNumRef() != null) {
-                Range templateDataRange = Range.fromFormula(data.getNumRef().getF());
-                for (Range bandRange : rangeDependencies.templates()) {
-                    if (bandRange.contains(templateDataRange)) {
-                        List<Range> seriesResultRanges = rangeDependencies.resultsForTemplate(bandRange);
+                CTNumDataSource data = ChartUtils.getAreaVal(area);
+                if (data != null && data.getNumRef() != null) {
+                    Range templateDataRange = Range.fromFormula(data.getNumRef().getF());
+                    for (Range bandRange : rangeDependencies.templates()) {
+                        if (bandRange.contains(templateDataRange)) {
+                            List<Range> seriesResultRanges = rangeDependencies.resultsForTemplate(bandRange);
 
-                        Range seriesFirstRange = getFirst(seriesResultRanges);
-                        Range seriesLastRange = getLast(seriesResultRanges);
+                            Range seriesFirstRange = getFirst(seriesResultRanges);
+                            Range seriesLastRange = getLast(seriesResultRanges);
 
-                        Offset offset = calculateOffset(templateDataRange, seriesFirstRange);
-                        Offset initialOffset = calculateOffset(templateDataRange, bandRange);
-                        templateDataRange = templateDataRange.shift(
-                                offset.downOffset - initialOffset.downOffset,
-                                offset.rightOffset - initialOffset.rightOffset);
+                            Offset offset = calculateOffset(templateDataRange, seriesFirstRange);
+                            Offset initialOffset = calculateOffset(templateDataRange, bandRange);
+                            templateDataRange = templateDataRange.shift(
+                                    offset.downOffset - initialOffset.downOffset,
+                                    offset.rightOffset - initialOffset.rightOffset);
 
-                        Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
-                        templateDataRange.grow(grow.downOffset, grow.rightOffset);
+                            Offset grow = calculateOffset(seriesFirstRange, seriesLastRange);
+                            templateDataRange.grow(grow.downOffset, grow.rightOffset);
 
-                        data.getNumRef().setF(templateDataRange.toFormula());
-                        break;
+                            data.getNumRef().setF(templateDataRange.toFormula());
+                            break;
+                        }
                     }
                 }
             }

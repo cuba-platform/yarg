@@ -15,6 +15,7 @@
  */
 package com.haulmont.yarg.formatters.impl.xls;
 
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.util.AreaReference;
 
 public class Area {
@@ -74,7 +75,7 @@ public class Area {
     }
 
     public AreaReference toAreaReference() {
-        return new AreaReference(topLeft.toCellReference(), bottomRight.toCellReference());
+        return new AreaReference(topLeft.toCellReference(), bottomRight.toCellReference(), SpreadsheetVersion.EXCEL97);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class Area {
         return toString().hashCode();
     }
 
-    public static enum AreaAlign {
+    public enum AreaAlign {
         HORIZONTAL,
         VERTICAL
     }

@@ -43,6 +43,7 @@ import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.formula.ptg.AreaPtg;
 import org.apache.poi.ss.formula.ptg.Ptg;
 import org.apache.poi.ss.formula.ptg.RefPtg;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -351,7 +352,7 @@ public class XLSFormatter extends AbstractFormatter {
             }
 
             bottomRight = new CellReference(rownum + rowsAddedByHorizontalBand - 1, offset + currentColumnCount);
-            resultRange = new AreaReference(topLeft, bottomRight);
+            resultRange = new AreaReference(topLeft, bottomRight, SpreadsheetVersion.EXCEL97);
 
             areaDependencyManager.addDependency(new Area(band.getName(), Area.AreaAlign.HORIZONTAL, templateRange),
                     new Area(band.getName(), Area.AreaAlign.HORIZONTAL, resultRange));
@@ -438,7 +439,7 @@ public class XLSFormatter extends AbstractFormatter {
             colnum += crefs[crefs.length - 1].getCol() - firstColumn + 1;
 
             AreaReference templateRange = getAreaForRange(templateWorkbook, rangeName);
-            AreaReference resultRange = new AreaReference(topLeft, bottomRight);
+            AreaReference resultRange = new AreaReference(topLeft, bottomRight, SpreadsheetVersion.EXCEL97);
             areaDependencyManager.addDependency(new Area(band.getName(), Area.AreaAlign.VERTICAL, templateRange),
                     new Area(band.getName(), Area.AreaAlign.VERTICAL, resultRange));
             bandsToResultRanges.put(band, new Range(resultSheet.getSheetName(),
@@ -603,16 +604,16 @@ public class XLSFormatter extends AbstractFormatter {
         resultCell.setCellStyle(resultStyle);
 
         String templateCellValue = "";
-        int cellType = templateCell.getCellType();
+        CellType cellType = templateCell.getCellType();
 
-        if (cellType != HSSFCell.CELL_TYPE_FORMULA && cellType != HSSFCell.CELL_TYPE_NUMERIC) {
+        if (cellType != CellType.FORMULA && cellType != CellType.NUMERIC) {
             HSSFRichTextString richStringCellValue = templateCell.getRichStringCellValue();
             templateCellValue = richStringCellValue != null ? richStringCellValue.getString() : "";
 
             templateCellValue = extractStyles(templateCell, resultCell, templateCellValue, band);
         }
 
-        if (cellType == HSSFCell.CELL_TYPE_STRING && containsJustOneAlias(templateCellValue)) {
+        if (cellType == CellType.STRING && containsJustOneAlias(templateCellValue)) {
             updateValueCell(rootBand, band, templateCellValue, resultCell,
                     drawingPatriarchsMap.get(resultCell.getSheet()));
         } else {
@@ -645,7 +646,7 @@ public class XLSFormatter extends AbstractFormatter {
         Object value = bandData.getData().get(parameterName);
 
         if (value == null) {
-            resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            resultCell.setCellType(CellType.BLANK);
             return;
         }
 
@@ -669,13 +670,13 @@ public class XLSFormatter extends AbstractFormatter {
         }
     }
 
-    protected void setValueToCell(HSSFCell resultCell, String cellValue, int cellType) {
+    protected void setValueToCell(HSSFCell resultCell, String cellValue, CellType cellType) {
         if (StringUtils.isNotEmpty(cellValue)) {
             switch (cellType) {
-                case HSSFCell.CELL_TYPE_FORMULA:
+                case FORMULA:
                     resultCell.setCellFormula(cellValue);
                     break;
-                case HSSFCell.CELL_TYPE_STRING:
+                case STRING:
                     resultCell.setCellValue(new HSSFRichTextString(cellValue));
                     break;
                 default:
@@ -684,13 +685,13 @@ public class XLSFormatter extends AbstractFormatter {
             }
 
         } else {
-            resultCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            resultCell.setCellType(CellType.BLANK);
         }
     }
 
     protected String inlineBandDataToCellString(HSSFCell cell, String templateCellValue, BandData band) {
         String resultStr = "";
-        if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
+        if (cell.getCellType() == CellType.STRING) {
             if (templateCellValue != null) resultStr = templateCellValue;
         } else {
             if (cell.toString() != null) resultStr = cell.toString();
@@ -722,7 +723,7 @@ public class XLSFormatter extends AbstractFormatter {
         for (CellReference cell : area.getAllReferencedCells()) {
             HSSFCell resultCell = getCellFromReference(cell, resultSheet);
 
-            if (resultCell.getCellType() == HSSFCell.CELL_TYPE_FORMULA) {
+            if (resultCell.getCellType() == CellType.FORMULA) {
                 Ptg[] ptgs = HSSFFormulaParser.parse(resultCell.getCellFormula(), resultWorkbook);
 
                 for (Ptg ptg : ptgs) {

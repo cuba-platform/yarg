@@ -42,10 +42,10 @@ public class HSSFWorkbookHelper {
         retval.setPaletteOptions((short) 0);
         retval.setAdtlPaletteOptions((short) 0);
         retval.setFillPaletteOptions((short) 0x20c0);
-        retval.setTopBorderPaletteIdx(HSSFColor.BLACK.index);
-        retval.setBottomBorderPaletteIdx(HSSFColor.BLACK.index);
-        retval.setLeftBorderPaletteIdx(HSSFColor.BLACK.index);
-        retval.setRightBorderPaletteIdx(HSSFColor.BLACK.index);
+        retval.setTopBorderPaletteIdx(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
+        retval.setBottomBorderPaletteIdx(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
+        retval.setLeftBorderPaletteIdx(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
+        retval.setRightBorderPaletteIdx(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
         return retval;
     }
 
