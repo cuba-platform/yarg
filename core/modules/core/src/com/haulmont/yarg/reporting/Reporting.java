@@ -223,7 +223,7 @@ public class Reporting implements ReportingAPI {
 
         if (ReportOutputType.custom != reportTemplate.getOutputType()) {
             ReportOutputType finalOutputType = (outputType != null ) ? outputType : reportTemplate.getOutputType();
-            outputName = format("%s.%s", StringUtils.substringBeforeLast(outputName, "."), finalOutputType.getId());
+            outputName = StringUtils.isBlank(outputNamePattern)? outputName : format("%s.%s", outputName, finalOutputType.getId());
         }
 
         return outputName;
