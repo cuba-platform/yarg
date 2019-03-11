@@ -239,17 +239,20 @@ configure(core) {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
+            exclude(group: 'com.fasterxml.jackson.core')
         }
         compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "6.1.0") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
+            exclude(group: 'com.fasterxml.jackson.core')
         }
         compile(group: "org.docx4j", name: "docx4j-export-fo", version: "6.1.0") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
+            exclude(group: 'com.fasterxml.jackson.core')
         }
         compile(group: "org.jsoup", name: "jsoup", version: "1.10.3")
         compile(group: "com.jayway.jsonpath", name: "json-path", version: "2.1.0")
