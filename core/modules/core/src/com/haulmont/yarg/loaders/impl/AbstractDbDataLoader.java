@@ -93,15 +93,21 @@ public abstract class AbstractDbDataLoader extends AbstractDataLoader {
             String notOperatorRegexp = "(<>|\\snot\\s+like\\s|\\snot\\s+in\\s)";
             String operatorRegexp = "(=|>=|<=|\\slike\\s|>|<|\\sin\\s)";
 
+            String escapeRegexp = "escape\\s*\\'\\W\\'\\s*";
+
             String notExpression1Rgxp = "\\s*" + valueRegexp + "\\s*" + notOperatorRegexp + "\\s*" + paramNameRegexp + "\\s*";
             String notExpression2Rgxp = "\\s*" + paramNameRegexp + "\\s*" + notOperatorRegexp + "\\s*" + valueRegexp + "\\s*";
-            String notExpressionRgxp = "(" + notExpression1Rgxp + "|" + notExpression2Rgxp + ")";
+            String notExpressionWithEscape1Rgxp = notExpression1Rgxp + escapeRegexp;
+            String notExpressionWithEscape2Rgxp = notExpression2Rgxp + escapeRegexp;
+            String notExpressionRgxp = "(" + notExpressionWithEscape1Rgxp + "|" + notExpressionWithEscape2Rgxp + "|" + notExpression1Rgxp + "|" + notExpression2Rgxp + ")";
 
             String expression1Rgxp = "\\s*" + valueRegexp + "\\s*" + operatorRegexp + "\\s*" + paramNameRegexp + "\\s*";
             String expression2Rgxp = "\\s*" + paramNameRegexp + "\\s*" + operatorRegexp + "\\s*" + valueRegexp + "\\s*";
-            String expressionRgxp = "(" + expression1Rgxp + "|" + expression2Rgxp + ")";
+            String expressionWithEscape1Rgxp = expression1Rgxp + escapeRegexp;
+            String expressionWithEscape2Rgxp = expression2Rgxp + escapeRegexp;
+            String expressionRgxp = "(" + expressionWithEscape1Rgxp + "|" + expressionWithEscape2Rgxp + "|" + expression1Rgxp + "|" + expression2Rgxp + ")";
 
-            String notAndFirstRgxp = andRegexp +notExpressionRgxp;
+            String notAndFirstRgxp = andRegexp + notExpressionRgxp;
             String notOrFirstRgxp = orRegexp + notExpressionRgxp;
             String notAndLastRgxp = notExpressionRgxp + andRegexp;
             String notOrLastRgxp = notExpressionRgxp + orRegexp;
