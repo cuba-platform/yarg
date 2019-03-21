@@ -32,4 +32,9 @@ public interface ReportFieldFormat extends Serializable {
      * Example: ##,# for decimals, dd-MM-yyyy for dates, etc.
      */
     String getFormat();
+
+    /**
+     * @return boolean <code>true</code> if the groovy script, otherwise <code>false</code>
+     */
+    Boolean isGroovyScript();
 }
