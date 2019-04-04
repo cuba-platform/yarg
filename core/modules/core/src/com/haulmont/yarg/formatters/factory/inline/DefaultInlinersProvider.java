@@ -16,15 +16,13 @@
 
 package com.haulmont.yarg.formatters.factory.inline;
 
-import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
-import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.inline.HtmlContentInliner;
-import com.haulmont.yarg.formatters.impl.inline.ImageContentInliner;
+import com.haulmont.yarg.formatters.impl.inline.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultInlinersProvider implements ReportInlinersProvider{
+public class DefaultInlinersProvider implements ReportInlinersProvider {
+
     protected List<ContentInliner> contentInliners;
 
     public DefaultInlinersProvider() {
@@ -32,13 +30,14 @@ public class DefaultInlinersProvider implements ReportInlinersProvider{
         addInliner(new BitmapContentInliner());
         addInliner(new HtmlContentInliner());
         addInliner(new ImageContentInliner());
+        addInliner(new ImageAllContentInliner());
     }
 
-    public void addInliner(ContentInliner inliner){
+    public void addInliner(ContentInliner inliner) {
         this.contentInliners.add(inliner);
     }
 
-    public void removeInliner(ContentInliner inliner){
+    public void removeInliner(ContentInliner inliner) {
         this.contentInliners.remove(inliner);
     }
 

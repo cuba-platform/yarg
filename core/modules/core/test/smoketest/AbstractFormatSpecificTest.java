@@ -55,8 +55,11 @@ public abstract class AbstractFormatSpecificTest {
         BandData band1_2 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
         BandData band1_3 = new BandData("Band1", root, BandOrientation.HORIZONTAL);
         BandData footer = new BandData("Footer", root, BandOrientation.HORIZONTAL);
+        BandData images = new BandData("Images", root, BandOrientation.HORIZONTAL);
         BandData split = new BandData("Split", root, BandOrientation.HORIZONTAL);
+
         split.setData(new HashMap<>());
+        images.setData(new HashMap<>());
 
         Map<String, Object> datamap = new HashMap<>();
         datamap.put("col1", 111);
@@ -123,21 +126,33 @@ public abstract class AbstractFormatSpecificTest {
         root.addChild(band2_1);
         root.addChild(band2_2);
         root.addChild(split);
+        root.addChild(images);
         root.addChild(footer);
         root.setFirstLevelBandDefinitionNames(new HashSet<>());
         root.getFirstLevelBandDefinitionNames().add("Band1");
         root.getFirstLevelBandDefinitionNames().add("Band2");
         root.getFirstLevelBandDefinitionNames().add("Split");
+        root.getFirstLevelBandDefinitionNames().add("Images");
         root.getFirstLevelBandDefinitionNames().add("Footer");
 
 
         root.addReportFieldFormats(Arrays.asList(
                 new ReportFieldFormatImpl("Root.html", "${html}"),
                 new ReportFieldFormatImpl("Root.image", "${bitmap:100x100}"),
-                new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}")));
+                new ReportFieldFormatImpl("Split.image", "${bitmap:100x100}"),
+                new ReportFieldFormatImpl("Images.imageAuto", "${img:bytearray:AUTOxAUTO}"),
+                new ReportFieldFormatImpl("Images.imageHeightAuto", "${img:bytearray:200xAUTO}"),
+                new ReportFieldFormatImpl("Images.imageWidthAuto", "${img:bytearray:AUTOx100}"),
+                new ReportFieldFormatImpl("Images.imageRect", "${img:bytearray:rect(200x200)}")));
         try {
             root.addData("html", "<html><body><a href=\"http://localhost:8080/app\">localhost</a></body></html>");
             root.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
+
+            images.addData("imageAuto", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
+            images.addData("imageWidthAuto", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
+            images.addData("imageHeightAuto", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
+            images.addData("imageRect", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
+
             split.addData("image", FileUtils.readFileToByteArray(new File("./modules/core/test/yarg.png")));
             split.addData("date", new Date());
             split.addData("theStyle", "redDate");

@@ -16,11 +16,11 @@
 package com.haulmont.yarg.formatters.impl.inline;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
-import com.haulmont.yarg.exception.ReportingException;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -37,7 +37,7 @@ public class ImageContentInliner extends AbstractInliner {
         return tagPattern;
     }
 
-    protected byte[] getContent(Object paramValue) {
+    protected byte[] getContent(Object paramValue, Matcher matcher) {
         try {
             return IOUtils.toByteArray(new URL(paramValue.toString()).openStream());
         } catch (IOException e) {

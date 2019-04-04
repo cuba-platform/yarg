@@ -41,7 +41,6 @@ import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.ImageUtils;
-import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.TraversalUtil;
 import org.docx4j.dml.*;
 import org.docx4j.dml.spreadsheetdrawing.*;
@@ -80,28 +79,35 @@ public abstract class AbstractInliner implements ContentInliner {
     protected Pattern tagPattern;
     protected int docxUniqueId1, docxUniqueId2;
 
-    protected abstract byte[] getContent(Object paramValue);
+    protected abstract byte[] getContent(Object paramValue, Matcher matcher);
 
     @Override
     public void inlineToXlsx(SpreadsheetMLPackage pkg, WorksheetPart worksheetPart, Cell newCell, Object paramValue, Matcher matcher) {
         try {
-            Image image = new Image(paramValue, matcher);
+            Image image = new Image(paramValue, matcher, this);
             if (image.isValid()) {
-                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, worksheetPart, image.imageContent);
-                CTOneCellAnchor anchor = new CTOneCellAnchor();
-                anchor.setFrom(new CTMarker());
-                CellReference cellReference = new CellReference("", newCell.getR());
-                anchor.getFrom().setCol(cellReference.getColumn() - 1);
-                anchor.getFrom().setRow(cellReference.getRow() - 1);
-                anchor.setExt(new CTPositiveSize2D());
-                anchor.getExt().setCx(XlsxUtils.convertPxToEmu(image.width));
-                anchor.getExt().setCy(XlsxUtils.convertPxToEmu(image.height));
+                byte[] imageContent = image.getImageContent();
+                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, worksheetPart, imageContent);
+                CTOneCellAnchor anchor = createAnchor(newCell, image.getHeight(), image.getWidth());
                 newCell.setV(null);
                 putImage(worksheetPart, pkg, imagePart, anchor);
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             throw new ReportFormattingException("An error occurred while inserting bitmap to xlsx file", e);
         }
+    }
+
+    private CTOneCellAnchor createAnchor(Cell newCell, long heigth, long width) {
+        CTOneCellAnchor anchor = new CTOneCellAnchor();
+        anchor.setFrom(new CTMarker());
+        CellReference cellReference = new CellReference("", newCell.getR());
+        anchor.getFrom().setCol(cellReference.getColumn() - 1);
+        anchor.getFrom().setRow(cellReference.getRow() - 1);
+        anchor.setExt(new CTPositiveSize2D());
+        anchor.getExt().setCx(XlsxUtils.convertPxToEmu(width));
+        anchor.getExt().setCy(XlsxUtils.convertPxToEmu(heigth));
+        return anchor;
     }
 
     private void putImage(WorksheetPart worksheetPart, SpreadsheetMLPackage pkg, BinaryPartAbstractImage imagePart, CTOneCellAnchor anchor) throws Docx4JException {
@@ -125,6 +131,27 @@ public abstract class AbstractInliner implements ContentInliner {
             currentId = drawing.getContents().getEGAnchor().size();
         }
 
+        CTPicture picture = getCtPicture(imagePartName, currentId);
+
+        anchor.setPic(picture);
+        anchor.setClientData(new CTAnchorClientData());
+
+        drawing.getContents().getEGAnchor().add(anchor);
+
+        Relationship rel = new Relationship();
+        rel.setId("rId" + (currentId + 1));
+        rel.setType(Namespaces.IMAGE);
+        rel.setTarget(imagePartName);
+
+        drawing.getRelationshipsPart().addRelationship(rel);
+        RelationshipsPart relPart = drawing.getRelationshipsPart();
+        pkg.getParts().remove(relPart.getPartName());
+        pkg.getParts().put(relPart);
+        pkg.getParts().remove(drawing.getPartName());
+        pkg.getParts().put(drawing);
+    }
+
+    private CTPicture getCtPicture(String imagePartName, int currentId) {
         CTPicture picture = new CTPicture();
 
         CTBlipFillProperties blipFillProperties = new CTBlipFillProperties();
@@ -161,41 +188,31 @@ public abstract class AbstractInliner implements ContentInliner {
         shapeProperties.getPrstGeom().setAvLst(new CTGeomGuideList());
 
         picture.setSpPr(shapeProperties);
-
-        anchor.setPic(picture);
-        anchor.setClientData(new CTAnchorClientData());
-
-        drawing.getContents().getEGAnchor().add(anchor);
-
-        Relationship rel = new Relationship();
-        rel.setId("rId" + (currentId + 1));
-        rel.setType(Namespaces.IMAGE);
-        rel.setTarget(imagePartName);
-
-        drawing.getRelationshipsPart().addRelationship(rel);
-        RelationshipsPart relPart = drawing.getRelationshipsPart();
-        pkg.getParts().remove(relPart.getPartName());
-        pkg.getParts().put(relPart);
-        pkg.getParts().remove(drawing.getPartName());
-        pkg.getParts().put(drawing);
+        return picture;
     }
 
     @Override
     public void inlineToDocx(WordprocessingMLPackage wordPackage, Text text, Object paramValue, Matcher paramsMatcher) {
         try {
-            Image image = new Image(paramValue, paramsMatcher);
+            Image image = new Image(paramValue, paramsMatcher, this);
             if (image.isValid()) {
                 Part part = resolveTextPartForDOCX(text, wordPackage);
-                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, part, image.imageContent);
-                int originalWidth = imagePart.getImageInfo().getSize().getWidthPx();
-                int originalHeight = imagePart.getImageInfo().getSize().getHeightPx();
+                BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordPackage, part, image.getImageContent());
 
-                double widthScale = (double) image.width / (double) originalWidth;
-                double heightScale = (double) image.height  / (double) originalHeight;
-                double actualScale = Math.min(widthScale, heightScale);
+                long targetWidth = image.getWidth();
+                long targetHeight = image.getHeight();
 
-                long targetWidth = Math.round(originalWidth * actualScale);
-                long targetHeight = Math.round(originalHeight * actualScale);
+                if (!getClass().equals(ImageAllContentInliner.class)) {
+                    int originalWidth = imagePart.getImageInfo().getSize().getWidthPx();
+                    int originalHeight = imagePart.getImageInfo().getSize().getHeightPx();
+
+                    double widthScale = (double) image.getWidth() / (double) originalWidth;
+                    double heightScale = (double) image.getHeight() / (double) originalHeight;
+                    double actualScale = Math.min(widthScale, heightScale);
+
+                    targetWidth = Math.round(originalWidth * actualScale);
+                    targetHeight = Math.round(originalHeight * actualScale);
+                }
 
                 Inline inline = imagePart.createImageInline("", "", docxUniqueId1++, docxUniqueId2++,
                         XlsxUtils.convertPxToEmu(targetWidth), XlsxUtils.convertPxToEmu(targetHeight), false);
@@ -214,12 +231,12 @@ public abstract class AbstractInliner implements ContentInliner {
     @Override
     public void inlineToXls(HSSFPatriarch patriarch, HSSFCell resultCell, Object paramValue, Matcher paramsMatcher) {
         try {
-            Image image = new Image(paramValue, paramsMatcher);
+            Image image = new Image(paramValue, paramsMatcher, this);
             if (image.isValid()) {
                 HSSFSheet sheet = resultCell.getSheet();
                 HSSFWorkbook workbook = sheet.getWorkbook();
 
-                int pictureIdx = workbook.addPicture(image.imageContent, Workbook.PICTURE_TYPE_JPEG);
+                int pictureIdx = workbook.addPicture(image.getImageContent(), Workbook.PICTURE_TYPE_JPEG);
 
                 CreationHelper helper = workbook.getCreationHelper();
                 ClientAnchor anchor = helper.createClientAnchor();
@@ -234,7 +251,8 @@ public abstract class AbstractInliner implements ContentInliner {
                 Dimension size = ImageUtils.getDimensionFromAnchor(picture);
                 double actualHeight = size.getHeight() / EMU_PER_PIXEL;
                 double actualWidth = size.getWidth() / EMU_PER_PIXEL;
-                picture.resize((double) image.width / actualWidth, (double) image.height / actualHeight);
+
+                picture.resize((double) image.getWidth() / actualWidth, (double) image.getHeight() / actualHeight);
             }
         } catch (IllegalArgumentException e) {
             throw new ReportFormattingException("An error occurred while inserting bitmap to xls file", e);
@@ -246,7 +264,7 @@ public abstract class AbstractInliner implements ContentInliner {
                             Matcher paramsMatcher) throws Exception {
         try {
             if (paramValue != null) {
-                Image image = new Image(paramValue, paramsMatcher);
+                Image image = new Image(paramValue, paramsMatcher, this);
 
                 if (image.isValid()) {
                     XComponent xComponent = officeComponent.getOfficeComponent();
@@ -269,10 +287,10 @@ public abstract class AbstractInliner implements ContentInliner {
 
         XGraphicProvider xGraphicProvider = as(XGraphicProvider.class, oGraphicProvider);
 
-        XPropertySet imageProperties = buildImageProperties(xGraphicProvider, oImage, image.imageContent);
+        XPropertySet imageProperties = buildImageProperties(xGraphicProvider, oImage, image.getImageContent());
         XTextContent xTextContent = as(XTextContent.class, oImage);
         destination.insertTextContent(textRange, xTextContent, true);
-        setImageSize(image.width, image.height, oImage, imageProperties);
+        setImageSize(image.getWidth(), image.getHeight(), oImage, imageProperties);
     }
 
     protected void setImageSize(int width, int height, Object oImage, XPropertySet imageProperties)
@@ -304,31 +322,6 @@ public abstract class AbstractInliner implements ContentInliner {
         }
 
         return imageProperties;
-    }
-
-    protected class Image {
-        byte[] imageContent = null;
-        int width = 0;
-        int height = 0;
-
-        public Image(Object paramValue, Matcher paramsMatcher) {
-            if (paramValue == null) {
-                return;
-            }
-
-            imageContent = getContent(paramValue);
-            if (imageContent.length == 0) {
-                imageContent = null;
-                return;
-            }
-
-            width = Integer.parseInt(paramsMatcher.group(1));
-            height = Integer.parseInt(paramsMatcher.group(2));
-        }
-
-        boolean isValid() {
-            return imageContent != null;
-        }
     }
 
     protected Part resolveTextPartForDOCX(Text text, WordprocessingMLPackage wordPackage) {

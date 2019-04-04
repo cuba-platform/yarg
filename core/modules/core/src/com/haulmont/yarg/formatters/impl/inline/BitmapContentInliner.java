@@ -16,6 +16,7 @@
 
 package com.haulmont.yarg.formatters.impl.inline;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -32,7 +33,7 @@ public class BitmapContentInliner extends AbstractInliner {
         return tagPattern;
     }
 
-    protected byte[] getContent(Object paramValue) {
+    protected byte[] getContent(Object paramValue, Matcher matcher) {
         return (byte[]) paramValue;
     }
 }
