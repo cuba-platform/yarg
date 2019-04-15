@@ -31,9 +31,9 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
-    public void testReplaceSingleCondition() throws Exception {
+    public void testReplaceSingleCondition() {
         String query = "select id as id from user where id  =  ${param1}";
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
         Assert.assertFalse(queryPack.getQuery().contains("${"));
@@ -47,16 +47,44 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
-    public void testParentBandCondition() throws Exception {
+    public void testReplaceSingleConditionWithEscape() {
+        String query = "select id as id from user where id like ${param1} ESCAPE '\\'";
+        testReplaceSingleWithLikeCondition(query);
+    }
+
+    @Test
+    public void testReplaceSingleConditionWithoutEscape() {
+        String query = "select id as id from user where id like ${param1}";
+        testReplaceSingleWithLikeCondition(query);
+    }
+
+    private void testReplaceSingleWithLikeCondition(String query) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("param1", null);
+
+        QueryPack queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals("select id as id from user where 1=1", queryPack.getQuery());
+        writeParams(queryPack);
+
+        params.put("param1", "param1");
+        queryPack = prepareQuery(query, new BandData(""), params);
+        System.out.println(queryPack.getQuery());
+        Assert.assertEquals(1, StringUtils.countMatches(queryPack.getQuery(), "?"));
+        writeParams(queryPack);
+    }
+
+    @Test
+    public void testParentBandCondition() {
         String query = "select id as id from user where id  =  ${Root.parentBandParam}";
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
         Assert.assertFalse(queryPack.getQuery().contains("${"));
         writeParams(queryPack);
 
         BandData parentBand = new BandData("Root");
-        parentBand.setData(new HashMap<String, Object>());
+        parentBand.setData(new HashMap<>());
         parentBand.addData("parentBandParam", "parentBandParam");
         queryPack = prepareQuery(query, parentBand, params);
         System.out.println(queryPack.getQuery());
@@ -65,9 +93,9 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
-    public void testParamReordering() throws Exception {
+    public void testParamReordering() {
         String query = "select id as id from user where id  =  ${param1} or id = ${param2} and id > ${param1}";
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
         Assert.assertFalse(queryPack.getQuery().contains("${"));
@@ -86,10 +114,10 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
-    public void testTemplate() throws Exception {
+    public void testTemplate() {
         String query = "select id as id from user where <% if (id != null) {%>id = \\${id}<%} else {%>id is null<%}%>";
 
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
         params.put("id", "id");
         String newQuery = processQueryTemplate(query, null, params);
         Assert.assertEquals("select id as id from user where id = ${id}", newQuery);
@@ -113,7 +141,7 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
-    public void testParamReordering2() throws Exception {
+    public void testParamReordering2() {
         String query = "select \n" +
                 "u.id as initiatorId,\n" +
                 "u.name as initiator,\n" +
@@ -138,7 +166,7 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
                 "and e.user_id = ${executorId}\n" +
                 "group by u.id, u.name\n" +
                 "order by u.name";
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         AbstractDbDataLoader.QueryPack queryPack = prepareQuery(query, new BandData(""), params);
         System.out.println(queryPack.getQuery());
         Assert.assertFalse(queryPack.getQuery().contains("${"));
@@ -158,9 +186,9 @@ public class LoadQueryTransformerTest extends AbstractDbDataLoader {
     }
 
     @Test
-    public void testParamsReplacing() throws Exception {
+    public void testParamsReplacing() {
         String query = " where id=${param1} and id = ${param2}";
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         params.put("param1", null);
         params.put("param2", "param2");
         params.put("param3", null);
