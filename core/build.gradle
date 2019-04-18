@@ -227,11 +227,11 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-RC15') {
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '0.0.1-RC19') {
             exclude(group: 'junit', module: 'junit')
         }
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-rtl-support', version: '0.0.1-RC15')
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '0.0.1-RC15') {
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-rtl-support', version: '0.0.1-RC19')
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '0.0.1-RC19') {
             exclude(group: 'junit', module: 'junit')
         }
         compile(group: "org.docx4j", name: "docx4j", version: "6.1.0") {
