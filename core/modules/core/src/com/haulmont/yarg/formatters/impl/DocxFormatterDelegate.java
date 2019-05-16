@@ -22,6 +22,7 @@ import org.docx4j.TextUtils;
 import org.docx4j.wml.Text;
 
 import java.io.StringWriter;
+import java.util.List;
 import java.util.regex.Matcher;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -52,6 +53,10 @@ public class DocxFormatterDelegate {
 
     public boolean containsJustOneAlias(String value) {
         return docxFormatter.containsJustOneAlias(value);
+    }
+
+    public List<String> getAllAliases(String value){
+        return docxFormatter.getAllAliases(value);
     }
 
     public String unwrapParameterName(String nameWithAlias) {

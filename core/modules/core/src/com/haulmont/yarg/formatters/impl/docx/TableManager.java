@@ -62,14 +62,23 @@ public class TableManager {
             @Override
             protected void handle(Text text) {
                 String textValue = text.getValue();
-                if (docxFormatter.containsJustOneAlias(textValue)) {//todo eude not only one value cells?
+                if (docxFormatter.containsJustOneAlias(textValue)) {
                     String parameterName = docxFormatter.unwrapParameterName(textValue);
                     String fullParameterName = bandName + "." + parameterName;
                     Object parameterValue = band.getParameterValue(parameterName);
 
                     if (docxFormatter.tryToApplyInliners(fullParameterName, parameterValue, text)) return;
-                }
+                } else {
+                    for (String alias : docxFormatter.getAllAliases(textValue)) { //todo order in result string? In case like '${1} abc ${2}'
+                        String parameterName = docxFormatter.unwrapParameterName(alias);
+                        String fullParameterName = bandName + "." + parameterName;
+                        Object parameterValue = band.getParameterValue(parameterName);
 
+                        if (docxFormatter.tryToApplyInliners(fullParameterName, parameterValue, text)) {
+                            textValue = textValue.replace(alias, "");
+                        }
+                    }
+                }
 
                 //todo eude the following logic is not full and ignores situation when in 1 text we have both table and not table aliases
                 boolean hasTableAliases = false;
