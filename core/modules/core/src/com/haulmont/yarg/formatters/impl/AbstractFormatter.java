@@ -212,6 +212,16 @@ public abstract class AbstractFormatter implements ReportFormatter {
         return !StringUtils.isBlank(value) && value.matches("\\$\\{[^\\$\\{\\}]*\\}");
     }
 
+    protected List<String> getAllAliases(String value) {
+        Pattern aliasPattern = Pattern.compile("\\$\\{[^\\$\\{\\}]*\\}");
+        List<String> aliases = new ArrayList<>();
+        Matcher m = aliasPattern.matcher(value);
+        while (m.find()){
+            aliases.add(m.group());
+        }
+        return aliases;
+    }
+
     protected BandData findBandByPath(String path) {
         if (rootBand.getName().equals(path)) return rootBand;
 
