@@ -66,16 +66,20 @@ public class FormatTest {
     }
 
     @Test
-    public void testGroovyFormat() throws ParseException {
-        AbstractFormatter abstractFormatter = createFormatter("a.number", "return value", true);
+    public void testGroovyFormat() {
+        AbstractFormatter abstractFormatter = createFormatter("a.text", "return value.replace('-', '/')", true);
+        assertEquals("01/09/2009", abstractFormatter.formatValue("01-09-2009", "text", "a.text"));
+    }
 
-        assertEquals("Test", abstractFormatter.formatValue("Test", "text", "a.text"));
+    @Test
+    public void testNullGroovyFormat() {
+        AbstractFormatter abstractFormatter = createFormatter("a.text", "return value", true);
         assertEquals("", abstractFormatter.formatValue(null, "text", "a.text"));
     }
 
     private AbstractFormatter createFormatter(String formatName, String formatValue, Boolean groovyScript) {
         BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
-        rootBand.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl(formatName, formatValue)));
+        rootBand.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl(formatName, formatValue, groovyScript)));
         FormatterFactoryInput formatterFactoryInput = new FormatterFactoryInput("xlsx", rootBand, reportTemplate, ReportOutputType.xlsx, null);
         return new AbstractFormatter(formatterFactoryInput) {
             @Override

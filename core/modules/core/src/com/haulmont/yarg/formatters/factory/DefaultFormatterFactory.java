@@ -27,6 +27,7 @@ import com.haulmont.yarg.formatters.impl.xls.DocumentConverter;
 import com.haulmont.yarg.formatters.impl.xls.DocumentConverterImpl;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportTemplate;
+import com.haulmont.yarg.util.groovy.Scripting;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -40,8 +41,9 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     protected HtmlImportProcessor htmlImportProcessor;
     protected HtmlToPdfConverterFactory htmlToPdfConverterFactory;
     protected String fontsDirectory;
+    protected Scripting scripting;
 
-    protected Map<String, FormatterCreator> formattersMap = new HashMap<String, FormatterCreator>();
+    protected Map<String, FormatterCreator> formattersMap = new HashMap<>();
 
     protected ReportInlinersProvider inlinersProvider;
 
@@ -52,6 +54,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
             xlsFormatter.setDocumentConverter(documentConverter);
             xlsFormatter.setDefaultFormatProvider(defaultFormatProvider);
+            xlsFormatter.setScripting(scripting);
             return xlsFormatter;
         });
 
@@ -70,6 +73,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             htmlFormatter.setDefaultFormatProvider(defaultFormatProvider);
             htmlFormatter.setFontsDirectory(getFontsDirectory());
             htmlFormatter.setPdfConverterFactory(htmlToPdfConverterFactory);
+            htmlFormatter.setScripting(scripting);
             return htmlFormatter;
         };
         formattersMap.put("ftl", ftlCreator);
@@ -79,12 +83,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             docxFormatter.setDefaultFormatProvider(defaultFormatProvider);
             docxFormatter.setDocumentConverter(documentConverter);
             docxFormatter.setHtmlImportProcessor(htmlImportProcessor);
+            docxFormatter.setScripting(scripting);
             return docxFormatter;
         });
         FormatterCreator xlsxCreator = factoryInput -> {
             XlsxFormatter xlsxFormatter = new XlsxFormatter(factoryInput);
             xlsxFormatter.setDefaultFormatProvider(defaultFormatProvider);
             xlsxFormatter.setDocumentConverter(documentConverter);
+            xlsxFormatter.setScripting(scripting);
             return xlsxFormatter;
         };
         formattersMap.put("xlsx", xlsxCreator);
@@ -131,6 +137,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setHtmlToPdfConverterFactory(HtmlToPdfConverterFactory htmlToPdfConverterFactory) {
         this.htmlToPdfConverterFactory = htmlToPdfConverterFactory;
+    }
+
+    public Scripting getScripting() {
+        return scripting;
+    }
+
+    public void setScripting(Scripting scripting) {
+        this.scripting = scripting;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {
