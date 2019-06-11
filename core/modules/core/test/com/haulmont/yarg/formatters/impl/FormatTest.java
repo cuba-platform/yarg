@@ -36,20 +36,20 @@ public class FormatTest {
 
     @Test
     public void testNull() {
-        AbstractFormatter abstractFormatter = createFormatter("a.number", "##.##");
+        AbstractFormatter abstractFormatter = createFormatter("a.number", "##.##", false);
         assertEquals("", abstractFormatter.formatValue(null, "number", "a.number"));
     }
 
     @Test
     public void testNumber() {
-        AbstractFormatter abstractFormatter = createFormatter("a.number", "##.##");
+        AbstractFormatter abstractFormatter = createFormatter("a.number", "##.##", false);
 
         assertEquals("5,57", abstractFormatter.formatValue(5.5678, "number", "a.number").replace(".", ","));
     }
 
     @Test
     public void testDate() throws ParseException {
-        AbstractFormatter abstractFormatter = createFormatter("a.number", "yyyy-mm-dd");
+        AbstractFormatter abstractFormatter = createFormatter("a.number", "yyyy-mm-dd", false);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-mm-yyyy");
 
         assertEquals("2009-09-01", abstractFormatter.formatValue(simpleDateFormat.parse("01-09-2009"), "number", "a.number"));
@@ -57,7 +57,7 @@ public class FormatTest {
 
     @Test
     public void testClass() throws ParseException {
-        AbstractFormatter abstractFormatter = createFormatter("a.number", "class:com.haulmont.yarg.formatters.impl.TestValueFormat");
+        AbstractFormatter abstractFormatter = createFormatter("a.number", "class:com.haulmont.yarg.formatters.impl.TestValueFormat", false);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-mm-yyyy");
 
         assertEquals("Test", abstractFormatter.formatValue(null, "number", "a.number"));
@@ -65,9 +65,21 @@ public class FormatTest {
         assertEquals("Test", abstractFormatter.formatValue(simpleDateFormat.parse("01-09-2009"), "number", "a.number"));
     }
 
-    private AbstractFormatter createFormatter(String formatName, String formatValue) {
+    @Test
+    public void testGroovyFormat() {
+        AbstractFormatter abstractFormatter = createFormatter("a.text", "return value.replace('-', '/')", true);
+        assertEquals("01/09/2009", abstractFormatter.formatValue("01-09-2009", "text", "a.text"));
+    }
+
+    @Test
+    public void testNullGroovyFormat() {
+        AbstractFormatter abstractFormatter = createFormatter("a.text", "return value", true);
+        assertEquals("", abstractFormatter.formatValue(null, "text", "a.text"));
+    }
+
+    private AbstractFormatter createFormatter(String formatName, String formatValue, Boolean groovyScript) {
         BandData rootBand = new BandData(BandData.ROOT_BAND_NAME);
-        rootBand.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl(formatName, formatValue)));
+        rootBand.addReportFieldFormats(Collections.singletonList(new ReportFieldFormatImpl(formatName, formatValue, groovyScript)));
         FormatterFactoryInput formatterFactoryInput = new FormatterFactoryInput("xlsx", rootBand, reportTemplate, ReportOutputType.xlsx, null);
         return new AbstractFormatter(formatterFactoryInput) {
             @Override

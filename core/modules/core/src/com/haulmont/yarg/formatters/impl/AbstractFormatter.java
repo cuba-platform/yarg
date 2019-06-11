@@ -21,14 +21,13 @@ import com.haulmont.yarg.exception.ReportingException;
 import com.haulmont.yarg.exception.ReportingInterruptedException;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
-import com.haulmont.yarg.formatters.impl.inline.BitmapContentInliner;
 import com.haulmont.yarg.formatters.impl.inline.ContentInliner;
-import com.haulmont.yarg.formatters.impl.inline.HtmlContentInliner;
-import com.haulmont.yarg.formatters.impl.inline.ImageContentInliner;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.ReportFieldFormat;
 import com.haulmont.yarg.structure.ReportOutputType;
 import com.haulmont.yarg.structure.ReportTemplate;
+import com.haulmont.yarg.util.groovy.DefaultScriptingImpl;
+import com.haulmont.yarg.util.groovy.Scripting;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
@@ -55,6 +54,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
     public static final Pattern UNIVERSAL_ALIAS_PATTERN = Pattern.compile(UNIVERSAL_ALIAS_REGEXP, Pattern.CASE_INSENSITIVE);
     public static final Pattern ALIAS_WITH_BAND_NAME_PATTERN = Pattern.compile(ALIAS_WITH_BAND_NAME_REGEXP);
     public static final Pattern BAND_NAME_DECLARATION_PATTERN = Pattern.compile(BAND_NAME_DECLARATION_REGEXP);
+    public static final String VALUE = "value";
 
 
     protected BandData rootBand;
@@ -63,11 +63,16 @@ public abstract class AbstractFormatter implements ReportFormatter {
     protected OutputStream outputStream;
     protected Set<ReportOutputType> supportedOutputTypes = new HashSet<>();
     protected DefaultFormatProvider defaultFormatProvider;
+    protected Scripting scripting = new DefaultScriptingImpl();
 
     /**
      * Chain of responsibility for content inliners
      */
     protected List<ContentInliner> contentInliners = new ArrayList<>();
+
+    public void setScripting(Scripting scripting) {
+        this.scripting = scripting;
+    }
 
     protected AbstractFormatter(FormatterFactoryInput formatterFactoryInput) {
         checkNotNull(formatterFactoryInput.getRootBand(), "\"rootBand\" parameter can not be null");
@@ -120,7 +125,9 @@ public abstract class AbstractFormatter implements ReportFormatter {
         String valueString;
         String formatString = getFormatString(parameterName, fullParameterName);
         if (formatString != null) {
-            if (formatString.startsWith("class:")) {
+            if (Boolean.TRUE.equals(isGroovyScript(parameterName, fullParameterName))) {
+                valueString = scripting.evaluateGroovy(formatString, Collections.singletonMap(VALUE, value));
+            } else if (formatString.startsWith("class:")) {
                 String className = formatString.replaceFirst("class:", "");
                 ValueFormat valueFormat;
                 try {
@@ -165,6 +172,19 @@ public abstract class AbstractFormatter implements ReportFormatter {
             }
         }
         return formatString;
+    }
+
+    protected Boolean isGroovyScript(String parameterName, String fullParameterName) {
+        Map<String, ReportFieldFormat> formats = rootBand.getReportFieldFormats();
+        Boolean groovyFormat = false;
+        if (formats != null) {
+            if (formats.containsKey(fullParameterName)) {
+                groovyFormat = formats.get(fullParameterName).isGroovyScript();
+            } else if (formats.containsKey(parameterName)) {
+                groovyFormat = formats.get(parameterName).isGroovyScript();
+            }
+        }
+        return groovyFormat;
     }
 
     protected String applyStringFunction(String valueString, String stringFunction) {

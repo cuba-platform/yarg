@@ -154,7 +154,13 @@ public class DefaultXmlReader implements XmlReader {
             for (Element parameter : parameters) {
                 String name = parameter.attribute("name").getText();
                 String format = parameter.attribute("format").getText();
-                reportParameters.add(new ReportFieldFormatImpl(name, format));
+                Attribute groovyScriptAttribute = parameter.attribute("groovyScript");
+                if (groovyScriptAttribute != null) {
+                    Boolean groovyFlag = (Boolean) groovyScriptAttribute.getData();
+                    reportParameters.add(new ReportFieldFormatImpl(name, format, groovyFlag));
+                } else {
+                    reportParameters.add(new ReportFieldFormatImpl(name, format));
+                }
             }
         }
 

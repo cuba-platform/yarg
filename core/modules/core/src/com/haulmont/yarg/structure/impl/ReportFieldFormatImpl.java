@@ -22,13 +22,21 @@ import com.haulmont.yarg.structure.ReportFieldFormat;
 public class ReportFieldFormatImpl implements ReportFieldFormat {
     protected String name;
     protected String format;
+    protected Boolean groovyScript;
 
     public ReportFieldFormatImpl(String name, String format) {
         Preconditions.checkNotNull(name, "\"name\" parameter can not be null");
-        Preconditions.checkNotNull(name, "\"format\" parameter can not be null");
+        Preconditions.checkNotNull(format, "\"format\" parameter can not be null");
 
         this.name = name;
         this.format = format;
+        this.groovyScript = false;
+    }
+
+    public ReportFieldFormatImpl(String name, String format, Boolean groovyScript) {
+        this(name, format);
+        Preconditions.checkNotNull(groovyScript, "\"groovyScript\" parameter can not be null");
+        this.groovyScript = groovyScript;
     }
 
     @Override
@@ -39,5 +47,10 @@ public class ReportFieldFormatImpl implements ReportFieldFormat {
     @Override
     public String getFormat() {
         return format;
+    }
+
+    @Override
+    public Boolean isGroovyScript() {
+        return groovyScript;
     }
 }
