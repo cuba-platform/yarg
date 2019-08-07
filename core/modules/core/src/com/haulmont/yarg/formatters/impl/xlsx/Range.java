@@ -26,10 +26,15 @@ import java.util.regex.Pattern;
 import static com.haulmont.yarg.formatters.impl.xlsx.XlsxUtils.getColumnReferenceFromNumber;
 
 public class Range {
+    public final static Pattern UNLIMITED_ROW_FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$([0-9]+):\\$([0-9]+)");
+    public final static Pattern UNLIMITED_COLUMN_FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$([A-z]+[0-9]*):\\$([A-z]+[0-9]*)");
     public final static Pattern FORMULA_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*):\\$(.*)\\$(.*)");
     public final static Pattern SINGLE_CELL_RANGE_PATTERN = Pattern.compile("'?(.+?)'?!\\$(.*)\\$(.*)");
     public final static Pattern NOT_STRICT_RANGE_PATTERN = Pattern.compile("([A-z]+[0-9]+):?([A-z]+[0-9]+)?");
     public final static Pattern STRICT_RANGE_PATTERN = Pattern.compile("([A-z]+[0-9]+):([A-z]+[0-9]+)");
+
+    public final static int MIN_LENGTH_RANGE = 1;
+    public final static int MAX_LENGTH_RANGE = 255;
 
     private String sheet;
     private int firstColumn;
@@ -55,43 +60,59 @@ public class Range {
         lastColumn = lastCell.getColumn();
         lastRow = lastCell.getRow();
 
-        Range result = new Range(sheetName, startColumn, startRow, lastColumn, lastRow);
-        return result;
+        return new Range(sheetName, startColumn, startRow, lastColumn, lastRow);
     }
 
     public static Range fromFormula(String range) {
         Matcher matcher = FORMULA_RANGE_PATTERN.matcher(range);
-        Matcher matcher2 = SINGLE_CELL_RANGE_PATTERN.matcher(range);
+        Matcher matcher2 = UNLIMITED_ROW_FORMULA_RANGE_PATTERN.matcher(range);
+        Matcher matcher3 = UNLIMITED_COLUMN_FORMULA_RANGE_PATTERN.matcher(range);
+        Matcher matcher4 = SINGLE_CELL_RANGE_PATTERN.matcher(range);
+
         if (matcher.find()) {
             String sheet = matcher.group(1);
             String startColumnStr = matcher.group(2);
             String startRowStr = matcher.group(3);
-            String endColumnStr = matcher.group(4);
-            String endRowStr = matcher.group(5);
-            try {
-                int startRow = Integer.valueOf(startRowStr);
-                int lastRow = Integer.valueOf(endRowStr);
-                int startColumn = XlsxUtils.getNumberFromColumnReference(startColumnStr);
-                int lastColumn = XlsxUtils.getNumberFromColumnReference(endColumnStr);
-                return new Range(sheet, startColumn, startRow, lastColumn, lastRow);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException(String.format("Wrong range value %s. Error: %s", range, e.getMessage()));
-            }
+            String lastColumnStr = matcher.group(4);
+            String lastRowStr = matcher.group(5);
+
+            return getRange(range, sheet, startColumnStr, startRowStr, lastColumnStr, lastRowStr);
         } else if (matcher2.find()) {
             String sheet = matcher2.group(1);
 
-            String startColumnStr = matcher2.group(2);
-            String startRowStr = matcher2.group(3);
-            int startColumn = XlsxUtils.getNumberFromColumnReference(startColumnStr);
-            int startRow;
-            try {
-                startRow = Integer.valueOf(startRowStr);
-                return new Range(sheet, startColumn, startRow, startColumn, startRow);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException(String.format("Wrong range value %s. Error: %s", range, e.getMessage()));
-            }
+            String startRowStr = matcher2.group(2);
+            String lastRowStr = matcher2.group(3);
+
+            return getRange(range, sheet, null, startRowStr, null, lastRowStr);
+        } else if (matcher3.find()) {
+            String sheet = matcher3.group(1);
+
+            String startColumnStr = matcher3.group(2);
+            String lastColumnStr = matcher3.group(3);
+
+            return getRange(range, sheet, startColumnStr, null, lastColumnStr, null);
+        } else if (matcher4.find()) {
+            String sheet = matcher4.group(1);
+
+            String startColumnStr = matcher4.group(2);
+            String startRowStr = matcher4.group(3);
+
+            return getRange(range, sheet, startColumnStr, startRowStr, startColumnStr, startRowStr);
         } else {
             throw new RuntimeException(String.format("Wrong range value %s", range));
+        }
+    }
+
+    private static Range getRange(String range, String sheet, String startColumnStr, String startRowStr, String lastColumnStr, String lastRowStr) {
+        try {
+            int startRow = startRowStr != null ? Integer.valueOf(startRowStr) : MIN_LENGTH_RANGE;
+            int startColumn = startColumnStr != null ? XlsxUtils.getNumberFromColumnReference(startColumnStr) : MIN_LENGTH_RANGE;
+            int lastRow = lastRowStr != null ? Integer.valueOf(lastRowStr) : MAX_LENGTH_RANGE;
+            int lastColumn = lastColumnStr != null ? XlsxUtils.getNumberFromColumnReference(lastColumnStr) : MAX_LENGTH_RANGE;
+
+            return new Range(sheet, startColumn, startRow, lastColumn, lastRow);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(String.format("Wrong range value %s. Error: %s", range, e.getMessage()));
         }
     }
 
