@@ -73,7 +73,7 @@
         </xs:sequence>
 
         <xs:attribute name="name" type="BandName" use="required"/>
-        <xs:attribute name="orientation" type="Orientation"/>
+        <xs:attribute name="orientation" type="Orientation" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="reportQuery">
