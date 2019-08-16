@@ -62,7 +62,7 @@ public class XslStyleHelper {
             // Finally we need to clone the font, and update the format record for this
             FontRecord fr = targetWorkbook.createNewFont();
             fr.cloneStyleFrom(sourceWorkbook.getFontRecordAt(source.getFontIndex()));
-            HSSFFont font = newInstance(HSSFFont.class, new Class[]{short.class, FontRecord.class},
+            HSSFFont font = newInstance(HSSFFont.class, new Class[]{int.class, FontRecord.class},
                     (short)targetWorkbook.getFontIndex(fr), fr);
             target.setFont(font);
         }
