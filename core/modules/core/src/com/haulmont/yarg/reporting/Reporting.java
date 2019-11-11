@@ -74,18 +74,11 @@ public class Reporting implements ReportingAPI {
 
     @Override
     public ReportOutputDocument runReport(RunParams runParams, OutputStream outputStream) {
-        return runReport(runParams.report, runParams.reportTemplate, runParams.outputType, runParams.params, outputStream);
-    }
+        Report report = runParams.report;
+        ReportTemplate reportTemplate = runParams.reportTemplate;
+        Map<String, Object> params = runParams.params;
+        ReportOutputType outputType = runParams.outputType;
 
-    @Override
-    public ReportOutputDocument runReport(RunParams runParams) {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        ReportOutputDocument reportOutputDocument = runReport(runParams.report, runParams.reportTemplate, runParams.outputType, runParams.params, result);
-        reportOutputDocument.setContent(result.toByteArray());
-        return reportOutputDocument;
-    }
-
-    protected ReportOutputDocument runReport(Report report, ReportTemplate reportTemplate, ReportOutputType outputType, Map<String, Object> params, OutputStream outputStream) {
         try {
             Preconditions.checkNotNull(report, "\"report\" parameter can not be null");
             Preconditions.checkNotNull(reportTemplate, "\"reportTemplate\" can not be null");
@@ -101,7 +94,7 @@ public class Reporting implements ReportingAPI {
 
             logReport("Finished report [%s] with parameters [%s]", report, handledParams);
 
-            String outputName = resolveOutputFileName(report, reportTemplate, outputType, rootBand);
+            String outputName = resolveOutputFileName(runParams, rootBand);
             return createReportOutputDocument(report, finalOutputType, outputName, rootBand);
         } catch (ReportingInterruptedException e) {
             logReport("Report is canceled by user request. Report [%s] with parameters [%s].", report, params);
@@ -115,6 +108,14 @@ public class Reporting implements ReportingAPI {
             }
             throw e;
         }
+    }
+
+    @Override
+    public ReportOutputDocument runReport(RunParams runParams) {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        ReportOutputDocument reportOutputDocument = runReport(runParams, result);
+        reportOutputDocument.setContent(result.toByteArray());
+        return reportOutputDocument;
     }
 
     protected void generateReport(Report report, ReportTemplate reportTemplate, ReportOutputType outputType,
@@ -186,8 +187,13 @@ public class Reporting implements ReportingAPI {
         return new ReportOutputDocumentImpl(report, null, outputName, outputType);
     }
 
-    protected String resolveOutputFileName(Report report, ReportTemplate reportTemplate, ReportOutputType outputType, BandData rootBand) {
+    protected String resolveOutputFileName(RunParams runParams, BandData rootBand) {
+        ReportTemplate reportTemplate = runParams.reportTemplate;
+        ReportOutputType outputType = runParams.outputType;
         String outputNamePattern = reportTemplate.getOutputNamePattern();
+        if (StringUtils.isNotEmpty(runParams.outputNamePattern)) {
+            outputNamePattern = runParams.outputNamePattern;
+        }
         String outputName = reportTemplate.getDocumentName();
         Pattern pattern = Pattern.compile("\\$\\{([A-z0-9_]+)\\.([A-z0-9_]+)\\}");
         if (StringUtils.isNotBlank(outputNamePattern)) {
