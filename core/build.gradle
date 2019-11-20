@@ -215,8 +215,8 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile(group: 'org.apache.poi', name: 'poi', version: '4.1.0')
-        compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '4.1.0') {
+        compile(group: 'org.apache.poi', name: 'poi', version: '4.1.1')
+        compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '4.1.1') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }
         compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.18')
