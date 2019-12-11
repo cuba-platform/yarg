@@ -36,6 +36,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -145,6 +147,9 @@ public abstract class AbstractFormatter implements ReportFormatter {
             } else if (value instanceof Date) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
                 valueString = dateFormat.format(value);
+            } else if (value instanceof TemporalAccessor) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(formatString);
+                valueString = dateTimeFormatter.format((TemporalAccessor) value);
             } else if (value instanceof String && !formatString.startsWith("${")) {//do not use inliner alias as format string
                 valueString = String.format(formatString, value);
             } else {
@@ -236,7 +241,7 @@ public abstract class AbstractFormatter implements ReportFormatter {
         Pattern aliasPattern = Pattern.compile("\\$\\{[^\\$\\{\\}]*\\}");
         List<String> aliases = new ArrayList<>();
         Matcher m = aliasPattern.matcher(value);
-        while (m.find()){
+        while (m.find()) {
             aliases.add(m.group());
         }
         return aliases;
