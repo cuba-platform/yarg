@@ -112,6 +112,10 @@ public class CrossTabExtractionController extends DefaultExtractionController {
                     return horizontal;
                 }).collect(Collectors.toList());
 
+        if (verticalData.isEmpty()) {
+            verticalData.add(wrapData(context, null));
+        }
+
         return Stream.concat(Stream.of(header), verticalData.stream()).collect(Collectors.toList());
     }
 
