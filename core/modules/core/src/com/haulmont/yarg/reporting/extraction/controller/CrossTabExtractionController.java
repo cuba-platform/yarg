@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 /**
  * Extraction controller for {@link com.haulmont.yarg.structure.BandOrientation#CROSS} orientation.
- *
+ * <p>
  * Contains custom logic to get more simple way to create crosstab bands
  */
 public class CrossTabExtractionController extends DefaultExtractionController {
@@ -53,12 +53,12 @@ public class CrossTabExtractionController extends DefaultExtractionController {
     protected List<Map<String, Object>> getQueriesResult(ExtractionContext context) {
         Map<String, Object> crossTabParams = new HashMap<>(context.getParams());
         getQueries(context)
-                .filter(e-> e.getName().endsWith(VERTICAL_BAND) || e.getName().endsWith(HORIZONTAL_BAND))
-                .forEach(q-> crossTabParams.put(q.getName(), getQueryData(context, q)));
+                .filter(e -> e.getName().endsWith(VERTICAL_BAND) || e.getName().endsWith(HORIZONTAL_BAND))
+                .forEach(q -> crossTabParams.put(q.getName(), getQueryData(context, q)));
 
         return getQueriesResult(
                 getQueries(context)
-                        .filter(e-> !e.getName().endsWith(VERTICAL_BAND) && !e.getName().endsWith(HORIZONTAL_BAND))
+                        .filter(e -> !e.getName().endsWith(VERTICAL_BAND) && !e.getName().endsWith(HORIZONTAL_BAND))
                         .iterator(), context.extendParams(crossTabParams));
     }
 
@@ -70,46 +70,47 @@ public class CrossTabExtractionController extends DefaultExtractionController {
                 context.getParentBandData(), BandOrientation.HORIZONTAL);
         header.setData(Collections.emptyMap());
 
-        String horizontalDataLink = outputData.stream().findFirst().map(data->
-                data.keySet().stream().filter(key-> key.startsWith(horizontalKey)).findFirst().orElse(null))
+        String horizontalDataLink = outputData.stream().findFirst().map(data ->
+                data.keySet().stream().filter(key -> key.startsWith(horizontalKey)).findFirst().orElse(null))
                 .orElse(null);
         String horizontalLink = horizontalDataLink == null ? null
                 : horizontalDataLink.substring(horizontalKey.length() + 1);
 
-        String verticalDataLink = outputData.stream().findFirst().map(data->
-                data.keySet().stream().filter(key-> key.startsWith(verticalKey)).findFirst().orElse(null))
+        String verticalDataLink = outputData.stream().findFirst().map(data ->
+                data.keySet().stream().filter(key -> key.startsWith(verticalKey)).findFirst().orElse(null))
                 .orElse(null);
         String verticalLink = verticalDataLink == null ? null
                 : verticalDataLink.substring(verticalKey.length() + 1);
 
         List<BandData> horizontalValues = Optional.ofNullable(context.getParams().get(horizontalKey))
-                .map(e-> (List<Map<String, Object>>)e)
-                .orElse(Collections.emptyList()).stream().map(hdata-> {
-            BandData horizontal = new BandData(horizontalKey, header, BandOrientation.VERTICAL);
-            horizontal.setData(hdata);
-            header.addChild(horizontal);
-            return horizontal;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+                .map(e -> (List<Map<String, Object>>) e)
+                .orElse(Collections.emptyList()).stream().map(hdata -> {
+                    BandData horizontal = new BandData(horizontalKey, header, BandOrientation.VERTICAL);
+                    horizontal.setData(hdata);
+                    header.addChild(horizontal);
+                    return horizontal;
+                }).filter(Objects::nonNull).collect(Collectors.toList());
 
         Map<CrossKey, Map<String, Object>> outputDataMap = outputData.stream().collect(Collectors.toMap(
-                data-> new CrossKey(data.get(horizontalDataLink), data.get(verticalDataLink)),
+                data -> new CrossKey(data.get(horizontalDataLink), data.get(verticalDataLink)),
                 Function.identity(),
-                (e1, e2)-> e2
+                (e1, e2) -> e2
         ));
 
         List<BandData> verticalData = Optional.ofNullable(context.getParams().get(verticalKey))
-                .map(e-> (List<Map<String, Object>>)e)
-                .orElse(Collections.emptyList()).stream().map(vData-> {
+                .map(e -> (List<Map<String, Object>>) e)
+                .orElse(Collections.emptyList()).stream().map(vData -> {
                     BandData horizontal = new BandData(verticalKey, context.getParentBandData(), BandOrientation.HORIZONTAL);
                     horizontal.setData(vData);
 
                     for (BandData hData : horizontalValues) {
-                        Map<String, Object> crossTabData = outputDataMap.get(new CrossKey(
-                                hData.getData().get(horizontalLink), vData.get(verticalLink)));
+                        Object hkey = horizontalLink == null ? null : hData.getData().get(horizontalLink);
+                        Object vkey = verticalLink == null ? null : vData.get(verticalLink);
+                        Map<String, Object> crossTabData = outputDataMap.get(new CrossKey(hkey, vkey));
                         horizontal.addChild(wrapData(context.withParentData(horizontal), crossTabData));
                     }
                     return horizontal;
-        }).collect(Collectors.toList());
+                }).collect(Collectors.toList());
 
         return Stream.concat(Stream.of(header), verticalData.stream()).collect(Collectors.toList());
     }
