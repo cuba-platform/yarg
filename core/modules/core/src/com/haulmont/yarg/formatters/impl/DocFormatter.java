@@ -40,6 +40,7 @@ import com.sun.star.table.XCell;
 import com.sun.star.text.*;
 import com.sun.star.util.XReplaceable;
 import com.sun.star.util.XSearchDescriptor;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,7 @@ public class DocFormatter extends AbstractFormatter {
 
     public DocFormatter(FormatterFactoryInput formatterFactoryInput, OfficeIntegrationAPI officeIntegration) {
         super(formatterFactoryInput);
-        Preconditions.checkNotNull("\"officeIntegration\" parameter can not be null", officeIntegration);
+        Preconditions.checkNotNull(officeIntegration, "\"officeIntegration\" parameter can not be null");
 
         this.officeIntegration = officeIntegration;
         supportedOutputTypes.add(ReportOutputType.doc);
@@ -84,21 +85,33 @@ public class DocFormatter extends AbstractFormatter {
     public void renderDocument() {
         try {
             doCreateDocument(reportTemplate.getOutputType(), outputStream);
-        } catch (Exception e) {//just try again if any exceptions occurred
-            log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report again.", reportTemplate.getDocumentName()), e);
+        } catch (Exception e) {
+            retryDocumentCreation(reportTemplate.getOutputType(), outputStream, e, 0);
+        }
+    }
 
-            for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
-                try {
-                    doCreateDocument(reportTemplate.getOutputType(), outputStream);
-                    return;
-                } catch (NoFreePortsException e1) {
-                    if (e instanceof NoFreePortsException) {
-                        throw (NoFreePortsException) e;
-                    }
-                }
+    protected void retryDocumentCreation(final ReportOutputType outputType,
+                                         final OutputStream outputStream,
+                                         Exception lastTryException,
+                                         int currentAttempt) {
+        if (officeIntegration.getCountOfRetry() != 0 && currentAttempt < officeIntegration.getCountOfRetry()) {
+            log.warn(String.format("An error occurred while generating doc report [%s]. " +
+                            "System will retry to generate report again (Current attempt: %s).",
+                    reportTemplate.getDocumentName(), currentAttempt + 1));
+
+            log.debug(ExceptionUtils.getStackTrace(lastTryException));
+            try {
+                Thread.sleep(officeIntegration.getRetryIntervalMs());
+
+                doCreateDocument(outputType, outputStream);
+            } catch (Exception e) {
+                retryDocumentCreation(reportTemplate.getOutputType(), outputStream, e, ++currentAttempt);
             }
+        } else {
+            if (lastTryException instanceof NoFreePortsException)
+                throw (NoFreePortsException) lastTryException;
 
-            throw wrapWithReportingException("An error occurred while generating doc report.", e);
+            throw wrapWithReportingException("An error occurred while generating doc report. All attempts failed", lastTryException);
         }
     }
 

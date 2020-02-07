@@ -18,7 +18,6 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 import com.haulmont.yarg.exception.OpenOfficeException;
 import com.sun.star.comp.helper.BootstrapException;
 
-import java.lang.RuntimeException;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -31,8 +30,9 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
     protected String openOfficePath;
     protected String temporaryDirPath;
     protected Integer[] openOfficePorts;
-    protected Integer timeoutInSeconds = 60;
-    protected int countOfRetry = 2;
+    protected Integer timeoutInSeconds = DEFAULT_TIMEOUT;
+    protected int countOfRetry = DEFAULT_RETRY_COUNT;
+    protected int retryIntervalMs = DEFAULT_RETRY_INTERVAL;
     protected Boolean displayDeviceAvailable = false;
 
     public OfficeIntegration(String openOfficePath, Integer... ports) {
@@ -56,6 +56,14 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     public void setCountOfRetry(int countOfRetry) {
         this.countOfRetry = countOfRetry;
+    }
+
+    public int getRetryIntervalMs() {
+        return retryIntervalMs;
+    }
+
+    public void setRetryIntervalMs(int retryIntervalMs) {
+        this.retryIntervalMs = retryIntervalMs;
     }
 
     public String getTemporaryDirPath() {
