@@ -16,8 +16,12 @@
 
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
+import com.google.common.collect.Lists;
 import com.sun.star.comp.helper.BootstrapException;
 import com.sun.star.lib.util.NativeLibraryLoader;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,7 @@ import java.util.List;
  * http://udk.openoffice.org/source/browse/udk/javaunohelper/com/sun/star/comp/helper/Bootstrap.java?view=markup
  */
 public class OOServer {
-    protected static final Logger log = LoggerFactory.getLogger(JavaProcessManager.class);
+    protected static final Logger log = LoggerFactory.getLogger(OOServer.class);
     /**
      * The OOo server process.
      */
@@ -57,9 +61,11 @@ public class OOServer {
     /**
      * The options for starting the OOo server.
      */
-    private List oooOptions;
+    private List<String> oooOptions;
 
     private ProcessManager processManager;
+
+    protected OfficeIntegration officeIntegration;
 
     /**
      * Constructs an OOo server which uses the folder of the OOo installation
@@ -69,13 +75,15 @@ public class OOServer {
      * @param oooExecFolder The folder of the OOo installation containing the soffice executable
      * @param oooOptions    The list of options
      */
-    public OOServer(String oooExecFolder, List oooOptions, String host, int port, ProcessManager processManager) {
+    public OOServer(String oooExecFolder, List<String> oooOptions, String host, int port,
+                    ProcessManager processManager, OfficeIntegration officeIntegration) {
         this.oooProcess = null;
         this.oooExecFolder = oooExecFolder;
         this.host = host;
         this.port = port;
         this.oooOptions = oooOptions;
         this.processManager = processManager;
+        this.officeIntegration = officeIntegration;
     }
 
     /**
@@ -91,7 +99,7 @@ public class OOServer {
      * the pipe name "oooPipe" the accept option looks like this:
      * - accept option    : -accept=pipe,name=oooPipe;urp;
      */
-    public void start() throws BootstrapException, IOException {
+    public synchronized void start() throws BootstrapException, IOException {
         // find office executable relative to this class's class loader
         String sOffice = System.getProperty("os.name").startsWith("Windows") ? "soffice.exe" : "soffice";
         //accept option !Note! we are using old version notation (- instead of --) to support old version of office
@@ -103,23 +111,30 @@ public class OOServer {
         if (fOffice == null)
             throw new BootstrapException("no office executable found!");
 
-        // create call with arguments
-        int arguments = (oooOptions != null) ? oooOptions.size() + 1 : 1;
-        arguments++;
-        String[] oooCommand = new String[arguments];
-        oooCommand[0] = fOffice.getPath();
+        List<String> argumentsList = Lists.newLinkedList();
+        argumentsList.add(fOffice.getPath());
 
-        for (int i = 0; i < oooOptions.size(); i++) {
-            oooCommand[i + 1] = (String) oooOptions.get(i);
+        if (CollectionUtils.isNotEmpty(oooOptions))
+            argumentsList.addAll(oooOptions);
+
+        String instanceProfilePath = getInstanceProfilePath();
+        if (StringUtils.isNotBlank(instanceProfilePath)) {
+            prepareInstanceProfileDir();
+            argumentsList.add("-env:UserInstallation=" + toUrl(new File(instanceProfilePath)));
         }
-
-        oooCommand[arguments - 1] = oooAcceptOption;
+        argumentsList.add(oooAcceptOption);
 
         // start office process
-        oooProcess = Runtime.getRuntime().exec(oooCommand);
+        oooProcess = Runtime.getRuntime().exec(argumentsList.toArray(new String[0]));
 
-        pipe(oooProcess.getInputStream(), System.out, "CO> ");
-        pipe(oooProcess.getErrorStream(), System.err, "CE> ");
+        pipe(oooProcess.getInputStream(), "OUT");
+        pipe(oooProcess.getErrorStream(), "ERR");
+    }
+
+    public String toUrl(File file) {
+        String path = file.toURI().getRawPath();
+        String url = path.startsWith("//") ? "file:" + path : "file://" + path;
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
     /**
@@ -128,17 +143,18 @@ public class OOServer {
      * nothing.
      * If there has been a previous start, kill destroys the process.
      */
-    public void kill() {
+    public synchronized void kill() {
         if (oooProcess != null) {
-            log.info("OOServer is killing office instance with port " + port);
+            log.info("OOServer is killing office instance with port {}", port);
             List<Long> pids = processManager.findPid(host, port);
             processManager.kill(oooProcess, pids);
             oooProcess = null;
+            deleteProfileDir();
         }
     }
 
-    private static void pipe(final InputStream in, final PrintStream out, final String prefix) {
-        new Thread("Pipe: " + prefix) {
+    protected void pipe(final InputStream in, final String prefix) {
+        new Thread(String.format("OOServer: %s", prefix)) {
             @Override
             public void run() {
                 BufferedReader r = new BufferedReader(new InputStreamReader(in));
@@ -148,10 +164,10 @@ public class OOServer {
                         if (s == null) {
                             break;
                         }
-                        out.println(prefix + s);
+                        log.debug("{}: {}", prefix, s);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace(System.err);
+                    log.debug("OOServer error:", e);
                 }
             }
         }.start();
@@ -176,5 +192,41 @@ public class OOServer {
         options.add("-headless");
 
         return options;
+    }
+
+    protected void prepareInstanceProfileDir() {
+        String instanceProfilePath = getInstanceProfilePath();
+        if (StringUtils.isNotBlank(instanceProfilePath)) {
+            File instanceProfileDir = new File(instanceProfilePath);
+            if (instanceProfileDir.exists()) {
+                log.debug(String.format("OpenOffice server profile dir '%s' already exists; deleting", instanceProfileDir));
+                deleteProfileDir();
+            }
+        }
+    }
+
+    protected void deleteProfileDir() {
+        String instanceProfilePath = getInstanceProfilePath();
+        if (StringUtils.isNotBlank(instanceProfilePath)) {
+            File instanceProfileDir = new File(instanceProfilePath);
+            try {
+                FileUtils.deleteDirectory(instanceProfileDir);
+            } catch (IOException ioException) {
+                File oldProfileDir = new File(instanceProfileDir.getParentFile(),
+                        instanceProfileDir.getName() + ".old." + System.currentTimeMillis());
+                if (instanceProfileDir.renameTo(oldProfileDir)) {
+                    log.warn("could not delete profileDir: " + ioException.getMessage() + "; renamed it to " + oldProfileDir);
+                } else {
+                    log.error("could not delete profileDir: " + ioException.getMessage());
+                }
+            }
+        }
+    }
+
+    protected String getInstanceProfilePath() {
+        if (StringUtils.isBlank(officeIntegration.getTemporaryDirPath()))
+            return "";
+
+        return officeIntegration.getTemporaryDirPath() + String.format(".ooserver_%s_%s", host, port);
     }
 }
