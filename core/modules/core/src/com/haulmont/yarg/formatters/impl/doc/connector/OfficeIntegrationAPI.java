@@ -17,11 +17,18 @@
 package com.haulmont.yarg.formatters.impl.doc.connector;
 
 public interface OfficeIntegrationAPI {
+
+    int DEFAULT_RETRY_COUNT = 2;
+    int DEFAULT_RETRY_INTERVAL = 1000;
+    int DEFAULT_TIMEOUT = 60;
+
     String getTemporaryDirPath();
 
     Integer getTimeoutInSeconds();
 
     int getCountOfRetry();
+
+    int getRetryIntervalMs();
 
     Boolean isDisplayDeviceAvailable();
 

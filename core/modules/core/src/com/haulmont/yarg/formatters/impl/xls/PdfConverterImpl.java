@@ -23,6 +23,7 @@ import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeResourceProvider;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeTask;
 import com.sun.star.lang.XComponent;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,19 +47,33 @@ public class PdfConverterImpl implements PdfConverter {
         try {
             doConvertToPdf(convertPattern, documentBytes, outputStream);
         } catch (Exception e) {
-            log.warn("An error occurred while converting xls to pdf. System will retry to generate report again.", e);
-            for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
-                try {
-                    doConvertToPdf(convertPattern, documentBytes, outputStream);
-                    return;
-                } catch (NoFreePortsException e1) {
-                    if (e instanceof NoFreePortsException) {
-                        throw (NoFreePortsException) e;
-                    }
-                }
-            }
+            retryPdfConversion(convertPattern, documentBytes, outputStream, e, 0);
+        }
+    }
 
-            throw new ReportingException("An error occurred while converting xls to pdf.", e);
+    protected void retryPdfConversion(final String pattern,
+                                      final byte[] documentBytes,
+                                      final OutputStream outputStream,
+                                      Exception lastTryException,
+                                      int retriesCount) {
+        if (officeIntegration.getCountOfRetry() != 0 && retriesCount < officeIntegration.getCountOfRetry()) {
+            log.warn(String.format("An error occurred while converting to pdf. " +
+                    "System will retry to convert again (Current attempt: %s).", retriesCount + 1));
+            log.debug(ExceptionUtils.getStackTrace(lastTryException));
+            try {
+                Thread.sleep(officeIntegration.getRetryIntervalMs());
+
+                doConvertToPdf(pattern, documentBytes, outputStream);
+            } catch (InterruptedException e) {
+                throw new ReportingException("Unable to convert to pdf. Retry interrupted", e);
+            } catch (Exception e) {
+                retryPdfConversion(pattern, documentBytes, outputStream, e, ++retriesCount);
+            }
+        } else {
+            if (lastTryException instanceof NoFreePortsException)
+                throw (NoFreePortsException) lastTryException;
+
+            throw new ReportingException("Unable to convert to pdf. All attempts failed", lastTryException);
         }
     }
 

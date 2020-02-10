@@ -3,7 +3,12 @@ package smoketest;
 import com.haulmont.yarg.formatters.ReportFormatter;
 import com.haulmont.yarg.formatters.factory.DefaultFormatterFactory;
 import com.haulmont.yarg.formatters.factory.FormatterFactoryInput;
+import com.haulmont.yarg.formatters.impl.DocFormatter;
 import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegration;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeIntegrationAPI;
+import com.haulmont.yarg.formatters.impl.doc.connector.OfficeTask;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverter;
+import com.haulmont.yarg.formatters.impl.xls.PdfConverterImpl;
 import com.haulmont.yarg.structure.BandData;
 import com.haulmont.yarg.structure.BandOrientation;
 import com.haulmont.yarg.structure.ReportFieldFormat;
@@ -20,11 +25,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
+
 /**
  * @author degtyarjov
  * @version $Id$
  */
-public class DocSpecificTest extends AbstractFormatSpecificTest{
+public class DocSpecificTest extends AbstractFormatSpecificTest {
     @Test
     public void testTableOdt() throws Exception {
         BandData root = new BandData("Root");
@@ -182,4 +191,38 @@ public class DocSpecificTest extends AbstractFormatSpecificTest{
         System.out.println();
     }
 
+    @Test
+    public void testRetryCount() throws Exception {
+        BandData root = createRootBand();
+        FormatterFactoryInput formatterFactoryInput = new FormatterFactoryInput("doc", root,
+                new ReportTemplateImpl("", "./modules/core/test/smoketest/test.doc",
+                        "./modules/core/test/smoketest/test.doc", ReportOutputType.doc), null);
+        OfficeIntegrationAPI officeIntegrationApiMock = createOfficeIntegrationApiMock(5);
+        DocFormatter docFormatter = new DocFormatter(formatterFactoryInput, officeIntegrationApiMock);
+
+        // Check that in case of exception 'runTaskWithTimeout' will execute exactly retriesCount + 1 times
+        try {
+            docFormatter.renderDocument();
+        } catch (Exception e) {
+            verify(officeIntegrationApiMock, times(6))
+                    .runTaskWithTimeout((OfficeTask) any(), anyInt());
+        }
+
+        officeIntegrationApiMock = createOfficeIntegrationApiMock(4);
+        PdfConverterImpl pdfConverter = new PdfConverterImpl(officeIntegrationApiMock);
+        try {
+            pdfConverter.convertToPdf(PdfConverter.FileType.DOCUMENT, null, null);
+        } catch (Exception e) {
+            verify(officeIntegrationApiMock, times(5))
+                    .runTaskWithTimeout((OfficeTask) any(), anyInt());
+        }
+    }
+
+    protected OfficeIntegrationAPI createOfficeIntegrationApiMock(int retryCount) {
+        OfficeIntegrationAPI mOfficeIntegrationApi = mock(OfficeIntegrationAPI.class);
+        doThrow(RuntimeException.class).when(mOfficeIntegrationApi).runTaskWithTimeout((OfficeTask) any(), anyInt());
+        when(mOfficeIntegrationApi.getCountOfRetry()).thenReturn(retryCount);
+        when(mOfficeIntegrationApi.getRetryIntervalMs()).thenReturn(300);
+        return mOfficeIntegrationApi;
+    }
 }
