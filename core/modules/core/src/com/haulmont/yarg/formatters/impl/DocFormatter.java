@@ -86,26 +86,37 @@ public class DocFormatter extends AbstractFormatter {
     public void renderDocument() {
         try {
             doCreateDocument(outputStream);
-        }  catch (ReportingInterruptedException ie) {
+        } catch (ReportingInterruptedException ie) {
             throw ie;
-        } catch (Exception e) {//just try again if any exceptions occurred
-            log.warn(String.format("An error occurred while generating doc report [%s]. System will retry to generate report again.", reportTemplate.getDocumentName()), e);
-
-            for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
-                try {
-                    checkThreadInterrupted();
-                    doCreateDocument(outputStream);
-                    return;
-                } catch (NoFreePortsException e1) {
-                    if (e instanceof NoFreePortsException) {
-                        throw (NoFreePortsException) e;
-                    }
-                }
-            }
-
-            throw wrapWithReportingException("An error occurred while generating doc report.", e);
+        } catch (Exception e) {
+            doCreateDocumentWithRetries(outputStream, e, 0);
         } finally {
             IOUtils.closeQuietly(outputStream);
+        }
+    }
+
+    protected void doCreateDocumentWithRetries(final OutputStream outputStream, Exception lastException, int currentAttempt) {
+        if (officeIntegration.getCountOfRetry() != 0 && currentAttempt < officeIntegration.getCountOfRetry()) {
+            log.warn("An error occurred while generating doc report {}. System will retry to generate doc report again (current attempt: {}).",
+                    reportTemplate.getDocumentName(), currentAttempt + 1);
+            log.debug("Last error:", lastException);
+            try {
+                Thread.sleep(officeIntegration.getRetryIntervalMs());
+
+                checkThreadInterrupted();
+                doCreateDocument(outputStream);
+            } catch (ReportingInterruptedException ie) {
+                throw ie;
+            } catch (InterruptedException e) {
+                throw new ReportingInterruptedException("Doc report task interrupted");
+            } catch (Exception e) {
+                doCreateDocumentWithRetries(outputStream, e, ++currentAttempt);
+            }
+        } else {
+            if (lastException instanceof NoFreePortsException) {
+                throw (NoFreePortsException) lastException;
+            }
+            throw wrapWithReportingException("An error occurred while generating doc report. All attempts failed", lastException);
         }
     }
 

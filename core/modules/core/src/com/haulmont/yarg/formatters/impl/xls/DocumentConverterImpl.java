@@ -45,37 +45,54 @@ public class DocumentConverterImpl implements DocumentConverter {
 
     public void convertToPdf(FileType fileType, final byte[] documentBytes, final OutputStream outputStream) {
         String convertPattern = FileType.SPREADSHEET == fileType ? XLS_TO_PDF_OUTPUT_FILE : ODT_TO_PDF_OUTPUT_FILE;
-        convertWithRetry(convertPattern, documentBytes, outputStream);
+        convert(convertPattern, documentBytes, outputStream);
     }
 
     @Override
     public void convertToHtml(FileType fileType, byte[] documentBytes, OutputStream outputStream) {
         String convertPattern = FileType.SPREADSHEET == fileType ? XLS_TO_HTML_OUTPUT_FILE : ODT_TO_HTML_OUTPUT_FILE;
-        convertWithRetry(convertPattern, documentBytes, outputStream);
+        convert(convertPattern, documentBytes, outputStream);
     }
 
-    protected void convertWithRetry(String convertPattern, final byte[] documentBytes, final OutputStream outputStream) {
+    protected void convert(String convertPattern, final byte[] documentBytes, final OutputStream outputStream) {
         try {
             convertOnes(convertPattern, documentBytes, outputStream);
         } catch (ReportingInterruptedException e) {
             throw e;
         } catch (Exception e) {
-            log.warn("An error occurred while converting. System will retry to generate report again.", e);
-            for (int i = 0; i < officeIntegration.getCountOfRetry(); i++) {
-                try {
-                    if (Thread.interrupted()) {
-                        throw new ReportingInterruptedException("Document conversation task interrupted");
-                    }
-                    convertOnes(convertPattern, documentBytes, outputStream);
-                    return;
-                } catch (NoFreePortsException e1) {
-                    if (e instanceof NoFreePortsException) {
-                        throw (NoFreePortsException) e;
-                    }
+            convertWithRetries(convertPattern, documentBytes, outputStream, e, 0);
+        }
+    }
+
+    protected void convertWithRetries(final String convertPattern,
+                                      final byte[] documentBytes,
+                                      final OutputStream outputStream,
+                                      Exception lastException,
+                                      int retriesCount) {
+        if (officeIntegration.getCountOfRetry() != 0 && retriesCount < officeIntegration.getCountOfRetry()) {
+            log.warn("An error occurred while converting to {}. System will retry to convert again (Current attempt: {}).",
+                    convertPattern, retriesCount + 1);
+            log.debug("Last error:", lastException);
+            try {
+                Thread.sleep(officeIntegration.getRetryIntervalMs());
+
+                if (Thread.interrupted()) {
+                    throw new ReportingInterruptedException("Document conversation task interrupted");
                 }
+                convertOnes(convertPattern, documentBytes, outputStream);
+            } catch (ReportingInterruptedException ie) {
+                throw ie;
+            } catch (InterruptedException e) {
+                throw new ReportingInterruptedException("Document conversation task interrupted");
+            } catch (Exception e) {
+                convertWithRetries(convertPattern, documentBytes, outputStream, e, ++retriesCount);
+            }
+        } else {
+            if (lastException instanceof NoFreePortsException) {
+                throw (NoFreePortsException) lastException;
             }
 
-            throw new ReportingException("An error occurred while converting.", e);
+            throw new ReportingException(String.format("Unable to convert to %s. All attempts failed", convertPattern), lastException);
         }
     }
 

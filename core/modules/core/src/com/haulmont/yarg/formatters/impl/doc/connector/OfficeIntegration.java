@@ -28,14 +28,15 @@ import java.util.concurrent.*;
 public class OfficeIntegration implements OfficeIntegrationAPI {
     protected volatile boolean platformDependProcessManagement = true;
     protected final ExecutorService executor;
-    protected final BlockingQueue<OfficeConnection> connectionsQueue = new LinkedBlockingDeque<OfficeConnection>();
-    protected final Set<OfficeConnection> connections = new CopyOnWriteArraySet<OfficeConnection>();
+    protected final BlockingQueue<OfficeConnection> connectionsQueue = new LinkedBlockingDeque<>();
+    protected final Set<OfficeConnection> connections = new CopyOnWriteArraySet<>();
 
     protected String openOfficePath;
     protected String temporaryDirPath;
     protected Integer[] openOfficePorts;
-    protected Integer timeoutInSeconds = 60;
-    protected int countOfRetry = 2;
+    protected Integer timeoutInSeconds = DEFAULT_TIMEOUT;
+    protected int countOfRetry = DEFAULT_RETRY_COUNT;
+    protected int retryIntervalMs = DEFAULT_RETRY_INTERVAL;
     protected Boolean displayDeviceAvailable = false;
 
     public OfficeIntegration(String openOfficePath, Integer... ports) {
@@ -59,6 +60,14 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     public void setCountOfRetry(int countOfRetry) {
         this.countOfRetry = countOfRetry;
+    }
+
+    public int getRetryIntervalMs() {
+        return retryIntervalMs;
+    }
+
+    public void setRetryIntervalMs(int retryIntervalMs) {
+        this.retryIntervalMs = retryIntervalMs;
     }
 
     public String getTemporaryDirPath() {
