@@ -45,7 +45,8 @@ public class OfficeConnection {
     public OfficeConnection(String openOfficePath, Integer port, ProcessManager processManager, OfficeIntegration officeIntegration) {
         this.port = port;
         this.officeIntegration = officeIntegration;
-        this.oooServer = new OOServer(openOfficePath, OOServer.getDefaultOOoOptions(), "localhost", port, processManager);
+        this.oooServer = new OOServer(openOfficePath, OOServer.getDefaultOOoOptions(),
+                "localhost", port, officeIntegration.getTemporaryDirPath(), processManager);
         this.bsc = new BootstrapSocketConnector(oooServer);
         this.openOfficePath = openOfficePath;
     }
