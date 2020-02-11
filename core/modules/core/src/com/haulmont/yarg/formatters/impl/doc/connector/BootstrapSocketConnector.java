@@ -30,8 +30,8 @@ public class BootstrapSocketConnector extends BootstrapConnector {
      *
      * @param oooServer The OOo server
      */
-    public BootstrapSocketConnector(OOServer oooServer) {
-        super(oooServer);
+    public BootstrapSocketConnector(OOServer oooServer, OfficeIntegration officeIntegration) {
+        super(oooServer, officeIntegration);
     }
 
     /**
