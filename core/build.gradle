@@ -256,18 +256,22 @@ configure(core) {
         it.file =~ 'tar' || it.file =~ 'zip'
     }
 
-    startScripts << {
-        copy {
-            from "reporting.properties"
-            into outputDir
+    startScripts {
+        doLast {
+            copy {
+                from "reporting.properties"
+                into outputDir
+            }
         }
     }
 
-    installApp << {
-        def outputDir = destinationDir
-        copy {
-            from "reporting.properties"
-            into "$outputDir/bin"
+    installDist {
+        doLast {
+            def outputDir = destinationDir
+            copy {
+                from "reporting.properties"
+                into "$outputDir/bin"
+            }
         }
     }
 
