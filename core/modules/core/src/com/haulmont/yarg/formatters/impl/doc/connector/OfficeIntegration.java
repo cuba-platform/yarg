@@ -35,6 +35,7 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
     protected String temporaryDirPath;
     protected Integer[] openOfficePorts;
     protected Integer timeoutInSeconds = DEFAULT_TIMEOUT;
+    protected int connectionTimeoutSec = DEFAULT_CONNECTION_TIMEOUT;
     protected int countOfRetry = DEFAULT_RETRY_COUNT;
     protected int retryIntervalMs = DEFAULT_RETRY_INTERVAL;
     protected Boolean displayDeviceAvailable = false;
@@ -76,6 +77,14 @@ public class OfficeIntegration implements OfficeIntegrationAPI {
 
     public Integer getTimeoutInSeconds() {
         return timeoutInSeconds;
+    }
+
+    public int getConnectionTimeoutSec() {
+        return connectionTimeoutSec;
+    }
+
+    public void setConnectionTimeoutSec(int connectionTimeoutSec) {
+        this.connectionTimeoutSec = connectionTimeoutSec;
     }
 
     public Boolean isDisplayDeviceAvailable() {

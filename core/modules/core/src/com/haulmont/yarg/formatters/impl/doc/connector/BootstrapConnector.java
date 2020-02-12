@@ -29,7 +29,7 @@ import com.sun.star.uno.XComponentContext;
 
 /**
  * A bootstrap connector which establishes a connection to an OOo server.
- * 
+ * <p>
  * Most of the source code in this class has been taken from the Java class
  * "Bootstrap.java" (Revision: 1.15) from the UDK projekt (Uno Software Develop-
  * ment Kit) from OpenOffice.org (http://udk.openoffice.org/). The source code
@@ -37,7 +37,7 @@ import com.sun.star.uno.XComponentContext;
  * access at http://udk.openoffice.org/source/browse/udk/. The Java class
  * "Bootstrap.java" is there available at
  * http://udk.openoffice.org/source/browse/udk/javaunohelper/com/sun/star/comp/helper/Bootstrap.java?view=markup
- * 
+ * <p>
  * The idea to develop this BootstrapConnector comes from the blog "Getting
  * started with the OpenOffice.org API part III : starting OpenOffice.org with
  * jars not in the OOo install dir by Wouter van Reeven"
@@ -48,54 +48,62 @@ import com.sun.star.uno.XComponentContext;
  */
 public class BootstrapConnector {
 
-    /** The OOo server. */
+    /**
+     * The OOo server.
+     */
     private OOServer oooServer;
-    
-    /** The connection string which has ben used to establish the connection. */
+
+    /**
+     * The connection string which has ben used to establish the connection.
+     */
     private String oooConnectionString;
+
+    protected int connectionTimeoutSec;
+
+    protected static final int CONNECTION_RETRY_INTERVAL = 500;
 
     /**
      * Constructs a bootstrap connector which connects to the specified
      * OOo server.
-     * 
-     * @param   oooServer   The OOo server
+     *
+     * @param oooServer The OOo server
      */
-    public BootstrapConnector(OOServer oooServer) {
-
+    public BootstrapConnector(OOServer oooServer, int connectionTimeoutSec) {
         this.oooServer = oooServer;
         this.oooConnectionString = null;
+        this.connectionTimeoutSec = connectionTimeoutSec;
     }
 
     /**
      * Connects to an OOo server using the specified accept option and
      * connection string and returns a component context for using the
      * connection to the OOo server.
-     * 
+     * <p>
      * The accept option and the connection string should match to get a
      * connection. OOo provides to different types of connections:
      * 1) The socket connection
      * 2) The named pipe connection
-     * 
+     * <p>
      * To create a socket connection a host and port must be provided.
      * For example using the host "localhost" and the port "8100" the
      * accept option and connection string looks like this:
      * - accept option    : -accept=socket,host=localhost,port=8100;urp;
      * - connection string: uno:socket,host=localhost,port=8100;urp;StarOffice.ComponentContext
-     * 
+     * <p>
      * To create a named pipe a pipe name must be provided. For example using
      * the pipe name "oooPipe" the accept option and connection string looks
      * like this:
      * - accept option    : -accept=pipe,name=oooPipe;urp;
      * - connection string: uno:pipe,name=oooPipe;urp;StarOffice.ComponentContext
-     * 
-     * @param   oooConnectionString   The connection string
-     * @return                        The component context
+     *
+     * @param oooConnectionString The connection string
+     * @return The component context
      */
     public XComponentContext connect(String oooConnectionString) throws BootstrapException {
 
         this.oooConnectionString = oooConnectionString;
 
-        XComponentContext xContext = null;
+        XComponentContext xContext;
         try {
             // get local context
             XComponentContext xLocalContext = getLocalContext();
@@ -104,24 +112,26 @@ public class BootstrapConnector {
 
             // initial service manager
             XMultiComponentFactory xLocalServiceManager = xLocalContext.getServiceManager();
-            if ( xLocalServiceManager == null )
+            if (xLocalServiceManager == null)
                 throw new BootstrapException("no initial service manager!");
 
             // create a URL resolver
             XUnoUrlResolver xUrlResolver = UnoUrlResolver.create(xLocalContext);
 
-            // wait until office is started
-            for (int i = 0;; ++i) {
+            long connectionTimeoutMillis = connectionTimeoutSec * 1000;
+            // wait until office is started but no longer than connectionTimeoutMillis
+            long start = System.currentTimeMillis();
+            for (; ; ) {
                 try {
                     xContext = getRemoteContext(xUrlResolver);
                     break;
-                } catch ( NoConnectException ex ) {
-                    // Wait 500 ms, then try to connect again, but do not wait
-                    // longer than 5 sec total:
-                    if (i == 10) {
-                        throw new BootstrapException(ex);
+                } catch (NoConnectException ex) {
+                    if (System.currentTimeMillis() - start < connectionTimeoutMillis) {
+                        // Retry to connect after a short interval
+                        Thread.sleep(CONNECTION_RETRY_INTERVAL);
+                    } else {
+                        throw new BootstrapException("Unable to connect to the OO process", ex);
                     }
-                    Thread.sleep(500);
                 }
             }
         } catch (RuntimeException e) {
@@ -135,9 +145,9 @@ public class BootstrapConnector {
     /**
      * Disconnects from an OOo server using the connection string from the
      * previous connect.
-     * 
+     * <p>
      * If there has been no previous connect, the disconnects does nothing.
-     * 
+     * <p>
      * If there has been a previous connect, disconnect tries to terminate
      * the OOo server and kills the OOo server process the connect started.
      */
@@ -158,11 +168,11 @@ public class BootstrapConnector {
             XComponentContext xRemoteContext = getRemoteContext(xUrlResolver);
 
             // get desktop to terminate office
-            Object desktop = xRemoteContext.getServiceManager().createInstanceWithContext("com.sun.star.frame.Desktop",xRemoteContext);
+            Object desktop = xRemoteContext.getServiceManager().createInstanceWithContext(
+                    "com.sun.star.frame.Desktop", xRemoteContext);
             XDesktop xDesktop = (XDesktop) UnoRuntime.queryInterface(XDesktop.class, desktop);
             xDesktop.terminate();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Bad luck, unable to terminate office
         }
 
@@ -172,8 +182,8 @@ public class BootstrapConnector {
 
     /**
      * Create default local component context.
-     * 
-     * @return      The default local component context
+     *
+     * @return The default local component context
      */
     protected XComponentContext getLocalContext() throws BootstrapException, Exception {
 
@@ -186,10 +196,11 @@ public class BootstrapConnector {
 
     /**
      * Try to connect to office.
-     * 
-     * @return      The remote component context
+     *
+     * @return The remote component context
      */
-    protected XComponentContext getRemoteContext(XUnoUrlResolver xUrlResolver) throws BootstrapException, ConnectionSetupException, IllegalArgumentException, NoConnectException {
+    protected XComponentContext getRemoteContext(XUnoUrlResolver xUrlResolver) throws BootstrapException,
+            ConnectionSetupException, IllegalArgumentException, NoConnectException {
 
         Object context = xUrlResolver.resolve(oooConnectionString);
         XComponentContext xContext = (XComponentContext) UnoRuntime.queryInterface(XComponentContext.class, context);

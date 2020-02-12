@@ -29,8 +29,8 @@ public class BootstrapSocketConnector extends BootstrapConnector {
      *
      * @param oooServer The OOo server
      */
-    public BootstrapSocketConnector(OOServer oooServer) {
-        super(oooServer);
+    public BootstrapSocketConnector(OOServer oooServer, int connectionTimeoutSec) {
+        super(oooServer, connectionTimeoutSec);
     }
 
     /**
