@@ -21,6 +21,7 @@ public interface OfficeIntegrationAPI {
     int DEFAULT_RETRY_COUNT = 2;
     int DEFAULT_RETRY_INTERVAL = 1000;
     int DEFAULT_TIMEOUT = 60;
+    int DEFAULT_CONNECTION_TIMEOUT = 15;
 
     String getTemporaryDirPath();
 
