@@ -212,13 +212,7 @@ public class OOServer {
             try {
                 FileUtils.deleteDirectory(instanceProfileDir);
             } catch (IOException ioException) {
-                File oldProfileDir = new File(instanceProfileDir.getParentFile(),
-                        instanceProfileDir.getName() + ".old." + System.currentTimeMillis());
-                if (instanceProfileDir.renameTo(oldProfileDir)) {
-                    log.warn("could not delete profileDir: " + ioException.getMessage() + "; renamed it to " + oldProfileDir);
-                } else {
-                    log.error("could not delete profileDir: " + ioException.getMessage());
-                }
+                log.error("could not delete profileDir: " + ioException.getMessage());
             }
         }
     }
