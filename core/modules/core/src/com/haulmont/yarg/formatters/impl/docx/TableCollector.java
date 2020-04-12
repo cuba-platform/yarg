@@ -20,10 +20,7 @@ import com.haulmont.yarg.formatters.impl.AbstractFormatter;
 import com.haulmont.yarg.formatters.impl.DocxFormatterDelegate;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
-import org.docx4j.wml.P;
-import org.docx4j.wml.Tbl;
-import org.docx4j.wml.Text;
-import org.docx4j.wml.Tr;
+import org.docx4j.wml.*;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.*;
@@ -112,7 +109,7 @@ public class TableCollector extends TraversalUtil.CallbackImpl {
             for (Object o : children) {
                 o = XmlUtils.unwrap(o);
 
-                if (o instanceof Child) {
+                if (o instanceof Child && !(parent instanceof SdtBlock)) {
                     ((Child) o).setParent(parent);
                 }
 

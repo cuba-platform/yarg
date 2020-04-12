@@ -22,6 +22,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
+import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.Text;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
@@ -60,7 +61,7 @@ public abstract class AliasVisitor extends TraversalUtil.CallbackImpl {
             for (Object object : children) {
                 object = XmlUtils.unwrap(object);
 
-                if (object instanceof Child) {
+                if (object instanceof Child && !(parent instanceof SdtBlock)) {
                     ((Child) object).setParent(parent);
                 }
 
