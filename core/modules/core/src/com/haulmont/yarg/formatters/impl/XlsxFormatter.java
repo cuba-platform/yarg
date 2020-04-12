@@ -33,11 +33,14 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.docx4j.XmlUtils;
-import org.docx4j.dml.chart.*;
+import org.docx4j.dml.chart.CTAxDataSource;
+import org.docx4j.dml.chart.CTChart;
+import org.docx4j.dml.chart.CTNumDataSource;
+import org.docx4j.dml.chart.CTPlotArea;
 import org.docx4j.dml.spreadsheetdrawing.CTTwoCellAnchor;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
@@ -47,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
-import org.xlsx4j.sml.CTHeaderFooter;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -1025,8 +1027,8 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void writeToOutputStream(SpreadsheetMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
-        SaveToZipFile saver = new SaveToZipFile(mlPackage);
-        saver.save(outputStream);
+        Save save = new Save(mlPackage);
+        save.save(outputStream);
     }
 
     protected void updateHeaderAndFooter() {
