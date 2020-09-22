@@ -26,7 +26,7 @@ repositories {
 }
 ...
 dependencies {
-    compile 'com.haulmont.yarg:yarg:2.0.1'
+    compile 'com.haulmont.yarg:yarg:2.2.6'
 }
 ```
 
@@ -46,7 +46,7 @@ __Maven:__
 <dependency>
     <groupId>com.haulmont.yarg</groupId>
     <artifactId>yarg</artifactId>
-    <version>2.0.1</version>
+    <version>2.2.6</version>
     <type>pom</type>
 </dependency>
 ```
