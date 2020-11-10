@@ -27,6 +27,8 @@ import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
 
+import java.util.function.Supplier;
+
 /**
  * A bootstrap connector which establishes a connection to an OOo server.
  * <p>
@@ -58,7 +60,7 @@ public class BootstrapConnector {
      */
     private String oooConnectionString;
 
-    protected int connectionTimeoutSec;
+    protected Supplier<Integer> connectionTimeoutSupplier;
 
     protected static final int CONNECTION_RETRY_INTERVAL = 500;
 
@@ -68,10 +70,10 @@ public class BootstrapConnector {
      *
      * @param oooServer The OOo server
      */
-    public BootstrapConnector(OOServer oooServer, int connectionTimeoutSec) {
+    public BootstrapConnector(OOServer oooServer, Supplier<Integer> connectionTimeoutSupplier) {
         this.oooServer = oooServer;
         this.oooConnectionString = null;
-        this.connectionTimeoutSec = connectionTimeoutSec;
+        this.connectionTimeoutSupplier = connectionTimeoutSupplier;
     }
 
     /**
@@ -118,7 +120,7 @@ public class BootstrapConnector {
             // create a URL resolver
             XUnoUrlResolver xUrlResolver = UnoUrlResolver.create(xLocalContext);
 
-            long connectionTimeoutMillis = connectionTimeoutSec * 1000;
+            long connectionTimeoutMillis = connectionTimeoutSupplier.get() * 1000;
             // wait until office is started but no longer than connectionTimeoutMillis
             long start = System.currentTimeMillis();
             for (; ; ) {

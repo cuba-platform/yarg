@@ -18,6 +18,8 @@ package com.haulmont.yarg.formatters.impl.doc.connector;
 
 import com.sun.star.uno.XComponentContext;
 
+import java.util.function.Supplier;
+
 /**
  * A Bootstrap Connector which uses a socket to connect to an OOo server.
  */
@@ -29,8 +31,8 @@ public class BootstrapSocketConnector extends BootstrapConnector {
      *
      * @param oooServer The OOo server
      */
-    public BootstrapSocketConnector(OOServer oooServer, int connectionTimeoutSec) {
-        super(oooServer, connectionTimeoutSec);
+    public BootstrapSocketConnector(OOServer oooServer, Supplier<Integer> connectionTimeoutSupplier) {
+        super(oooServer, connectionTimeoutSupplier);
     }
 
     /**

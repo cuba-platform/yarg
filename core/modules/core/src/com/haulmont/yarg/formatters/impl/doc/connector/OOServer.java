@@ -30,6 +30,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Starts and stops an OOo server.
@@ -53,7 +54,7 @@ public class OOServer {
      */
     private String oooExecFolder;
 
-    private String temporaryDirPath;
+    private Supplier<String> temporaryDirSupplier;
 
     private String host;
 
@@ -75,14 +76,14 @@ public class OOServer {
      * @param oooOptions    The list of options
      */
     public OOServer(String oooExecFolder, List<String> oooOptions, String host, int port,
-                    String temporaryDirPath, ProcessManager processManager) {
+                    Supplier<String> temporaryDirSupplier, ProcessManager processManager) {
         this.oooProcess = null;
         this.oooExecFolder = oooExecFolder;
         this.host = host;
         this.port = port;
         this.oooOptions = oooOptions;
         this.processManager = processManager;
-        this.temporaryDirPath = temporaryDirPath;
+        this.temporaryDirSupplier = temporaryDirSupplier;
     }
 
     /**
@@ -223,8 +224,8 @@ public class OOServer {
     }
 
     protected String getInstanceProfilePath() {
-        if (StringUtils.isNotEmpty(temporaryDirPath)) {
-            return String.format("%s.server_%s_%s", temporaryDirPath, host, port);
+        if (temporaryDirSupplier != null && StringUtils.isNotEmpty(temporaryDirSupplier.get())) {
+            return String.format("%s.server_%s_%s", temporaryDirSupplier.get(), host, port);
         }
         return "";
     }
