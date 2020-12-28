@@ -27,6 +27,13 @@ import com.sun.star.lang.IllegalArgumentException;
 import com.sun.star.lang.XMultiComponentFactory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A bootstrap connector which establishes a connection to an OOo server.
@@ -61,7 +68,13 @@ public class BootstrapConnector {
 
     protected OfficeIntegration officeIntegration;
 
+    protected ExecutorService executor;
+
+    protected static final Logger log = LoggerFactory.getLogger(BootstrapConnector.class);
+
     protected static final int CONNECTION_RETRY_INTERVAL = 500;
+
+    protected static final int GRACEFUL_DISCONNECT_TIMEOUT_SEC = 5;
 
     /**
      * Constructs a bootstrap connector which connects to the specified
@@ -73,6 +86,7 @@ public class BootstrapConnector {
         this.oooServer = oooServer;
         this.oooConnectionString = null;
         this.officeIntegration = officeIntegration;
+        this.executor = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -157,24 +171,40 @@ public class BootstrapConnector {
         if (oooConnectionString == null)
             return;
 
-        // call office to terminate itself
+        Future<?> future = executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                // call office to terminate itself
+                try {
+                    // get local context
+                    XComponentContext xLocalContext = getLocalContext();
+
+                    // create a URL resolver
+                    XUnoUrlResolver xUrlResolver = UnoUrlResolver.create(xLocalContext);
+
+                    // get remote context
+                    XComponentContext xRemoteContext = getRemoteContext(xUrlResolver);
+
+                    // get desktop to terminate office
+                    Object desktop = xRemoteContext.getServiceManager().createInstanceWithContext(
+                            "com.sun.star.frame.Desktop", xRemoteContext);
+                    XDesktop xDesktop = (XDesktop) UnoRuntime.queryInterface(XDesktop.class, desktop);
+                    xDesktop.terminate();
+                } catch (Exception e) {
+                    log.debug("Unable to disconnect from the oo process ", e);
+                }
+            }
+        });
+
         try {
-            // get local context
-            XComponentContext xLocalContext = getLocalContext();
-
-            // create a URL resolver
-            XUnoUrlResolver xUrlResolver = UnoUrlResolver.create(xLocalContext);
-
-            // get remote context
-            XComponentContext xRemoteContext = getRemoteContext(xUrlResolver);
-
-            // get desktop to terminate office
-            Object desktop = xRemoteContext.getServiceManager().createInstanceWithContext(
-                    "com.sun.star.frame.Desktop", xRemoteContext);
-            XDesktop xDesktop = (XDesktop) UnoRuntime.queryInterface(XDesktop.class, desktop);
-            xDesktop.terminate();
+            future.get(GRACEFUL_DISCONNECT_TIMEOUT_SEC, TimeUnit.SECONDS);
         } catch (Exception e) {
-            // Bad luck, unable to terminate office
+            log.debug("Unable to disconnect from the oo process ", e);
+        } finally {
+            try {
+                future.cancel(true);
+            } catch (Exception ignored) {
+            }
         }
 
         oooServer.kill();
