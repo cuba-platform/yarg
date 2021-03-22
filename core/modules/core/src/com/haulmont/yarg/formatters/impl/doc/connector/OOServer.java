@@ -183,13 +183,13 @@ public class OOServer {
 
         ArrayList<String> options = new ArrayList<String>();
 
-        options.add("-nologo");
-        options.add("-nodefault");
-        options.add("-norestore");
-        options.add("-nocrashreport");
-        options.add("-nolockcheck");
-        options.add("-nofirststartwizard");
-        options.add("-headless");
+        options.add("--nologo");
+        options.add("--nodefault");
+        options.add("--norestore");
+        options.add("--nocrashreport");
+        options.add("--nolockcheck");
+        options.add("--nofirststartwizard");
+        options.add("--headless");
 
         return options;
     }
