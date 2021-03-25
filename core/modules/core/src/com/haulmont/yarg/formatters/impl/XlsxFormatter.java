@@ -762,7 +762,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
             resultCells.addAll(currentRowResultCells);
 
-            copyRowSettings(templateRow, resultRow, getWorksheet(templateRow), getWorksheet(resultRow));
+            copyRowSettings(templateRow, resultRow, getTemplateWorksheet(templateRow), getWorksheet(resultRow));
         }
         return resultCells;
     }
@@ -899,6 +899,27 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Worksheet getWorksheet(Row newRow) {
         SheetData resultSheetData = (SheetData) newRow.getParent();
         return (Worksheet) resultSheetData.getParent();
+    }
+
+    protected Worksheet getTemplateWorksheet(Row newRow) {
+        SheetData resultSheetData = (SheetData) newRow.getParent();
+        Worksheet worksheet = (Worksheet) resultSheetData.getParent();
+
+        for (Document.SheetWrapper sheetWrapper : template.getWorksheets()) {
+            if (sheetWrapper.getWorksheet().getJaxbElement() == worksheet) {
+                return worksheet;
+            }
+        }
+
+        int i = 0;
+        for (Document.SheetWrapper sheetWrapper : result.getWorksheets()) {
+            if (sheetWrapper.getWorksheet().getJaxbElement() == worksheet) {
+                break;
+            }
+            i++;
+        }
+
+        return template.getWorksheets().get(i).getWorksheet().getJaxbElement();
     }
 
     protected void addFormulaForPostProcessing(Range templateRange, BandData bandData, Row newRow, Cell templateCell, Cell newCell) {
