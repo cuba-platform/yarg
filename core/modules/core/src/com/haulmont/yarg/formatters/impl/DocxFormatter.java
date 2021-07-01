@@ -102,7 +102,7 @@ public class DocxFormatter extends AbstractFormatter {
             } catch (Docx4JException e) {
                 throw new RuntimeException("Unable to get document content", e);
             }
-            Body body =  wmlDocumentEl.getBody();
+            Body body = wmlDocumentEl.getBody();
 
             TocFinder finder = new TocFinder();
             new TraversalUtil(body.getContent(), finder);
@@ -251,25 +251,24 @@ public class DocxFormatter extends AbstractFormatter {
                     Object chunkParent = locatedChunk.getAltChunk().getParent();
                     R run = (R) chunkParent;//always should be R
                     P paragraph = (P) run.getParent();
+                    ContentAccessor paragraphParent = (ContentAccessor) paragraph.getParent();
 
-                    if (results.size() == 1 && results.get(0) instanceof P) {
-                        P resultP = (P)results.get(0);
-                        paragraph.getContent().addAll(resultP.getContent());
+                    if (paragraphParent instanceof ArrayListWml) {
+                        ArrayListWml parent = (ArrayListWml) paragraph.getParent();
+                        parent.addAll(parent.indexOf(paragraph), results);
+                        if (results.get(0) instanceof P) {
+                            P resultParagraph = (P) results.get(0);
+                            resultParagraph.setPPr(paragraph.getPPr());
+                        }
+                        parent.remove(paragraph);
                     } else {
-                        if (paragraph.getParent() instanceof ArrayListWml) {
-                            ArrayListWml parent = (ArrayListWml) paragraph.getParent();
-                            parent.addAll(parent.indexOf(paragraph), results);
-                            if (results.get(0) instanceof P) {
-                                P resultParagraph = (P) results.get(0);
-                                resultParagraph.setPPr(paragraph.getPPr());
-                            }
-                            parent.remove(paragraph);
-                        } else {
-                            for (Object result : results) {
-                                if (result instanceof P) {
-                                    P resultParagraph = (P) result;
-                                    paragraph.getContent().addAll(resultParagraph.getContent());
-                                }
+                        List<Object> destinationContent = paragraphParent.getContent();
+                        int indexToAdd = destinationContent.indexOf(paragraph);
+                        destinationContent.remove(indexToAdd);
+                        for (Object result : results) {
+                            if (result instanceof P) {
+                                P resultParagraph = (P) result;
+                                destinationContent.add(indexToAdd++, resultParagraph);
                             }
                         }
                     }
