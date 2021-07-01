@@ -103,7 +103,6 @@ public class XlsxFormatter extends AbstractFormatter {
         findVerticalDependencies();
 
         result.clearWorkbook();
-        result.getWorkbook().setDefinedNames(template.getWorkbook().getDefinedNames());
 
         for (BandData childBand : rootBand.getChildrenList()) {
             checkThreadInterrupted();
