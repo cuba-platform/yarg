@@ -9,7 +9,7 @@ def projectName = "YARG (Yet another report generator)"
 def projectDescription = "Open source library for report generation. Provided by Haulmont."
 def projectUrl = "https://github.com/cuba-platform/yarg"
 
-def artifactVersion = '2.3-KLAUS'
+def artifactVersion = '2.2-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
 }
