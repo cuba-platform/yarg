@@ -16,6 +16,7 @@
 package com.haulmont.yarg.formatters.impl.xlsx;
 
 import com.haulmont.yarg.exception.ReportFormattingException;
+import com.haulmont.yarg.structure.BandData;
 import org.docx4j.dml.chart.CTChartSpace;
 import org.docx4j.dml.spreadsheetdrawing.CTDrawing;
 import org.docx4j.dml.spreadsheetdrawing.CTMarker;
@@ -278,7 +279,15 @@ public class Document {
                 throw new ReportFormattingException("An error occurred while clearing docx4j workbook", e);
             }
         }
-        workbook.getDefinedNames().getDefinedName().clear();
+    }
+
+    /**
+     * Method clears defined names associated with band data and leaves all other defined names in the workbook
+     */
+    public void clearBandDefinedNames(BandData rootBand) {
+        workbook.getDefinedNames().getDefinedName().removeIf(
+                ctDefinedName -> rootBand.findBandRecursively(ctDefinedName.getName()) != null
+        );
     }
 
     public static class SheetWrapper {
