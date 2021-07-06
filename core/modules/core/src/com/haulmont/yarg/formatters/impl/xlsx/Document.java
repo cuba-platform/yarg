@@ -281,7 +281,10 @@ public class Document {
         }
     }
 
-    public void excludeDefinedNames(BandData rootBand) {
+    /**
+     * Method clears defined names associated with band data and leaves all other defined names in the workbook
+     */
+    public void clearBandDefinedNames(BandData rootBand) {
         workbook.getDefinedNames().getDefinedName().removeIf(
                 ctDefinedName -> rootBand.findBandRecursively(ctDefinedName.getName()) != null
         );
