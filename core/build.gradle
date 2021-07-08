@@ -238,7 +238,7 @@ configure(core) {
         compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '1.0.0') {
             exclude(group: 'junit', module: 'junit')
         }
-        compile(group: "org.docx4j", name: "docx4j-JAXB-ReferenceImpl", version: "8.1.6") {
+        compile(group: "org.docx4j", name: "docx4j-JAXB-ReferenceImpl", version: "8.2.9") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
