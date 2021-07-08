@@ -44,7 +44,7 @@ public class HtmlImportProcessorImpl implements HtmlImportProcessor {
         Elements elements = document.getElementsByTag("font");
         for (Element element : elements) {
             String color = element.attr("color");
-            if (color != null) {
+            if (StringUtils.isNotEmpty(color)) {
                 String style = StringUtils.trim(element.attr("style"));
                 if (style != null) {
                     if (StringUtils.endsWith(style, ";")) {
