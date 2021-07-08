@@ -251,7 +251,7 @@ configure(core) {
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
             exclude(group: 'com.fasterxml.jackson.core')
         }
-        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "8.1.6") {
+        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "8.2.9") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
