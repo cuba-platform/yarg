@@ -30,6 +30,7 @@ import com.haulmont.yarg.util.docx4j.XmlCopyUtils;
 import com.opencsv.CSVWriter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.docx4j.XmlUtils;
@@ -998,10 +999,17 @@ public class XlsxFormatter extends AbstractFormatter {
             }
         } else {
             String value = insertBandDataToString(bandData, cellValue);
-            newCell.setV(value);
 
+            //to handle escapes before band values we should set space = preserve and hold value in CTRst
+            CTRst is = ObjectUtils.defaultIfNull(newCell.getIs(), Context.getsmlObjectFactory().createCTRst());
+            CTXstringWhitespace t = ObjectUtils.defaultIfNull(is.getT(), Context.getsmlObjectFactory().createCTXstringWhitespace());
+            t.setValue(value);
+            t.setSpace("preserve");
+            is.setT(t);
+            newCell.setIs(is);
+            newCell.setV("");
             if (newCell.getT() == STCellType.S) {
-                newCell.setT(STCellType.STR);
+                newCell.setT(STCellType.INLINE_STR);
             }
         }
     }
