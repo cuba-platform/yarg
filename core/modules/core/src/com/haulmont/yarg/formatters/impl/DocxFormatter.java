@@ -152,15 +152,15 @@ public class DocxFormatter extends AbstractFormatter {
                     outputStream.flush();
                 }
             } else if (ReportOutputType.html.equals(outputType)) {
+                convertAltChunks();
                 if (documentConverter != null) {
-                    convertAltChunks();
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     writeToOutputStream(wordprocessingMLPackage, bos);
                     documentConverter.convertToHtml(DocumentConverter.FileType.DOCUMENT, bos.toByteArray(), outputStream);
                     outputStream.flush();
                 } else {
                     HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
-                    htmlSettings.setWmlPackage(wordprocessingMLPackage);
+                    htmlSettings.setOpcPackage(wordprocessingMLPackage);
                     Docx4J.toHTML(htmlSettings, outputStream, Docx4J.FLAG_NONE);
                     outputStream.flush();
                 }
