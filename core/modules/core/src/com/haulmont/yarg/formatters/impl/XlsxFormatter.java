@@ -62,6 +62,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 
 public class XlsxFormatter extends AbstractFormatter {
+    private static final String TRUE_AS_STRING = "1";
+    private static final String FALSE_AS_STRING = "0";
+
     protected DocumentConverter documentConverter;
     protected Document template;
     protected Document result;
@@ -986,7 +989,7 @@ public class XlsxFormatter extends AbstractFormatter {
                 newCell.setV(formatValue(value, parameterName, fullParameterName));
             } else if (value instanceof Boolean) {
                 newCell.setT(STCellType.B);
-                newCell.setV(String.valueOf(value));
+                newCell.setV((boolean) value ? TRUE_AS_STRING : FALSE_AS_STRING);
             } else if (value instanceof Number) {
                 newCell.setT(STCellType.N);
                 newCell.setV(String.valueOf(value));
