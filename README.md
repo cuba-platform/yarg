@@ -13,20 +13,20 @@ YARG is a mature and well-tested tool, already used in a number of Haulmont's so
 
 ### How to add dependency
 
-Yarg versions are distributed using public Bintray Maven repository: http://dl.bintray.com/cuba-platform/main
+Yarg versions are distributed using a repository located at Haulmont server: https://repo.cuba-platform.com/content/groups/work
 
-You can find the complete list of versions here: https://bintray.com/cuba-platform/main/yarg
+You can find the complete list of versions here: https://repo.cuba-platform.com/content/groups/work/com/haulmont/yarg/
 
 __Gradle:__
 ```
 repositories {
     maven {
-        url "http://dl.bintray.com/cuba-platform/main"
+        url "https://repo.cuba-platform.com/content/groups/work"
     }
 }
 ...
 dependencies {
-    compile 'com.haulmont.yarg:yarg:2.2.6'
+    compile 'com.haulmont.yarg:yarg:2.2.10'
 }
 ```
 
@@ -37,16 +37,16 @@ __Maven:__
         <snapshots>
             <enabled>false</enabled>
         </snapshots>
-        <id>bintray-cuba-platform-main</id>
-        <name>bintray</name>
-        <url>http://dl.bintray.com/cuba-platform/main</url>
+        <id>repo-cuba-platform-work</id>
+        <name>repo</name>
+        <url>https://repo.cuba-platform.com/content/groups/work</url>
     </repository>
 </repositories>
 ...
 <dependency>
     <groupId>com.haulmont.yarg</groupId>
     <artifactId>yarg</artifactId>
-    <version>2.2.6</version>
+    <version>2.2.10</version>
     <type>pom</type>
 </dependency>
 ```
