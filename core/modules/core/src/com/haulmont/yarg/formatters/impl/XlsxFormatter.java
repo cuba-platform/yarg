@@ -1011,7 +1011,7 @@ public class XlsxFormatter extends AbstractFormatter {
             is.setT(t);
             newCell.setIs(is);
             newCell.setV("");
-            if (newCell.getT() == STCellType.S || newCell.getT() == STCellType.STR) {
+            if (newCell.getT() == STCellType.S) {
                 newCell.setT(STCellType.INLINE_STR);
             }
         }
