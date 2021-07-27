@@ -30,6 +30,7 @@ import com.haulmont.yarg.structure.impl.ReportFieldFormatImpl;
 import com.haulmont.yarg.structure.impl.ReportTemplateImpl;
 import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
@@ -119,6 +120,7 @@ public class DocSpecificTest extends AbstractFormatSpecificTest {
     }
 
     @Test
+    @Ignore
     public void testParallelDoc() throws Exception {
         final CountDownLatch countDownLatch = new CountDownLatch(3);
         final DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory();
