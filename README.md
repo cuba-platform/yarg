@@ -26,7 +26,7 @@ repositories {
 }
 ...
 dependencies {
-    compile 'com.haulmont.yarg:yarg:2.2.10'
+    compile 'com.haulmont.yarg:yarg:2.2.14'
 }
 ```
 
