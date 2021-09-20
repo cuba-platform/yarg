@@ -46,7 +46,7 @@ __Maven:__
 <dependency>
     <groupId>com.haulmont.yarg</groupId>
     <artifactId>yarg</artifactId>
-    <version>2.2.10</version>
+    <version>2.2.14</version>
     <type>pom</type>
 </dependency>
 ```
