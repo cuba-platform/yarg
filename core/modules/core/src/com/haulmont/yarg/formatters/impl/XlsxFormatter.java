@@ -1026,7 +1026,8 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected void saveXlsxAsCsv(Document document, OutputStream outputStream) throws IOException, Docx4JException {
-        CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), ';', CSVWriter.DEFAULT_QUOTE_CHARACTER);
+        CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), ';', CSVWriter.DEFAULT_QUOTE_CHARACTER,
+                CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
 
         for (Document.SheetWrapper sheetWrapper : document.getWorksheets()) {
             Worksheet worksheet = sheetWrapper.getWorksheet().getContents();

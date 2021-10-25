@@ -54,7 +54,8 @@ public class CsvFormatter extends AbstractFormatter {
     protected void writeCsvDocument(BandData rootBand, OutputStream outputStream) {
         try {
             List<BandData> actualData = getActualData(rootBand);
-            CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), separator, CSVWriter.DEFAULT_QUOTE_CHARACTER);
+            CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream), separator,
+                    CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
 
             writer.writeNext(header);
 
