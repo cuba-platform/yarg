@@ -180,7 +180,7 @@ public class HtmlFormatter extends AbstractFormatter {
 
         if (reportTemplate.isGroovy()) {
             groovy.text.Template htmlTemplate = getGroovyTemplate();
-            Writer htmlWriter = new OutputStreamWriter(outputStream);
+            Writer htmlWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
             try {
                 htmlTemplate.make(templateModel).writeTo(htmlWriter);
                 htmlWriter.close();
@@ -191,7 +191,7 @@ public class HtmlFormatter extends AbstractFormatter {
             }
         } else {
             freemarker.template.Template htmlTemplate = getFreemarkerTemplate();
-            Writer htmlWriter = new OutputStreamWriter(outputStream);
+            Writer htmlWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 
             try {
                 htmlTemplate.process(templateModel, htmlWriter);
