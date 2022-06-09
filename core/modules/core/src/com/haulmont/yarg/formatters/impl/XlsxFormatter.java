@@ -682,7 +682,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected Row findNextRowForVBand(BandData band, Range templateRange, List<Row> resultSheetRows) {
         Row firstRow = null;
         boolean isFirstLevelBand = BandData.ROOT_BAND_NAME.equals(band.getParentBand().getName());
-        setPreviousRangeVerticalOffset(0, null);
+        this.previousRangesRightOffset = 0;
 
         Range lastRenderedRange = getLastRenderedBandForThisLevel(band);
         if (lastRenderedRange != null) {//this band has been already rendered at least once
@@ -696,6 +696,18 @@ public class XlsxFormatter extends AbstractFormatter {
             firstRow = findNextRowForChildBand(band, templateRange, resultSheetRows);
         } else {//this is the first render
             firstRow = findNextRowForFirstRender(templateRange, resultSheetRows);
+            if (previousRangeBandData != null && firstRow != null) {//row for rendering and previously rendered data already there
+                Range lastRenderedBandRange = getLastRenderedBandForThisLevel(previousRangeBandData);
+                if (firstRow.getR() != null && firstRow.getR().intValue() <= lastRenderedBandRange.getLastRow()) {
+                    //we have intersection between previously rendered data and what we want to add
+                    int lastRenderedColumn = lastRenderedBandRange.getLastColumn();
+                    int firstTemplateColumn = templateRange.getFirstColumn();
+                    if (lastRenderedColumn != firstTemplateColumn) {
+                        previousRangesRightOffset = lastRenderedColumn - firstTemplateColumn + 1;
+                    }
+                    previousRangeBandData = band;
+                }
+            }
         }
         return firstRow;
     }
