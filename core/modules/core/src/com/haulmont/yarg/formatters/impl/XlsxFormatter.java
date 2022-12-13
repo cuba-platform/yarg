@@ -32,6 +32,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.CTAxDataSource;
 import org.docx4j.dml.chart.CTChart;
@@ -53,10 +56,7 @@ import org.xlsx4j.sml.*;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -82,6 +82,8 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BandData previousRangeBandData;
     protected int previousRangesRightOffset;
 
+    protected boolean formulasPostProcessingEvaluationEnabled = true;
+
     protected Unmarshaller unmarshaller;
     protected Marshaller marshaller;
 
@@ -94,6 +96,10 @@ public class XlsxFormatter extends AbstractFormatter {
 
     public void setDocumentConverter(DocumentConverter documentConverter) {
         this.documentConverter = documentConverter;
+    }
+
+    public void setFormulasPostProcessingEvaluationEnabled(boolean formulasPostProcessingEvaluationEnabled) {
+        this.formulasPostProcessingEvaluationEnabled = formulasPostProcessingEvaluationEnabled;
     }
 
     @Override
@@ -135,36 +141,40 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void saveAndClose() {
         try {
             checkThreadInterrupted();
-            if (ReportOutputType.xlsx.equals(outputType)) {
-                writeToOutputStream(result.getPackage(), outputStream);
-                outputStream.flush();
-            } else if (ReportOutputType.csv.equals(outputType)) {
+            if (ReportOutputType.csv.equals(outputType)) {
                 saveXlsxAsCsv(result, outputStream);
                 outputStream.flush();
-            } else if (ReportOutputType.pdf.equals(outputType)) {
-                if (documentConverter != null) {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    writeToOutputStream(result.getPackage(), bos);
-                    documentConverter.convertToPdf(DocumentConverter.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
-                    outputStream.flush();
-                } else {
-                    throw new UnsupportedOperationException(
-                            "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
-                                    "Please setup Libre/Open office connection details.");
-                }
-            } else if (ReportOutputType.html.equals(outputType)) {
-                if (documentConverter != null) {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    writeToOutputStream(result.getPackage(), bos);
-                    documentConverter.convertToHtml(DocumentConverter.FileType.SPREADSHEET, bos.toByteArray(), outputStream);
-                    outputStream.flush();
-                } else {
-                    throw new UnsupportedOperationException(
-                            "XlsxFormatter could not convert result to html without Libre/Open office connected. " +
-                                    "Please setup Libre/Open office connection details.");
-                }
             } else {
-                throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", outputType));
+                ByteArrayOutputStream intermediateBos = new ByteArrayOutputStream();
+                writeToOutputStream(result.getPackage(), intermediateBos);
+                if (formulasPostProcessingEvaluationEnabled) {
+                    intermediateBos = evaluateFormulas(intermediateBos.toByteArray());
+                }
+
+                if (ReportOutputType.xlsx.equals(outputType)) {
+                    outputStream.write(intermediateBos.toByteArray());
+                    outputStream.flush();
+                } else if (ReportOutputType.pdf.equals(outputType)) {
+                    if (documentConverter != null) {
+                        documentConverter.convertToPdf(DocumentConverter.FileType.SPREADSHEET, intermediateBos.toByteArray(), outputStream);
+                        outputStream.flush();
+                    } else {
+                        throw new UnsupportedOperationException(
+                                "XlsxFormatter could not convert result to pdf without Libre/Open office connected. " +
+                                        "Please setup Libre/Open office connection details.");
+                    }
+                } else if (ReportOutputType.html.equals(outputType)) {
+                    if (documentConverter != null) {
+                        documentConverter.convertToHtml(DocumentConverter.FileType.SPREADSHEET, intermediateBos.toByteArray(), outputStream);
+                        outputStream.flush();
+                    } else {
+                        throw new UnsupportedOperationException(
+                                "XlsxFormatter could not convert result to html without Libre/Open office connected. " +
+                                        "Please setup Libre/Open office connection details.");
+                    }
+                } else {
+                    throw new UnsupportedOperationException(String.format("XlsxFormatter could not output file with type [%s]", outputType));
+                }
             }
         } catch (Docx4JException e) {
             throw wrapWithReportingException("An error occurred while saving result report", e);
@@ -172,6 +182,28 @@ public class XlsxFormatter extends AbstractFormatter {
             throw wrapWithReportingException("An error occurred while saving result report to " + outputType.getId(), e);
         } finally {
             IOUtils.closeQuietly(outputStream);
+        }
+    }
+
+    protected ByteArrayOutputStream evaluateFormulas(byte[] content) {
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(content);
+            org.apache.poi.ss.usermodel.Workbook workbook = new XSSFWorkbook(bis);
+            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            for (org.apache.poi.ss.usermodel.Sheet sheet : workbook) {
+                for (org.apache.poi.ss.usermodel.Row row : sheet) {
+                    for (org.apache.poi.ss.usermodel.Cell cell : row) {
+                        if (cell.getCellType() == CellType.FORMULA) {
+                            evaluator.evaluateFormulaCell(cell);
+                        }
+                    }
+                }
+            }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            workbook.write(bos);
+            return bos;
+        } catch (IOException e) {
+            throw new ReportingException(e);
         }
     }
 
