@@ -34,6 +34,7 @@ public interface PropertiesLoader {
     String CUBA_REPORTING_PUT_EMPTY_ROW_IF_NO_DATA_SELECTED = "cuba.reporting.dataextractor.putEmptyRowIfNoDataSelected";
     String CUBA_REPORTING_FONTS_DIRECTORY = "cuba.reporting.fontsDirectory";
     String CUBA_REPORTING_OPEN_HTML_FOR_PDF_CONVERSION = "cuba.reporting.openHtmlForPdfConversion";
+    String CUBA_REPORTING_FORMULAS_POST_PROCESSING_EVALUATION_ENABLED = "cuba.reporting.formulasPostProcessingEvaluationEnabled";
 
     Properties load() throws IOException;
 }

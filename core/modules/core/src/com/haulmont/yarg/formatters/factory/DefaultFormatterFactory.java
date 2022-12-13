@@ -47,9 +47,12 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     protected ReportInlinersProvider inlinersProvider;
 
+    protected boolean formulasPostProcessingEvaluationEnabled;
+
     public DefaultFormatterFactory() {
         htmlImportProcessor = new HtmlImportProcessorImpl();
         htmlToPdfConverterFactory = new HtmlToPdfConverterFactory();
+        formulasPostProcessingEvaluationEnabled = true;
         formattersMap.put("xls", factoryInput -> {
             XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
             xlsFormatter.setDocumentConverter(documentConverter);
@@ -91,6 +94,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
             xlsxFormatter.setDefaultFormatProvider(defaultFormatProvider);
             xlsxFormatter.setDocumentConverter(documentConverter);
             xlsxFormatter.setScripting(scripting);
+            xlsxFormatter.setFormulasPostProcessingEvaluationEnabled(formulasPostProcessingEvaluationEnabled);
             return xlsxFormatter;
         };
         formattersMap.put("xlsx", xlsxCreator);
@@ -145,6 +149,14 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
 
     public void setScripting(Scripting scripting) {
         this.scripting = scripting;
+    }
+
+    public boolean isFormulasPostProcessingEvaluationEnabled() {
+        return formulasPostProcessingEvaluationEnabled;
+    }
+
+    public void setFormulasPostProcessingEvaluationEnabled(boolean formulasPostProcessingEvaluationEnabled) {
+        this.formulasPostProcessingEvaluationEnabled = formulasPostProcessingEvaluationEnabled;
     }
 
     public ReportFormatter createFormatter(FormatterFactoryInput factoryInput) {

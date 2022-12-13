@@ -68,6 +68,9 @@ public class ReportEngineCreator {
             }
         }
 
+        String formulasEvaluationEnabled = properties.getProperty(PropertiesLoader.CUBA_REPORTING_FORMULAS_POST_PROCESSING_EVALUATION_ENABLED, "true");
+        formatterFactory.setFormulasPostProcessingEvaluationEnabled(Boolean.parseBoolean(formulasEvaluationEnabled));
+
         reporting.setFormatterFactory(formatterFactory);
         SqlDataLoader sqlDataLoader = new PropertiesSqlLoaderFactory(propertiesLoader).create();
         GroovyDataLoader groovyDataLoader = new GroovyDataLoader(new DefaultScriptingImpl());
