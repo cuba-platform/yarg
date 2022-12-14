@@ -476,6 +476,77 @@ public class XlsxIntegrationTest {
     }
 
     @Test
+    public void testXlsxFormulasPostProcessingEvaluation() throws Exception {
+        BandData root = new BandData("Root", null, BandOrientation.HORIZONTAL);
+        HashMap<String, Object> rootData = new HashMap<String, Object>();
+        root.setData(rootData);
+
+        BandData mainHeader = new BandData("MainHeader", root);
+        mainHeader.setData(rootData);
+        root.addChild(mainHeader);
+
+        BandData header1 = new BandData("Header", root, BandOrientation.HORIZONTAL);
+        header1.setData(new HashMap<String, Object>());
+        header1.addData("service", "IT support");
+        BandData details11 = new BandData("Details", header1, BandOrientation.HORIZONTAL);
+        details11.setData(new HashMap<String, Object>());
+        details11.addData("client", "Google");
+        details11.addData("volume", 900);
+        details11.addData("price", 114);
+        BandData details12 = new BandData("Details", header1, BandOrientation.HORIZONTAL);
+        details12.setData(new HashMap<String, Object>());
+        details12.addData("client", "Yandex");
+        details12.addData("volume", 300);
+        details12.addData("price", 171);
+
+        header1.addChild(details11);
+        header1.addChild(details12);
+        header1.addChild(new BandData("Total", header1, BandOrientation.HORIZONTAL));
+
+        BandData header2 = new BandData("Header", root, BandOrientation.HORIZONTAL);
+        header2.setData(new HashMap<String, Object>());
+        header2.addData("service", "Technical support");
+        BandData details21 = new BandData("Details", header2, BandOrientation.HORIZONTAL);
+        details21.setData(new HashMap<String, Object>());
+        details21.addData("client", "Google");
+        details21.addData("volume", 110);
+        details21.addData("price", 600);
+        BandData details22 = new BandData("Details", header2, BandOrientation.HORIZONTAL);
+        details22.setData(new HashMap<String, Object>());
+        details22.addData("client", "Yandex");
+        details22.addData("volume", 60);
+        details22.addData("price", 800);
+
+        header2.addChild(details21);
+        header2.addChild(details22);
+        header2.addChild(new BandData("Total", header2, BandOrientation.HORIZONTAL));
+
+        root.addChild(header1);
+        root.addChild(header2);
+
+        FileOutputStream outputStream = new FileOutputStream("./result/integration/result-formulas-evaluation.xlsx");
+        DefaultFormatterFactory formatterFactory = new DefaultFormatterFactory();
+        formatterFactory.setFormulasPostProcessingEvaluationEnabled(true);
+        ReportFormatter formatter = formatterFactory.createFormatter(new FormatterFactoryInput("xlsx", root,
+                new ReportTemplateImpl("", "./modules/core/test/integration/test-formulas.xlsx", "./modules/core/test/integration/test-formulas.xlsx", ReportOutputType.xlsx), outputStream));
+        formatter.renderDocument();
+
+        IOUtils.closeQuietly(outputStream);
+
+        //Use Map structure due to problems with etalon xlsx-file
+        Map<String, String> etalonCellValues = new HashMap<>();
+        etalonCellValues.put("E3", "102600.0");
+        etalonCellValues.put("E4", "51300.0");
+        etalonCellValues.put("C5", "1200.0");
+        etalonCellValues.put("E5", "153900.0");
+        etalonCellValues.put("E7", "66000.0");
+        etalonCellValues.put("E8", "48000.0");
+        etalonCellValues.put("C9", "170.0");
+        etalonCellValues.put("E9", "114000.0");
+        checkFormulaResultValues("./result/integration/result-formulas-evaluation.xlsx", etalonCellValues);
+    }
+
+    @Test
     public void testXlsxHorizontalBandAfterVertical() throws Exception {
         BandData root = new BandData(BandData.ROOT_BAND_NAME);
 
@@ -613,6 +684,31 @@ public class XlsxIntegrationTest {
                         Assert.assertEquals(etalonCell.getF().getValue(), resultCell.getF().getValue());
                     } else {
                         Assert.assertEquals(etalonCell.getV(), resultCell.getV());
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkFormulaResultValues(String resultPath, Map<String, String> etalonCellValues) throws Docx4JException {
+        Document result = Document.create(SpreadsheetMLPackage.load(new File(resultPath)));
+
+        List<Document.SheetWrapper> resultWorksheets = result.getWorksheets();
+
+        for (int wsIndex = 0; wsIndex < resultWorksheets.size(); wsIndex++) {
+            Document.SheetWrapper resultWorksheet = resultWorksheets.get(wsIndex);
+
+            List<Row> resultRows = resultWorksheet.getWorksheet().getContents().getSheetData().getRow();
+            for (int rowIndex = 0, rowSize = resultRows.size(); rowIndex < rowSize; rowIndex++) {
+                Row resultRow = resultRows.get(rowIndex);
+                List<Cell> resultCells = resultRow.getC();
+                for (int cellIndex = 0, cSize = resultCells.size(); cellIndex < cSize; cellIndex++) {
+                    Cell resultCell = resultCells.get(cellIndex);
+                    if (resultCell.getF() != null) {
+                        String cellLocation = resultCell.getR();
+                        String etalonCellValue = etalonCellValues.get(cellLocation);
+                        String cellValue = resultCell.getV();
+                        Assert.assertEquals(etalonCellValue, cellValue);
                     }
                 }
             }

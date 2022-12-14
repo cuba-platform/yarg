@@ -32,8 +32,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.chart.CTAxDataSource;
@@ -194,16 +193,7 @@ public class XlsxFormatter extends AbstractFormatter {
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(content);
             org.apache.poi.ss.usermodel.Workbook workbook = new XSSFWorkbook(bis);
-            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-            for (org.apache.poi.ss.usermodel.Sheet sheet : workbook) {
-                for (org.apache.poi.ss.usermodel.Row row : sheet) {
-                    for (org.apache.poi.ss.usermodel.Cell cell : row) {
-                        if (cell.getCellType() == CellType.FORMULA) {
-                            evaluator.evaluateFormulaCell(cell);
-                        }
-                    }
-                }
-            }
+            XSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             workbook.write(bos);
             return bos;
