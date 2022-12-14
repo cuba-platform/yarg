@@ -52,7 +52,7 @@ public class DefaultFormatterFactory implements ReportFormatterFactory {
     public DefaultFormatterFactory() {
         htmlImportProcessor = new HtmlImportProcessorImpl();
         htmlToPdfConverterFactory = new HtmlToPdfConverterFactory();
-        formulasPostProcessingEvaluationEnabled = true;
+        formulasPostProcessingEvaluationEnabled = false;
         formattersMap.put("xls", factoryInput -> {
             XLSFormatter xlsFormatter = new XLSFormatter(factoryInput);
             xlsFormatter.setDocumentConverter(documentConverter);

@@ -82,7 +82,7 @@ public class XlsxFormatter extends AbstractFormatter {
     protected BandData previousRangeBandData;
     protected int previousRangesRightOffset;
 
-    protected boolean formulasPostProcessingEvaluationEnabled = true;
+    protected boolean formulasPostProcessingEvaluationEnabled = false;
 
     protected Unmarshaller unmarshaller;
     protected Marshaller marshaller;
@@ -147,7 +147,7 @@ public class XlsxFormatter extends AbstractFormatter {
             } else {
                 ByteArrayOutputStream intermediateBos = new ByteArrayOutputStream();
                 writeToOutputStream(result.getPackage(), intermediateBos);
-                if (formulasPostProcessingEvaluationEnabled) {
+                if (isFormulasPostProcessingEvaluationRequired()) {
                     intermediateBos = evaluateFormulas(intermediateBos.toByteArray());
                 }
 
@@ -183,6 +183,11 @@ public class XlsxFormatter extends AbstractFormatter {
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
+    }
+
+    protected boolean isFormulasPostProcessingEvaluationRequired() {
+        return formulasPostProcessingEvaluationEnabled
+                && (innerFormulas.size() > 0 || outerFormulas.size() > 0);
     }
 
     protected ByteArrayOutputStream evaluateFormulas(byte[] content) {

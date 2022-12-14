@@ -591,7 +591,9 @@ public class XlsxIntegrationTest {
         Document etalon = Document.create(SpreadsheetMLPackage.load(new File(etalonPath)));
 
         List<Document.SheetWrapper> resultWorksheets = result.getWorksheets();
+        resultWorksheets.sort(Comparator.comparing(Document.SheetWrapper::getName));
         List<Document.SheetWrapper> etalonWorksheets = etalon.getWorksheets();
+        etalonWorksheets.sort(Comparator.comparing(Document.SheetWrapper::getName));
 
         for (int i = 0; i < resultWorksheets.size(); i++) {
             Document.SheetWrapper resultWorksheet = resultWorksheets.get(i);
