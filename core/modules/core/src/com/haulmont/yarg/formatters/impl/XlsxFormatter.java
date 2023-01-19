@@ -45,6 +45,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
 import org.docx4j.openpackaging.parts.SpreadsheetML.PivotCacheDefinition;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
@@ -140,6 +141,20 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void saveAndClose() {
         try {
             checkThreadInterrupted();
+
+            //Remove calcChain until it is well-formed and to get rid of MS Excel errors on file opening in some cases
+            SpreadsheetMLPackage smlPackage = result.getPackage();
+            Parts parts = smlPackage.getParts();
+            CalcChain calcChain = null;
+            try {
+                calcChain = (CalcChain) parts.get(new PartName("/xl/calcChain.xml"));
+            } catch (InvalidFormatException e) {
+                log.warn("Invalid format of part name", e);
+            }
+            if (calcChain != null) {
+                calcChain.remove();
+            }
+
             if (ReportOutputType.csv.equals(outputType)) {
                 saveXlsxAsCsv(result, outputStream);
                 outputStream.flush();
@@ -503,21 +518,7 @@ public class XlsxFormatter extends AbstractFormatter {
     }
 
     protected CTCalcChain getCalculationChain() {
-        CTCalcChain calculationChain = null;
-        try {
-            CalcChain part = (CalcChain) result.getPackage().getParts().get(new PartName("/xl/calcChain.xml"));
-            if (part != null) {
-                try {
-                    calculationChain = part.getContents();
-                } catch (Docx4JException e) {
-                    throw new RuntimeException("Unable to get contents of part", e);
-                }
-                calculationChain.getC().clear();
-            }
-        } catch (InvalidFormatException e) {
-            //do nothing
-        }
-        return calculationChain;
+        return null; // calcChain processing is disabled until it is well-formed
     }
 
     protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange,
@@ -1151,6 +1152,14 @@ public class XlsxFormatter extends AbstractFormatter {
         public CellWithBand(BandData bandData, Cell cell) {
             this.bandData = bandData;
             this.cell = cell;
+        }
+
+        public BandData getBandData() {
+            return bandData;
+        }
+
+        public Cell getCell() {
+            return cell;
         }
     }
 
