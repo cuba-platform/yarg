@@ -84,20 +84,20 @@ public class XlsxFormulaUpdateTest {
                 new FormatterFactoryInput("xls", new BandData(""), reportTemplate, null));
 
         Cell cellWithFormula = cellWithFormula("SUM(A9:A9)/B9");
-        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:A9"), Range.fromRange("Sheet", "A90:A90"), null, 0);
-        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "B9:B9"), Range.fromRange("Sheet", "B90:B90"), null, 0);
+        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:A9"), Range.fromRange("Sheet", "A90:A90"));
+        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "B9:B9"), Range.fromRange("Sheet", "B90:B90"));
         Assert.assertEquals("SUM(A90:A90)/B90", cellWithFormula.getF().getValue());
 
         cellWithFormula = cellWithFormula("SUM(A9:B9)");
-        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:B9"), Range.fromRange("Sheet", "A90:B90"), null, 0);
+        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:B9"), Range.fromRange("Sheet", "A90:B90"));
         Assert.assertEquals("SUM(A90:B90)", cellWithFormula.getF().getValue());
 
         cellWithFormula = cellWithFormula("A9*SUM(A9:A9)");
-        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:A9"), Range.fromRange("Sheet", "A90:A90"), null, 0);
+        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:A9"), Range.fromRange("Sheet", "A90:A90"));
         Assert.assertEquals("A90*SUM(A90:A90)", cellWithFormula.getF().getValue());
 
         cellWithFormula = cellWithFormula("CA9*SUM(A9:A9)");
-        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:A9"), Range.fromRange("Sheet", "A90:A90"), null, 0);
+        xlsxFormatter.updateFormula(cellWithFormula, Range.fromRange("Sheet", "A9:A9"), Range.fromRange("Sheet", "A90:A90"));
         Assert.assertEquals("CA9*SUM(A90:A90)", cellWithFormula.getF().getValue());
     }
 

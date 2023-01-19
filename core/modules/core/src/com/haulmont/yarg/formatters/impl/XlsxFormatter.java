@@ -45,6 +45,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain;
 import org.docx4j.openpackaging.parts.SpreadsheetML.PivotCacheDefinition;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
@@ -140,6 +141,20 @@ public class XlsxFormatter extends AbstractFormatter {
     protected void saveAndClose() {
         try {
             checkThreadInterrupted();
+
+            //Remove calcChain until it is well-formed and to get rid of MS Excel errors on file opening in some cases
+            SpreadsheetMLPackage smlPackage = result.getPackage();
+            Parts parts = smlPackage.getParts();
+            CalcChain calcChain = null;
+            try {
+                calcChain = (CalcChain) parts.get(new PartName("/xl/calcChain.xml"));
+            } catch (InvalidFormatException e) {
+                log.warn("Invalid format of part name", e);
+            }
+            if (calcChain != null) {
+                calcChain.remove();
+            }
+
             if (ReportOutputType.csv.equals(outputType)) {
                 saveXlsxAsCsv(result, outputStream);
                 outputStream.flush();
@@ -342,9 +357,8 @@ public class XlsxFormatter extends AbstractFormatter {
 
     //todo support formulas without range but with list of cells
     protected void updateFormulas() {
-        CTCalcChain calculationChain = getCalculationChain();
-        int formulaCount = processInnerFormulas(calculationChain);
-        processOuterFormulas(formulaCount, calculationChain);
+        processInnerFormulas();
+        processOuterFormulas();
     }
 
     protected void updateConditionalFormatting() {
@@ -378,7 +392,7 @@ public class XlsxFormatter extends AbstractFormatter {
         }
     }
 
-    protected void processOuterFormulas(int formulaCount, CTCalcChain calculationChain) {
+    protected void processOuterFormulas() {
         for (CellWithBand cellWithWithBand : outerFormulas) {
             Cell cellWithFormula = cellWithWithBand.cell;
             String oldFormula = cellWithFormula.getF().getValue();
@@ -441,7 +455,7 @@ public class XlsxFormatter extends AbstractFormatter {
                     for (Range formulaRange : formulaRanges) {
                         if (newRanges.size() > 0) {
                             Range shiftedRange = calculateFormulaRangeChange(formulaRange, templateRange, newRanges);
-                            updateFormula(cellWithFormula, formulaRange, shiftedRange, calculationChain, formulaCount++);
+                            updateFormula(cellWithFormula, formulaRange, shiftedRange);
                         } else {
                             cellWithFormula.setF(null);
                             cellWithFormula.setV("ERROR: Formula references to empty range");
@@ -467,9 +481,7 @@ public class XlsxFormatter extends AbstractFormatter {
         return shiftedRange;
     }
 
-    protected int processInnerFormulas(CTCalcChain calculationChain) {
-        int formulaCount = 1;
-
+    protected void processInnerFormulas() {
         for (CellWithBand cellWithWithBand : innerFormulas) {
             Cell cellWithFormula = cellWithWithBand.cell;
             String oldFormula = cellWithFormula.getF().getValue();
@@ -491,7 +503,7 @@ public class XlsxFormatter extends AbstractFormatter {
 
                             for (Range formulaRange : formulaRanges) {
                                 Range shiftedFormulaRange = formulaRange.copy().shift(offset.downOffset, offset.rightOffset);
-                                updateFormula(cellWithFormula, formulaRange, shiftedFormulaRange, calculationChain, formulaCount++);
+                                updateFormula(cellWithFormula, formulaRange, shiftedFormulaRange);
                             }
                             break;
                         }
@@ -499,51 +511,15 @@ public class XlsxFormatter extends AbstractFormatter {
                 }
             }
         }
-        return formulaCount;
     }
 
-    protected CTCalcChain getCalculationChain() {
-        CTCalcChain calculationChain = null;
-        try {
-            CalcChain part = (CalcChain) result.getPackage().getParts().get(new PartName("/xl/calcChain.xml"));
-            if (part != null) {
-                try {
-                    calculationChain = part.getContents();
-                } catch (Docx4JException e) {
-                    throw new RuntimeException("Unable to get contents of part", e);
-                }
-                calculationChain.getC().clear();
-            }
-        } catch (InvalidFormatException e) {
-            //do nothing
-        }
-        return calculationChain;
-    }
-
-    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange,
-                                 CTCalcChain calculationChain, int formulaCount) {
+    protected void updateFormula(Cell cellWithFormula, Range originalFormulaRange, Range formulaRange) {
         CTCellFormula formula = cellWithFormula.getF();
         formula.setValue(formula.getValue().replace(originalFormulaRange.toRange(), formulaRange.toRange()));
         if (originalFormulaRange.isOneCellRange() && formulaRange.isOneCellRange()) {
             //here we check that there are no alpha-numeric symbols around the single reference
             String pattern = "(?<!\\w+)" + originalFormulaRange.toFirstCellReference() + "(?!\\w+)";
             formula.setValue(formula.getValue().replaceAll(pattern, formulaRange.toFirstCellReference()));
-        }
-
-        if (calculationChain != null) {
-            CTCalcCell calcCell = new CTCalcCell();
-            calcCell.setR(cellWithFormula.getR());
-            String sheetName = originalFormulaRange.getSheet();
-            Sheets sheets = template.getWorkbook().getSheets();
-            if (sheets != null && sheets.getSheet() != null) {
-                for (Sheet sheet : sheets.getSheet()) {
-                    if (Objects.equals(sheet.getName(), sheetName)) {
-                        calcCell.setI((int) sheet.getSheetId());
-                        break;
-                    }
-                }
-            }
-            calculationChain.getC().add(calcCell);
         }
     }
 
