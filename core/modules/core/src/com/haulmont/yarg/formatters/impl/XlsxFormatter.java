@@ -1128,14 +1128,6 @@ public class XlsxFormatter extends AbstractFormatter {
             this.bandData = bandData;
             this.cell = cell;
         }
-
-        public BandData getBandData() {
-            return bandData;
-        }
-
-        public Cell getCell() {
-            return cell;
-        }
     }
 
     protected static class Offset {
