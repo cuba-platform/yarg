@@ -771,7 +771,7 @@ public class XlsxFormatter extends AbstractFormatter {
             List<Cell> templateCells = new ArrayList<>(cellsForOneRowRange.values());
             Row templateRow = !templateCells.isEmpty() ?
                     (Row) templateCells.get(0).getParent() :
-                    resultSheet.getSheetData().getRow().get(oneRowRange.getFirstRow() - 1);
+                    resultSheetRows.get((int) (firstRow.getR() + i - 1));
 
             createFakeTemplateCellsForEmptyOnes(oneRowRange, cellsForOneRowRange, templateCells);
 
