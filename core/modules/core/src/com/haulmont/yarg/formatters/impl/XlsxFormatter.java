@@ -54,8 +54,8 @@ import org.slf4j.LoggerFactory;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.*;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;

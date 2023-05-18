@@ -244,20 +244,20 @@ configure(core) {
         compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '1.0.0') {
             exclude(group: 'junit', module: 'junit')
         }
-        compile(group: "org.docx4j", name: "docx4j-JAXB-ReferenceImpl", version: "8.2.9") {
+        compile(group: "org.docx4j", name: "docx4j-JAXB-ReferenceImpl", version: "11.4.9") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
             exclude(group: 'com.fasterxml.jackson.core')
         }
-        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "8.0.0") {
+        compile(group: "org.docx4j", name: "docx4j-ImportXHTML", version: "11.4.8") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'org.apache.poi', module: 'poi')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
             exclude(group: 'com.fasterxml.jackson.core')
         }
-        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "8.2.9") {
+        compile(group: "org.docx4j", name: "docx4j-export-fo", version: "11.4.9") {
             exclude(group: 'junit', module: 'junit')
             exclude(group: 'log4j', module: 'log4j')
             exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
@@ -279,6 +279,7 @@ configure(core) {
             exclude(group: 'org.codehaus.castor', module: 'castor-xml')
         }
         compile(group: "net.sf.jasperreports", name: "jasperreports-fonts", version: "6.8.0")
+        compile(group: "jakarta.xml.bind", name: "jakarta.xml.bind-api", version: "4.0.0")
 
         testCompile(group: 'org.jmockit', name: 'jmockit', version: '1.15')
         testCompile(group: 'junit', name: 'junit', version: '4.5')

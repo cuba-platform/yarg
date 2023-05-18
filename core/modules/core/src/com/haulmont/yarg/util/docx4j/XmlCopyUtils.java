@@ -20,8 +20,8 @@ import org.xlsx4j.sml.Cell;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
-import javax.xml.bind.*;
-import javax.xml.bind.util.JAXBSource;
+import jakarta.xml.bind.*;
+import jakarta.xml.bind.util.JAXBSource;
 import javax.xml.namespace.QName;
 
 public class XmlCopyUtils {
