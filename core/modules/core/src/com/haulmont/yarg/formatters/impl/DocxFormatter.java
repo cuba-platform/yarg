@@ -26,12 +26,15 @@ import com.haulmont.yarg.structure.ReportOutputType;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.model.structure.DocumentModel;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -44,6 +47,7 @@ import org.docx4j.wml.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.JAXBException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,6 +62,8 @@ import java.util.regex.Matcher;
  */
 public class DocxFormatter extends AbstractFormatter {
     protected static final Logger log = LoggerFactory.getLogger(DocxFormatter.class);
+
+    protected static final String NEWLINE_REPLACE_CHARACTER = "¶";
 
     protected WordprocessingMLPackage wordprocessingMLPackage;
     protected DocumentWrapper documentWrapper;
@@ -96,6 +102,18 @@ public class DocxFormatter extends AbstractFormatter {
     protected void updateTableOfContents() {
         try {
             MainDocumentPart documentPart = wordprocessingMLPackage.getMainDocumentPart();
+            replaceNewLines(documentPart);
+
+            DocumentModel documentModel = wordprocessingMLPackage.getDocumentModel();
+            if (documentModel != null && documentModel.getSections() != null) {
+                documentModel.getSections().forEach(section -> {
+                    if (section.getHeaderFooterPolicy() != null) {
+                        replaceNewLines(section.getHeaderFooterPolicy().getDefaultFooter());
+                        replaceNewLines(section.getHeaderFooterPolicy().getDefaultFooter());
+                    }
+                });
+            }
+
             Document wmlDocumentEl;
             try {
                 wmlDocumentEl = documentPart.getContents();
@@ -114,6 +132,21 @@ public class DocxFormatter extends AbstractFormatter {
             }
         } catch (TocException e) {
             log.error("An error occurred during updating the Table Of Contents", e);
+        }
+    }
+
+    @SuppressWarnings("rawtypes,unchecked")
+    protected void replaceNewLines(JaxbXmlPart documentPart) {
+        if (documentPart != null) {
+            String xml = XmlUtils.marshaltoString(documentPart.getJaxbElement(), true);
+            xml = xml.replace(NEWLINE_REPLACE_CHARACTER, "</w:t><w:br/><w:t>");
+            Object obj = null;
+            try {
+                obj = XmlUtils.unmarshalString(xml);
+                documentPart.setJaxbElement(obj);
+            } catch (JAXBException e) {
+                log.error("An error occurred during replacement of the newline character");
+            }
         }
     }
 
@@ -227,6 +260,15 @@ public class DocxFormatter extends AbstractFormatter {
     protected void writeToOutputStream(WordprocessingMLPackage mlPackage, OutputStream outputStream) throws Docx4JException {
         SaveToZipFile saver = new SaveToZipFile(mlPackage);
         saver.save(outputStream);
+    }
+
+    @Override
+    protected String formatValue(Object value, String parameterName, String fullParameterName, String stringFunction) {
+        String formattedValue = super.formatValue(value, parameterName, fullParameterName, stringFunction);
+        if (formattedValue != null) {
+            return formattedValue.replace("\n", NEWLINE_REPLACE_CHARACTER);
+        }
+        return formattedValue;
     }
 
     @SuppressWarnings("unchecked")
