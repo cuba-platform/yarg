@@ -468,10 +468,8 @@ public class XLSFormatter extends AbstractFormatter {
      * @param currentSheet Sheet which contains merge regions
      */
     protected void initMergeRegions(HSSFSheet currentSheet) {
-        int rangeNumber = templateWorkbook.getNumberOfNames();
-        for (int i = 0; i < rangeNumber; i++) {
-            HSSFName aNamedRange = templateWorkbook.getNameAt(i);
-
+        List<HSSFName> allNames = templateWorkbook.getAllNames();
+        for (HSSFName aNamedRange : allNames) {
             String refersToFormula = aNamedRange.getRefersToFormula();
             if (!AreaReference.isContiguous(refersToFormula)) {
                 continue;
@@ -526,10 +524,7 @@ public class XLSFormatter extends AbstractFormatter {
      */
     protected void copyMergeRegions(HSSFSheet resultSheet, String rangeName,
                                     int firstTargetRangeRow, int firstTargetRangeColumn) {
-        int rangeNameIdx = templateWorkbook.getNameIndex(rangeName);
-        if (rangeNameIdx == -1) return;
-
-        HSSFName aNamedRange = templateWorkbook.getNameAt(rangeNameIdx);
+        HSSFName aNamedRange = templateWorkbook.getName(rangeName);
         AreaReference aref = new AreaReference(aNamedRange.getRefersToFormula(), SpreadsheetVersion.EXCEL97);
         int column = aref.getFirstCell().getCol();
         int row = aref.getFirstCell().getRow();
