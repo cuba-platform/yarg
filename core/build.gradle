@@ -34,6 +34,14 @@ if (repositoryUser) {//for internal users
     workRepositoryUrl = "$repositoryUrl/groups/work"
 }
 
+// Use jmix repository for Phoenix releases
+def jmixUploadUrl = 'http://cuba-nexus3.haulmont.com:8081/repository', jmixUploadUser, jmixUploadPassword
+if (rootProject.hasProperty('jmixUploadUrl')) {
+    jmixUploadUrl = rootProject['jmixUploadUrl']
+    jmixUploadUser = rootProject['jmixUploadUser']
+    jmixUploadPassword = rootProject['jmixUploadPassword']
+}
+
 configure([api, core, console, server]) {
     apply(plugin: 'maven')
     apply(plugin: 'signing')
@@ -105,8 +113,8 @@ configure([api, core, console, server]) {
 //                authentication(userName: "$oss_login", password:  "$oss_password")
 //            }
 
-            repository(url: "$repositoryUrl/repositories/" + (isSnapshot ? 'snapshots' : 'releases')) {
-                authentication(userName: repositoryUser, password: repositoryPassword)
+            repository(url: "$jmixUploadUrl/" + (isSnapshot ? 'snapshots' : 'releases')) {
+                authentication(userName: jmixUploadUser, password: jmixUploadPassword)
             }
 
             pom.project {
