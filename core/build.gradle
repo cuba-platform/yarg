@@ -12,8 +12,9 @@ def projectUrl = "https://github.com/cuba-platform/yarg"
 def artifactVersion = '2.2-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
+} else {
+    throw new GradleException("The [buildVersion] property is required")
 }
-def isSnapshot = artifactVersion.endsWith('-SNAPSHOT')
 
 def api = project(':yarg-api')
 def core = project(':yarg')
@@ -35,7 +36,7 @@ if (repositoryUser) {//for internal users
 }
 
 // Use jmix repository for Phoenix releases
-def jmixUploadUrl = 'http://cuba-nexus3.haulmont.com:8081/repository', jmixUploadUser, jmixUploadPassword
+def jmixUploadUrl = 'http://cuba-nexus3.haulmont.com:8081/repository/phoenix-releases/', jmixUploadUser, jmixUploadPassword
 if (rootProject.hasProperty('jmixUploadUrl')) {
     jmixUploadUrl = rootProject['jmixUploadUrl']
     jmixUploadUser = rootProject['jmixUploadUser']
@@ -113,7 +114,7 @@ configure([api, core, console, server]) {
 //                authentication(userName: "$oss_login", password:  "$oss_password")
 //            }
 
-            repository(url: "$jmixUploadUrl/" + (isSnapshot ? 'snapshots' : 'releases')) {
+            repository(url: "$jmixUploadUrl") {
                 authentication(userName: jmixUploadUser, password: jmixUploadPassword)
             }
 
