@@ -12,9 +12,8 @@ def projectUrl = "https://github.com/cuba-platform/yarg"
 def artifactVersion = '2.2-SNAPSHOT'
 if (rootProject.hasProperty('buildVersion')) {
     artifactVersion = rootProject['buildVersion']
-} else {
-    throw new GradleException("The [buildVersion] property is required")
 }
+def isSnapshot = artifactVersion.endsWith('-SNAPSHOT')
 
 def api = project(':yarg-api')
 def core = project(':yarg')
@@ -104,9 +103,10 @@ configure([api, core, console, server]) {
     }
 
     uploadArchives.configure {
-        repositories.mavenDeployer {
-            name = 'httpDeployer'
-            configuration = configurations.deployerJars
+        if(!isSnapshot) {
+            repositories.mavenDeployer {
+                name = 'httpDeployer'
+                configuration = configurations.deployerJars
 
 //            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 //
@@ -114,31 +114,32 @@ configure([api, core, console, server]) {
 //                authentication(userName: "$oss_login", password:  "$oss_password")
 //            }
 
-            repository(url: "$jmixUploadUrl") {
-                authentication(userName: jmixUploadUser, password: jmixUploadPassword)
-            }
+                repository(url: "$jmixUploadUrl") {
+                    authentication(userName: jmixUploadUser, password: jmixUploadPassword)
+                }
 
-            pom.project {
-                name = "$projectName"
-                description = "$projectDescription"
-                url = "$projectUrl"
-                developers {
-                    developer {
-                        id 'tinhol'
-                        email 'tinhol@mail.ru'
-                        organization = 'Haulmont'
-                        organizationUrl 'http://www.haulmont.com/'
-                    }
-                }
-                scm {
-                    connection = "$projectUrl"
+                pom.project {
+                    name = "$projectName"
+                    description = "$projectDescription"
                     url = "$projectUrl"
-                }
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
+                    developers {
+                        developer {
+                            id 'tinhol'
+                            email 'tinhol@mail.ru'
+                            organization = 'Haulmont'
+                            organizationUrl 'http://www.haulmont.com/'
+                        }
+                    }
+                    scm {
+                        connection = "$projectUrl"
+                        url = "$projectUrl"
+                    }
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
                     }
                 }
             }
@@ -228,9 +229,9 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile(group: 'org.apache.poi', name: 'poi', version: '5.2.3')
-        compile(group: 'org.apache.poi', name: 'poi-ooxml', version: '5.2.3')
-        compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '5.2.3') {
+        compile(group: 'org.apache.poi', name: 'poi', version: '5.2.2')
+        compile(group: 'org.apache.poi', name: 'poi-ooxml', version: '5.2.2')
+        compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '5.2.2') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }
         compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.18')
