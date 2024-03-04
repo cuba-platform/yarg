@@ -228,8 +228,8 @@ configure(core) {
         compile(group: 'org.apache.poi', name: 'poi-scratchpad', version: '4.1.2') {
             exclude(group: 'org.apache.poi', module: 'poi')
         }
-        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.22')
-        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.1.22') {
+        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-core', version: '9.1.18')
+        compile(group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.1.18') {
             exclude(group: 'org.bouncycastle', module: 'bctsp-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'org.bouncycastle', module: 'bcmail-jdk14')
@@ -237,11 +237,11 @@ configure(core) {
             exclude(group: 'bouncycastle', module: 'bcprov-jdk14')
             exclude(group: 'bouncycastle', module: 'bctsp-jdk14')
         }
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '1.0.10') {
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-core', version: '1.0.0') {
             exclude(group: 'junit', module: 'junit')
         }
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-rtl-support', version: '1.0.10')
-        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '1.0.10') {
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-rtl-support', version: '1.0.0')
+        compile (group: 'com.openhtmltopdf', name: 'openhtmltopdf-pdfbox', version: '1.0.0') {
             exclude(group: 'junit', module: 'junit')
         }
         compile(group: "org.docx4j", name: "docx4j-JAXB-ReferenceImpl", version: "8.2.9") {
