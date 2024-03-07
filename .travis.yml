@@ -8,10 +8,10 @@ before_install:
   - (cd core && chmod +x ./gradlew)
 
 install:
-  - (cd core &&./gradlew --no-daemon assemble)
+  - (cd core &&./gradlew assemble)
 
 script:
-  - (cd core &&./gradlew --no-daemon test)
+  - (cd core &&./gradlew test)
 
 cache:
   directories:
