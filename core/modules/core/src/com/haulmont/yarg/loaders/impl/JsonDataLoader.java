@@ -109,7 +109,7 @@ public class JsonDataLoader extends AbstractDataLoader {
     protected List<Map<String, Object>> extractScriptResult(String jsonData, String jsonPathScript, ReportQuery reportQuery) {
         List<Map<String, Object>> result = new ArrayList<>();
         try {
-            Object scriptResult = JsonPath.read(jsonData, jsonPathScript);
+            Object scriptResult = JsonPath.read(jsonData, jsonPathScript.trim());
             parseScriptResult(result, jsonPathScript, scriptResult);
         } catch (com.jayway.jsonpath.PathNotFoundException e) {
             return Collections.emptyList();
