@@ -277,6 +277,7 @@ configure(core) {
             exclude(group: 'com.google.zxing', module: 'core')
             exclude(group: 'com.ibm.icu', module: 'icu4j')
             exclude(group: 'com.fasterxml.jackson.core')
+            exclude(group: 'com.fasterxml.jackson.dataformat', module: 'jackson-dataformat-yaml')
             exclude(group: 'org.jfree')
             exclude(group: 'org.eclipse.jdt.core.compiler', module: 'ecj')
             exclude(group: 'com.lowagie', module: 'itext')
